@@ -25,8 +25,6 @@ class RedirectIfAuthenticated
 
                     'tecnologias' => redirect()->route('tecnologias'),
 
-                    'admin' => redirect()->route('admin'),
-
                     default => abort(403, 'Rol de usuario no válido.'),
                 };
             }

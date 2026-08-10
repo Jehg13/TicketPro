@@ -103,7 +103,7 @@
                     </button>
 
                     <div>
-                        <h1 class="text-2xl font-extrabold text-white sm:text-3xl">Bienvenido, {{ Auth::user()->nombre ?? 'Desconocido' }}</h1>
+                        <h1 class="text-2xl font-extrabold text-white sm:text-3xl">Bienvenido, {{ Auth::user()->name ?? 'Desconocido' }}</h1>
                         <p class="mt-1 text-sm text-slate-400 sm:text-base">
                             Inicio / <span class="font-bold text-white">Dashboard</span>
                         </p>

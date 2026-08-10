@@ -22,6 +22,13 @@ class LoginController extends Controller
 
     $request->session()->regenerate();
 
-    return redirect()->route('dashboard');
+    $usuario = Auth::user();
+
+    return match($usuario->rol){
+    'usuario' => redirect()->route('dashboard'),
+    'tecnologias' => redirect()->route('tecnologias'),
+    default => abort(403,'Rol de usuario invalido')
+    
+    };
 }
 }

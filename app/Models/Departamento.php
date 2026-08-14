@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Departamento extends Model
 {
     use HasFactory;
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function oficina(){
+        return $this->belongsTo(Oficina::class, 'oficina_id');
+    }
 }

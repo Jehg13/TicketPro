@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 class LoginController extends Controller
 {
-
     public function Login(Request $request){
     $datosValidados = $request->validate([
         "email" => 'required|email',
@@ -28,7 +27,6 @@ class LoginController extends Controller
     'usuario' => redirect()->route('dashboard'),
     'tecnologias' => redirect()->route('tecnologias'),
     default => abort(403,'Rol de usuario invalido')
-    
     };
-}
+    }
 }

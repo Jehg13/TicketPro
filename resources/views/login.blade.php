@@ -74,8 +74,8 @@
                             <input type="checkbox" name="remember" class="w-4 h-4 rounded bg-[#161b28] border-blue-600 text-brandblue-500 focus:ring-brandblue-500">
                             Recordarme
                         </label>
-                        @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-gray-300 text-sm hover:text-white hover:underline">
+                        @if (Route::has('olvidecontraseña'))
+                            <a href="{{ route('olvidecontraseña') }}" class="text-gray-300 text-sm hover:text-white hover:underline">
                                 ¿Olvidaste tu contraseña?
                             </a>
                         @endif

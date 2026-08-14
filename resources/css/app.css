@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "scrollbars.css";
 
 @theme {
     --color-brandblue-400: #3b82f6;

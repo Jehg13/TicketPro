@@ -15,7 +15,7 @@ class DepartamentoSeeder extends Seeder
     public function run(): void
     {
         DB::table('departamentos')->insert([
-            'nombre' => 'administracion',
+            'nombre' => 'tecnologias',
             'oficina_id' => '1',
         ]);
     }

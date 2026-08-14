@@ -48,4 +48,9 @@ class TicketU extends Model
             'id'
         )->orderBy('created_at', 'asc');
     }
+
+    public function tomadoPor()
+{
+    return $this->belongsTo(User::class, 'tomado_por');
+}
 }

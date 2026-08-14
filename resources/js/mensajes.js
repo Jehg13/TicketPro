@@ -1,99 +1,171 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const formulario = document.getElementById('formComentario');
-    const listaComentarios = document.getElementById('listaComentarios');
-    const botonEnviar = document.getElementById('btnEnviarComentario');
-    const inputComentario = document.getElementById('inputComentario');
+    const formulario =
+        document.getElementById('formComentario');
+
+    const listaComentarios =
+        document.getElementById('listaComentarios');
+
+    const botonEnviar =
+        document.getElementById('btnEnviarComentario');
+
+    const inputComentario =
+        document.getElementById('inputComentario');
+
+
+    /*
+     * ---------------------------------------------------------
+     * VERIFICAR FORMULARIO
+     * ---------------------------------------------------------
+     */
 
     if (!formulario) {
-        console.warn('No se encontró #formComentario');
+
+        console.warn(
+            'No se encontró #formComentario'
+        );
+
         return;
     }
 
+
     let ticketActual = null;
+
 
     /*
      * ---------------------------------------------------------
      * CARGAR TICKET Y COMENTARIOS
      * ---------------------------------------------------------
+     *
+     * Alpine es el encargado de mostrar los comentarios.
+     *
+     * ---------------------------------------------------------
      */
 
-    window.cargarTicketComentarios = function (ticketId, comentarios = []) {
+    window.cargarTicketComentarios =
+        function (
+            ticketId,
+            comentarios = []
+        ) {
 
-        ticketActual = ticketId;
+            ticketActual =
+                ticketId;
 
-        formulario.action = `/tickets/${ticketId}/comentarios`;
 
-        formulario.reset();
+            formulario.action =
+                `/tickets/${ticketId}/comentarios`;
 
-        if (listaComentarios) {
-            listaComentarios.innerHTML = '';
-        }
 
-        if (Array.isArray(comentarios) && comentarios.length > 0) {
+            formulario.reset();
 
-            comentarios.forEach(function (comentario) {
-                agregarComentario(comentario);
-            });
-
-        } else {
-
-            mostrarSinComentarios();
-
-        }
-
-        if (listaComentarios) {
-            setTimeout(function () {
-                listaComentarios.scrollTop = listaComentarios.scrollHeight;
-            }, 50);
-        }
-    };
+        };
 
 
     /*
      * ---------------------------------------------------------
-     * OBTENER EL TICKET ACTUAL DESDE ALPINE
+     * OBTENER DATOS DE ALPINE
+     * ---------------------------------------------------------
+     */
+
+    function obtenerAlpineTicketModal() {
+
+        const modal =
+            document.querySelector(
+                '[x-data*="ticketModal"]'
+            );
+
+
+        if (
+            !modal ||
+            !modal._x_dataStack
+        ) {
+
+            return null;
+
+        }
+
+
+        for (
+            const data
+            of modal._x_dataStack
+        ) {
+
+            if (data) {
+
+                return data;
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
+
+    /*
+     * ---------------------------------------------------------
+     * OBTENER TICKET ACTUAL
      * ---------------------------------------------------------
      */
 
     function obtenerTicketActual() {
 
+        /*
+         * Si ya tenemos el ticket guardado,
+         * utilizarlo directamente.
+         */
+
         if (ticketActual) {
+
             return ticketActual;
+
         }
+
+
+        /*
+         * Intentar obtenerlo desde el formulario.
+         */
 
         const formularioData =
             formulario._x_dataStack?.[0];
 
-        if (formularioData?.selectedTicket?.id) {
+
+        if (
+            formularioData?.selectedTicket?.id
+        ) {
+
             ticketActual =
                 formularioData.selectedTicket.id;
 
             return ticketActual;
+
         }
 
-        const modal =
-            document.querySelector('[x-data*="ticketModal"]');
 
-        if (modal && modal._x_dataStack) {
+        /*
+         * Intentar obtenerlo desde Alpine.
+         */
 
-            for (const data of modal._x_dataStack) {
+        const alpineData =
+            obtenerAlpineTicketModal();
 
-                if (
-                    data &&
-                    data.selectedTicket &&
-                    data.selectedTicket.id
-                ) {
 
-                    ticketActual =
-                        data.selectedTicket.id;
+        if (
+            alpineData?.selectedTicket?.id
+        ) {
 
-                    return ticketActual;
-                }
-            }
+            ticketActual =
+                alpineData.selectedTicket.id;
+
+            return ticketActual;
+
         }
+
 
         return null;
+
     }
 
 
@@ -110,46 +182,244 @@ document.addEventListener('DOMContentLoaded', function () {
             const boton =
                 event.target.closest('button');
 
+
             if (!boton) {
+
                 return;
+
             }
 
-            setTimeout(function () {
 
-                const modal =
-                    document.querySelector(
-                        '[x-data*="ticketModal"]'
-                    );
+            /*
+             * Esperar a que Alpine termine de actualizar
+             * selectedTicket.
+             */
 
-                if (!modal || !modal._x_dataStack) {
-                    return;
-                }
+            setTimeout(
+                function () {
 
-                for (const data of modal._x_dataStack) {
+                    const alpineData =
+                        obtenerAlpineTicketModal();
+
 
                     if (
-                        data &&
-                        data.selectedTicket &&
-                        data.selectedTicket.id
+                        !alpineData ||
+                        !alpineData.selectedTicket ||
+                        !alpineData.selectedTicket.id
                     ) {
 
-                        ticketActual =
-                            data.selectedTicket.id;
+                        return;
 
-                        if (formulario) {
-
-                            formulario.action =
-                                `/tickets/${ticketActual}/comentarios`;
-
-                        }
-
-                        break;
                     }
-                }
 
-            }, 0);
+
+                    ticketActual =
+                        alpineData.selectedTicket.id;
+
+
+                    formulario.action =
+                        `/tickets/${ticketActual}/comentarios`;
+
+                },
+                0
+            );
+
         }
     );
+
+
+    /*
+     * ---------------------------------------------------------
+     * AGREGAR COMENTARIO AL ESTADO DE ALPINE
+     * ---------------------------------------------------------
+     *
+     * IMPORTANTE:
+     *
+     * Usamos unshift() en lugar de push().
+     *
+     * push():
+     *
+     * comentario viejo
+     * comentario viejo
+     * comentario nuevo
+     *
+     * unshift():
+     *
+     * comentario nuevo
+     * comentario viejo
+     * comentario viejo
+     *
+     * De esta manera el comentario nuevo aparece ARRIBA.
+     *
+     * ---------------------------------------------------------
+     */
+
+    function agregarComentarioAlpine(comentario) {
+
+        if (!comentario) {
+
+            return;
+
+        }
+
+
+        const alpineData =
+            obtenerAlpineTicketModal();
+
+
+        if (!alpineData) {
+
+            console.warn(
+                'No se encontró el componente Alpine ticketModal.'
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Asegurarnos de que comentarios sea un array.
+         */
+
+        if (
+            !Array.isArray(
+                alpineData.comentarios
+            )
+        ) {
+
+            alpineData.comentarios = [];
+
+        }
+
+
+        /*
+         * Evitar comentarios duplicados.
+         */
+
+        if (
+            comentario.id &&
+            alpineData.comentarios.some(
+                function (item) {
+
+                    return (
+                        item &&
+                        item.id === comentario.id
+                    );
+
+                }
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+         * -----------------------------------------------------
+         * AGREGAR AL PRINCIPIO
+         * -----------------------------------------------------
+         *
+         * Antes teníamos:
+         *
+         * alpineData.comentarios.push(comentario);
+         *
+         * Ahora usamos:
+         *
+         * alpineData.comentarios.unshift(comentario);
+         *
+         * -----------------------------------------------------
+         */
+
+        alpineData.comentarios.unshift(
+            comentario
+        );
+
+
+        /*
+         * Alpine actualizará automáticamente:
+         *
+         * x-if="comentarios.length === 0"
+         *
+         * y:
+         *
+         * x-for="comentario in comentarios"
+         *
+         */
+
+
+        /*
+         * Esperar a que Alpine termine de renderizar.
+         */
+
+        if (
+            alpineData.$nextTick
+        ) {
+
+            alpineData.$nextTick(
+                function () {
+
+                    /*
+                     * Inicializar iconos Lucide.
+                     */
+
+                    if (
+                        window.lucide
+                    ) {
+
+                        window.lucide.createIcons();
+
+                    }
+
+
+                    /*
+                     * Mantener el scroll arriba porque
+                     * los comentarios nuevos aparecen arriba.
+                     */
+
+                    if (listaComentarios) {
+
+                        listaComentarios.scrollTop =
+                            0;
+
+                    }
+
+                }
+            );
+
+        } else {
+
+            /*
+             * Fallback por si $nextTick no está disponible.
+             */
+
+            setTimeout(
+                function () {
+
+                    if (
+                        window.lucide
+                    ) {
+
+                        window.lucide.createIcons();
+
+                    }
+
+
+                    if (listaComentarios) {
+
+                        listaComentarios.scrollTop =
+                            0;
+
+                    }
+
+                },
+                50
+            );
+
+        }
+
+    }
 
 
     /*
@@ -163,10 +433,17 @@ document.addEventListener('DOMContentLoaded', function () {
         async function (e) {
 
             e.preventDefault();
+
             e.stopPropagation();
+
+
+            /*
+             * Obtener ticket actual.
+             */
 
             const idTicket =
                 obtenerTicketActual();
+
 
             if (!idTicket) {
 
@@ -174,71 +451,122 @@ document.addEventListener('DOMContentLoaded', function () {
                     'No hay un ticket seleccionado.'
                 );
 
+
                 alert(
                     'Selecciona un ticket antes de enviar un comentario.'
                 );
 
+
                 return;
+
             }
+
+
+            /*
+             * Actualizar action.
+             */
 
             formulario.action =
                 `/tickets/${idTicket}/comentarios`;
 
+
+            /*
+             * Crear FormData.
+             */
+
             const formData =
                 new FormData(formulario);
+
 
             const mensaje =
                 formData.get('mensaje');
 
+
             const archivo =
                 formData.get('archivo');
 
+
+            /*
+             * Verificar mensaje o archivo.
+             */
+
             if (
-                (!mensaje || mensaje.trim() === '') &&
-                (!archivo || archivo.size === 0)
+                (!mensaje ||
+                    mensaje.trim() === '') &&
+                (!archivo ||
+                    archivo.size === 0)
             ) {
 
                 alert(
                     'Escribe un comentario o selecciona un archivo.'
                 );
 
+
                 return;
+
             }
+
+
+            /*
+             * Deshabilitar botón.
+             */
 
             if (botonEnviar) {
 
-                botonEnviar.disabled = true;
+                botonEnviar.disabled =
+                    true;
+
 
                 botonEnviar.classList.add(
                     'opacity-50',
                     'pointer-events-none'
                 );
+
             }
 
+
             try {
+
+                /*
+                 * -------------------------------------------------
+                 * PETICIÓN AL SERVIDOR
+                 * -------------------------------------------------
+                 */
 
                 const response =
                     await fetch(
                         formulario.action,
                         {
                             method: 'POST',
+
                             body: formData,
+
                             headers: {
+
                                 'X-Requested-With':
                                     'XMLHttpRequest',
 
                                 'Accept':
                                     'application/json'
+
                             }
+
                         }
                     );
+
+
+                /*
+                 * Obtener tipo de respuesta.
+                 */
 
                 const contentType =
                     response.headers.get(
                         'content-type'
                     );
 
+
                 let data = null;
+
 
                 if (
                     contentType &&
@@ -258,6 +586,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
+
+                /*
+                 * Verificar respuesta.
+                 */
+
                 if (
                     !response.ok ||
                     !data.success
@@ -270,37 +603,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 }
 
-                const sinComentarios =
-                    document.getElementById(
-                        'sinComentarios'
-                    );
 
-                if (sinComentarios) {
-                    sinComentarios.remove();
-                }
+                /*
+                 * -------------------------------------------------
+                 * AGREGAR NUEVO COMENTARIO ARRIBA
+                 * -------------------------------------------------
+                 */
 
                 if (data.comentario) {
 
-                    agregarComentario(
+                    agregarComentarioAlpine(
                         data.comentario
                     );
 
                 }
 
+
+                /*
+                 * -------------------------------------------------
+                 * LIMPIAR FORMULARIO
+                 * -------------------------------------------------
+                 */
+
                 formulario.reset();
+
+
+                /*
+                 * Limpiar archivo de Alpine.
+                 */
 
                 limpiarArchivoAlpine();
 
-                if (listaComentarios) {
-
-                    setTimeout(function () {
-
-                        listaComentarios.scrollTop =
-                            listaComentarios.scrollHeight;
-
-                    }, 50);
-
-                }
 
             } catch (error) {
 
@@ -309,23 +642,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     error
                 );
 
+
                 alert(
                     error.message ||
                     'Ocurrió un error al enviar el comentario.'
                 );
 
+
             } finally {
+
+                /*
+                 * Volver a habilitar botón.
+                 */
 
                 if (botonEnviar) {
 
-                    botonEnviar.disabled = false;
+                    botonEnviar.disabled =
+                        false;
+
 
                     botonEnviar.classList.remove(
                         'opacity-50',
                         'pointer-events-none'
                     );
+
                 }
+
             }
+
         }
     );
 
@@ -342,19 +686,29 @@ document.addEventListener('DOMContentLoaded', function () {
             'keydown',
             function (e) {
 
+                /*
+                 * Enter sin Shift = enviar.
+                 *
+                 * Shift + Enter = salto de línea.
+                 */
+
                 if (
                     e.key === 'Enter' &&
                     !e.shiftKey
                 ) {
 
                     e.preventDefault();
+
                     e.stopPropagation();
+
 
                     formulario.requestSubmit();
 
                 }
+
             }
         );
+
     }
 
 
@@ -367,6 +721,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function limpiarArchivoAlpine() {
 
         try {
+
+            /*
+             * Revisar formulario.
+             */
 
             if (
                 formulario._x_dataStack &&
@@ -384,11 +742,69 @@ document.addEventListener('DOMContentLoaded', function () {
                             )
                         ) {
 
-                            data.archivoAdjunto = null;
+                            data.archivoAdjunto =
+                                null;
 
                         }
+
                     }
                 );
+
+            }
+
+
+            /*
+             * Revisar modal.
+             */
+
+            const modal =
+                document.querySelector(
+                    '[x-data*="ticketModal"]'
+                );
+
+
+            if (
+                modal &&
+                modal._x_dataStack
+            ) {
+
+                modal._x_dataStack.forEach(
+                    function (data) {
+
+                        if (
+                            data &&
+                            Object.prototype.hasOwnProperty.call(
+                                data,
+                                'archivoAdjunto'
+                            )
+                        ) {
+
+                            data.archivoAdjunto =
+                                null;
+
+                        }
+
+                    }
+                );
+
+            }
+
+
+            /*
+             * Limpiar físicamente el input file.
+             */
+
+            const inputArchivo =
+                formulario.querySelector(
+                    'input[type="file"]'
+                );
+
+
+            if (inputArchivo) {
+
+                inputArchivo.value =
+                    '';
+
             }
 
         } catch (error) {
@@ -397,348 +813,76 @@ document.addEventListener('DOMContentLoaded', function () {
                 'No se pudo limpiar archivoAdjunto:',
                 error
             );
+
         }
+
     }
 
 
     /*
      * ---------------------------------------------------------
-     * AGREGAR COMENTARIO
+     * INICIALIZAR LUCIDE
      * ---------------------------------------------------------
      */
 
-    function agregarComentario(comentario) {
+    document.addEventListener(
+        'alpine:initialized',
+        function () {
 
-        if (!listaComentarios) {
-            return;
-        }
+            if (
+                window.lucide
+            ) {
 
-        const usuario =
-            comentario.usuario || {};
+                window.lucide.createIcons();
 
-        const nombreUsuario =
-            usuario.name ||
-            'Usuario';
-
-        const avatar =
-            'https://ui-avatars.com/api/?name=' +
-            encodeURIComponent(nombreUsuario) +
-            '&background=0D8ABC&color=fff';
-
-        let archivoHTML = '';
-
-        if (comentario.archivo) {
-
-            const nombreArchivo =
-                comentario.nombre_archivo ||
-                comentario.archivo.split('/').pop();
-
-            const urlArchivo =
-                comentario.url_archivo ||
-                comentario.archivo;
-
-            const extension =
-                nombreArchivo
-                    .split('.')
-                    .pop()
-                    .toUpperCase();
-
-            const imagenes = [
-                'JPG',
-                'JPEG',
-                'PNG',
-                'GIF',
-                'WEBP',
-                'SVG'
-            ];
-
-            const esImagen =
-                imagenes.includes(extension);
-
-            if (esImagen) {
-
-                archivoHTML = `
-
-                    <a
-                        href="${escapeHTML(urlArchivo)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="block w-36 rounded-xl overflow-hidden
-                        bg-slate-900 border border-slate-700/80
-                        hover:border-blue-500/60 transition"
-                    >
-
-                        <img
-                            src="${escapeHTML(urlArchivo)}"
-                            alt="${escapeHTML(nombreArchivo)}"
-                            class="w-36 h-20 object-cover"
-                        >
-
-                        <div
-                            class="px-2 py-1.5
-                            flex items-center justify-between gap-2
-                            border-t border-slate-800"
-                        >
-
-                            <span
-                                class="text-[9px]
-                                text-slate-300 truncate"
-                            >
-                                ${escapeHTML(nombreArchivo)}
-                            </span>
-
-                            <span
-                                class="px-1 py-0.5 rounded
-                                bg-blue-600 text-white
-                                font-bold text-[8px]"
-                            >
-                                ${escapeHTML(extension)}
-                            </span>
-
-                        </div>
-
-                    </a>
-
-                `;
-
-            } else {
-
-                const color =
-                    extension === 'PDF'
-                        ? 'bg-red-600'
-                        : 'bg-blue-600';
-
-                archivoHTML = `
-
-                    <a
-                        href="${escapeHTML(urlArchivo)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="group block w-40 h-20
-                        rounded-xl bg-slate-900
-                        border border-slate-700/80 p-2
-                        hover:border-blue-500/60
-                        hover:bg-slate-800 transition"
-                    >
-
-                        <div
-                            class="flex items-center gap-2 mb-2"
-                        >
-
-                            <div
-                                class="w-8 h-8 rounded-lg
-                                bg-blue-600/20
-                                flex items-center justify-center"
-                            >
-
-                                <i
-                                    data-lucide="file"
-                                    class="w-4 h-4 text-blue-400"
-                                ></i>
-
-                            </div>
-
-                        </div>
-
-                        <div
-                            class="flex items-center
-                            justify-between gap-2
-                            text-[9px] text-slate-300
-                            pt-1 border-t border-slate-800"
-                        >
-
-                            <span class="truncate">
-                                ${escapeHTML(nombreArchivo)}
-                            </span>
-
-                            <span
-                                class="px-1 py-0.5 rounded
-                                ${color}
-                                text-white font-bold text-[8px]"
-                            >
-                                ${escapeHTML(extension)}
-                            </span>
-
-                        </div>
-
-                    </a>
-
-                `;
             }
+
         }
+    );
 
-        const elemento =
-            document.createElement('div');
 
-        elemento.className =
-            'flex items-start gap-3';
+    /*
+     * ---------------------------------------------------------
+     * OBSERVAR CAMBIOS DEL MODAL
+     * ---------------------------------------------------------
+     *
+     * Mantiene actualizada la referencia del ticket.
+     *
+     * ---------------------------------------------------------
+     */
 
-        elemento.innerHTML = `
+    setInterval(
+        function () {
 
-            <img
-                src="${avatar}"
-                class="w-8 h-8 rounded-full
-                object-cover shrink-0
-                border border-blue-400/30"
-                alt="${escapeHTML(nombreUsuario)}"
-            >
+            const alpineData =
+                obtenerAlpineTicketModal();
 
-            <div class="flex-1 min-w-0">
 
-                <div
-                    class="flex items-center
-                    gap-2 mb-1 flex-wrap"
-                >
+            if (
+                alpineData?.selectedTicket?.id
+            ) {
 
-                    <span
-                        class="text-xs font-bold text-white"
-                    >
-                        ${escapeHTML(nombreUsuario)}
-                    </span>
+                const nuevoTicket =
+                    alpineData.selectedTicket.id;
 
-                    <span
-                        class="px-2 py-0.5
-                        rounded-full text-[9px]
-                        font-semibold
-                        bg-indigo-600/30
-                        text-indigo-300
-                        border border-indigo-500/40"
-                    >
-                        ${escapeHTML(
-                            usuario.rol || 'Usuario'
-                        )}
-                    </span>
 
-                    <span
-                        class="text-[10px]
-                        text-slate-500 ml-auto"
-                    >
-                        ${escapeHTML(
-                            comentario.fecha || ''
-                        )}
-                    </span>
+                if (
+                    ticketActual !== nuevoTicket
+                ) {
 
-                </div>
+                    ticketActual =
+                        nuevoTicket;
 
-                ${
-                    comentario.mensaje
-                        ? `
-                            <p
-                                class="text-xs
-                                text-slate-300 mb-2
-                                whitespace-pre-line"
-                            >
-                                ${escapeHTML(
-                                    comentario.mensaje
-                                )}
-                            </p>
-                        `
-                        : ''
+
+                    formulario.action =
+                        `/tickets/${ticketActual}/comentarios`;
+
                 }
 
-                ${archivoHTML}
+            }
 
-            </div>
-        `;
+        },
+        500
+    );
 
-        listaComentarios.appendChild(
-            elemento
-        );
-
-        if (
-            typeof lucide !== 'undefined'
-        ) {
-
-            lucide.createIcons();
-
-        }
-    }
-
-
-    /*
-     * ---------------------------------------------------------
-     * SIN COMENTARIOS
-     * ---------------------------------------------------------
-     */
-
-    function mostrarSinComentarios() {
-
-        if (!listaComentarios) {
-            return;
-        }
-
-        listaComentarios.innerHTML = `
-
-            <div
-                id="sinComentarios"
-                class="flex flex-col
-                items-center justify-center
-                py-16 text-slate-500"
-            >
-
-                <div
-                    class="w-12 h-12 rounded-full
-                    bg-slate-800/60
-                    flex items-center
-                    justify-center mb-3"
-                >
-
-                    <i
-                        data-lucide="message-square-off"
-                        class="w-5 h-5"
-                    ></i>
-
-                </div>
-
-                <p class="text-xs">
-                    Aún no hay comentarios.
-                </p>
-
-                <span
-                    class="text-[10px]
-                    text-slate-600 mt-1"
-                >
-                    Sé el primero en agregar
-                    un comentario.
-                </span>
-
-            </div>
-        `;
-
-        if (
-            typeof lucide !== 'undefined'
-        ) {
-
-            lucide.createIcons();
-
-        }
-    }
-
-
-    /*
-     * ---------------------------------------------------------
-     * ESCAPAR HTML
-     * ---------------------------------------------------------
-     */
-
-    function escapeHTML(text) {
-
-        if (
-            text === null ||
-            text === undefined
-        ) {
-
-            return '';
-
-        }
-
-        const div =
-            document.createElement('div');
-
-        div.textContent =
-            String(text);
-
-        return div.innerHTML;
-    }
-
-}); 
+});

@@ -27,10 +27,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'password_updated_at' => 'datetime',
     ];
 
     public function departamento()
     {
         return $this->belongsTo(Departamento::class, 'departamento_id');
     }
+
+    public function sendPasswordResetNotification($token)
+{
+    $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+}
 }

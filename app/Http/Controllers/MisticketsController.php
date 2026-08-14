@@ -684,4 +684,31 @@ class MisticketsController extends Controller
             )
         );
     }
+
+public function tomar($id)
+{
+    $ticket = TicketU::findOrFail($id);
+
+    $usuario = auth()->user();
+
+    $ticket->tomado_por = $usuario->id;
+    $ticket->fecha_tomado = now();
+    $ticket->estado = 'en proceso';
+
+    $ticket->save();
+
+    return response()->json([
+        'success' => true,
+
+        'tomado_por' => [
+            'id' => $usuario->id,
+            'name' => $usuario->name,
+            'foto' => asset('storage/' . $usuario->foto),
+        ],
+
+        'fecha_tomado' => $ticket->fecha_tomado,
+
+        'estado' => $ticket->estado,
+    ]);
+}
 }

@@ -9,8 +9,15 @@ class PerfilController extends Controller
 {
     public function create()
     {
+        $user = auth()->user();
+
+        if ($user->rol === 'tecnologias') {
+            return view('admin.perfil');
+        }
+
         return view('user.perfil');
     }
+
 
     public function update(Request $request)
     {
@@ -36,13 +43,16 @@ class PerfilController extends Controller
             ->store('profile-photos', 'public');
 
         $user->foto = $path;
+
         $user->save();
+
 
         return back()->with(
             'success',
             'Foto de perfil actualizada correctamente.'
         );
     }
+
 
     public function delete()
     {
@@ -56,11 +66,59 @@ class PerfilController extends Controller
         }
 
         $user->foto = 'profile-photos/user.png';
+
         $user->save();
+
 
         return back()->with(
             'success',
             'Foto de perfil eliminada correctamente.'
+        );
+    }
+
+
+    public function updateTecnologias(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($user->rol !== 'tecnologias') {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email,' . $user->id,
+            ],
+
+            'departamento' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if ($user->departamento) {
+            $user->departamento->nombre = $request->departamento;
+            $user->departamento->save();
+        }
+
+        $user->save();
+
+        return back()->with(
+            'success',
+            'Información personal actualizada correctamente.'
         );
     }
 }

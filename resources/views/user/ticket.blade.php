@@ -222,25 +222,71 @@
                 </div>
 
                 <!-- Usuario -->
-                <div class="flex items-center gap-3 cursor-pointer">
+                <div class="relative">
+                    <button id="profile-button" type="button"
+                        class="flex items-center gap-3 cursor-pointer rounded-xl px-2 py-1.5 hover:bg-[#151b3b] transition-all duration-200 focus:outline-none">
 
-                    <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
-                        class="w-10 h-10 rounded-full border border-gray-600 object-cover">
+                        <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                            class="w-10 h-10 rounded-full border border-gray-600 object-cover">
 
-                    <div class="hidden md:block text-right">
-                        <p class="text-sm font-semibold leading-tight">
-                            {{ Auth::user()->name ?? 'Usuario' }}
-                        </p>
+                        <div class="hidden md:block text-right">
+                            <p class="text-sm font-semibold leading-tight">
+                                {{ Auth::user()->name ?? 'Usuario' }}
+                            </p>
 
-                        <p class="text-xs text-gray-400">
-                            {{ optional(Auth::user()->departamento)->nombre ?? 'Administración' }}
-                        </p>
+                            <p class="text-xs text-gray-400">
+                                {{ optional(Auth::user()->departamento)->nombre ?? 'Administración' }}
+                            </p>
+                        </div>
+
+                        <svg id="profile-arrow" class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <!-- DROPDOWN PERFIL -->
+                    <div id="profile-dropdown"
+                        class="hidden absolute right-0 mt-3 w-56 bg-[#0f1535]/95 backdrop-blur-xl border border-[#1e295d] rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+
+                        <!-- Ver perfil -->
+                        <a href="{{ route('perfilusuario') }}"
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-[#151b3b] hover:text-white transition-colors">
+
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                </path>
+                            </svg>
+
+                            <span>Ver perfil</span>
+                        </a>
+
+                        <div class="border-t border-[#1e295d]"></div>
+
+                        <!-- Cerrar sesión -->
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+
+                            <button type="submit"
+                                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
+
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                    </path>
+                                </svg>
+
+                                <span>Cerrar sesión</span>
+                            </button>
+                        </form>
+
                     </div>
-
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
-                        </path>
-                    </svg>
                 </div>
             </div>
         </header>

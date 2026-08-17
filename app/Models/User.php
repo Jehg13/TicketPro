@@ -39,4 +39,14 @@ class User extends Authenticatable
 {
     $this->notify(new \App\Notifications\ResetPasswordNotification($token));
 }
+
+public function solicitudesCambio()
+{
+    return $this->hasMany(SolicitudCambio::class, 'user_id');
+}
+
+public function solicitudesRevisadas()
+{
+    return $this->hasMany(SolicitudCambio::class, 'revisado_por');
+}
 }

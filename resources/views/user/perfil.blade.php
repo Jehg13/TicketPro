@@ -414,7 +414,7 @@
                                 traves del boton solicitar cambio
                             </p>
                         </div>
-                        <button
+                        <button id="openModalBtn"
                             class="px-4 py-2 rounded-lg border border-[#1e295d] bg-[#0b102b] hover:bg-[#151b3b] text-gray-200 text-xs font-medium flex items-center gap-2 whitespace-nowrap transition shrink-0">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -616,26 +616,249 @@
         </div>
 
     </main>
+   <!-- MODAL SOLICITAR CAMBIO DE INFORMACIÓN -->
+<div id="changeModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
 
+    <!-- Backdrop -->
+    <div id="modalBackdrop"
+        class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity">
+    </div>
+
+    <!-- Contenido -->
+    <div
+        class="relative w-full max-w-lg mx-4 bg-[#0a0e27] border border-[#1e295d] rounded-2xl shadow-2xl overflow-hidden z-10 transition-all transform">
+
+        <!-- Header -->
+        <div
+            class="flex items-center justify-between px-6 py-4 border-b border-[#1e295d]/80 bg-[#0f1535]/50">
+
+            <div class="flex items-center gap-2.5">
+
+                <div class="p-2 rounded-lg bg-blue-600/10 border border-blue-500/20 text-blue-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                        </path>
+                    </svg>
+                </div>
+
+                <div>
+                    <h3 class="text-base font-bold text-white">
+                        Solicitar cambio de información
+                    </h3>
+
+                    <p class="text-xs text-gray-400">
+                        Los cambios requerirán aprobación administrativa
+                    </p>
+                </div>
+
+            </div>
+
+            <button
+                id="closeModalBtn"
+                type="button"
+                class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-[#151b3b] transition">
+
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+
+            </button>
+
+        </div>
+
+
+        <!-- FORMULARIO -->
+        <form
+            action="{{ route('solicitar.cambio.store') }}"
+            method="POST"
+            class="p-6 space-y-4">
+
+            @csrf
+
+            <!-- Campo a modificar -->
+            <div>
+
+                <label class="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Campo a modificar
+                    <span class="text-rose-500">*</span>
+                </label>
+
+                <select
+                    name="campo"
+                    id="campoCambio"
+                    required
+                    class="w-full bg-[#060818] border border-[#1e295d] text-gray-200 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 transition">
+
+                    <option value="" disabled selected>
+                        Selecciona el dato a actualizar
+                    </option>
+
+                    <option
+                        value="nombre"
+                        data-valor="{{ Auth::User()->name }}">
+                        Nombre completo
+                    </option>
+
+                    <option
+                        value="correo"
+                        data-valor="{{ Auth::User()->email }}">
+                        Correo electrónico
+                    </option>
+
+                    <option
+                        value="oficina"
+                        data-valor="{{ Auth::User()->departamento?->oficina?->nombre ?? '' }}">
+                        Oficina / Sucursal
+                    </option>
+
+                    <option
+                        value="departamento"
+                        data-valor="{{ Auth::User()->departamento?->nombre ?? '' }}">
+                        Departamento
+                    </option>
+                </select>
+
+            </div>
+
+
+            <!-- Valor actual -->
+            <div>
+
+                <label class="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Valor actual
+                </label>
+
+                <input
+                    type="text"
+                    id="valorActualVisible"
+                    readonly
+                    placeholder="Selecciona primero el campo..."
+                    class="w-full bg-[#060818] border border-[#1e295d] text-gray-400 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none">
+
+                <!-- Este es el que realmente se envía -->
+                <input
+                    type="hidden"
+                    name="valor_actual"
+                    id="valorActual">
+
+            </div>
+
+
+            <!-- Nuevo valor -->
+            <div>
+
+                <label class="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Nuevo valor o dato correcto
+                    <span class="text-rose-500">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="nuevo_valor"
+                    required
+                    placeholder="Escribe aquí el dato correcto..."
+                    class="w-full bg-[#060818] border border-[#1e295d] text-gray-200 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 transition placeholder:text-gray-600">
+
+            </div>
+
+
+            <!-- Motivo -->
+            <div>
+
+                <label class="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Motivo o justificación del cambio
+                    <span class="text-rose-500">*</span>
+                </label>
+
+                <textarea
+                    name="motivo"
+                    rows="3"
+                    required
+                    placeholder="Describe brevemente la razón de la corrección..."
+                    class="w-full bg-[#060818] border border-[#1e295d] text-gray-200 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 transition placeholder:text-gray-600 resize-none"></textarea>
+
+            </div>
+
+
+            <!-- Acciones -->
+            <div class="flex items-center justify-end gap-3 pt-2">
+
+                <button
+                    type="button"
+                    id="cancelModalBtn"
+                    class="px-4 py-2.5 rounded-xl border border-[#1e295d] bg-[#0b102b] hover:bg-[#151b3b] text-gray-300 text-xs font-medium transition">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-[0_0_15px_rgba(37,99,235,0.4)] transition">
+
+                    Enviar solicitud
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+<script>
+
+    const campoCambio = document.getElementById('campoCambio');
+    const valorActual = document.getElementById('valorActual');
+    const valorActualVisible = document.getElementById('valorActualVisible');
+
+    campoCambio.addEventListener('change', function () {
+
+        const opcionSeleccionada =
+            this.options[this.selectedIndex];
+
+        const valor =
+            opcionSeleccionada.dataset.valor || '';
+
+        // Valor que se envía al controlador
+        valorActual.value = valor;
+
+        // Valor que se muestra visualmente
+        valorActualVisible.value =
+            valor || 'No disponible';
+
+    });
+
+</script>
 </body>
 
 </html>
-<style>
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelModalBtn');
+        const backdrop = document.getElementById('modalBackdrop');
+        const modal = document.getElementById('changeModal');
 
-    ::-webkit-scrollbar-track {
-        background: #060818;
-    }
+        const toggleModal = () => {
+            modal.classList.toggle('hidden');
+        };
 
-    ::-webkit-scrollbar-thumb {
-        background: #1e295d;
-        border-radius: 9999px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #2563eb;
-    }
-</style>
+        if (openBtn) openBtn.addEventListener('click', toggleModal);
+        if (closeBtn) closeBtn.addEventListener('click', toggleModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', toggleModal);
+        if (backdrop) backdrop.addEventListener('click', toggleModal);
+    });
+</script>

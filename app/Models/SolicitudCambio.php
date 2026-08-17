@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class SolicitudCambio extends Model
+{
+    use HasFactory;
+
+    protected $table = 'solicitudes_cambio';
+
+    protected $fillable = [
+        'folio',
+        'usuario_id',
+        'campo',
+        'valor_actual',
+        'nuevo_valor',
+        'motivo',
+        'estado',
+        'comentario_admin',
+        'revisado_por',
+        'revisado_at',
+    ];
+
+    protected $casts = [
+        'revisado_at' => 'datetime',
+    ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function revisor()
+    {
+        return $this->belongsTo(User::class, 'revisado_por');
+    }
+}

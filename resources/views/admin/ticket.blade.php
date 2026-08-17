@@ -66,7 +66,7 @@
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
 
-                <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
 
                 <div class="overflow-hidden">
@@ -367,33 +367,123 @@
                         </div>
 
 
-                        {{-- USUARIO HEADER --}}
+        <!-- USUARIO -->
+<!-- USUARIO -->
+<div class="relative z-[100]">
 
-                        <div
-                            class="flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4">
+    <!-- BOTÓN DEL USUARIO -->
+    <button
+        id="profile-button"
+        type="button"
+        class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                            <img src="{{ asset('storage/' . auth()->user()->foto) }}"
-                                alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+        <img
+            src="{{ auth()->user()->foto
+                ? asset('storage/' . auth()->user()->foto)
+                : asset('images/default-avatar.png') }}"
+            alt="{{ auth()->user()->name }}"
+            class="w-8 h-8 rounded-full object-cover">
 
-                            <div class="text-left leading-tight hidden sm:block">
+        <div class="text-left leading-tight hidden sm:block">
 
-                                <p class="text-xs font-semibold text-white">
+            <p class="text-xs font-semibold text-white">
+                {{ auth()->user()->name ?? 'Desconocido' }}
+            </p>
 
-                                    {{ Auth::user()->name ?? 'Desconocido' }}
+            <p class="text-[10px] text-blue-400 font-medium">
+                {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+            </p>
 
-                                </p>
+        </div>
 
-                                <p class="text-[10px] text-slate-400">
+        <svg
+            id="profile-arrow"
+            class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
 
-                                    {{ Auth::user()->departamento->nombre ?? 'Desconocido' }}
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7">
+            </path>
 
-                                </p>
+        </svg>
 
-                            </div>
+    </button>
 
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 ml-1"></i>
 
-                        </div>
+    <!-- DROPDOWN -->
+    <div
+        id="profile-dropdown"
+        class="hidden absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
+
+        <!-- PERFIL -->
+        <a
+            href="{{ route('perfilusuario') }}"
+            class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
+
+            <svg
+                class="w-5 h-5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                </path>
+
+            </svg>
+
+            <span>Perfil</span>
+
+        </a>
+
+
+        <!-- SEPARADOR -->
+        <div class="border-t border-[#1e295d]"></div>
+
+
+        <!-- CERRAR SESIÓN -->
+        <form
+            method="POST"
+            action="{{ route('logout') }}">
+
+            @csrf
+
+            <button
+                type="submit"
+                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
+
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
+
+                </svg>
+
+                <span>Cerrar sesión</span>
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
 
                     </div>
 
@@ -1003,38 +1093,32 @@
 
                                     <td class="py-4 px-6 text-slate-400 whitespace-nowrap">
 
-    <div class="flex items-center gap-3">
+                                        <div class="flex items-center gap-3">
 
-        {{-- FOTO DEL USUARIO DE TECNOLOGÍAS --}}
-        <div
-            class="w-8 h-8 rounded-full
-            border border-blue-500/20
-            overflow-hidden shrink-0"
-        >
+                                            {{-- FOTO DEL USUARIO DE TECNOLOGÍAS --}}
+                                            <div
+                                                class="w-8 h-8 rounded-full
+                   border border-blue-500/20
+                   overflow-hidden shrink-0">
 
-            <img
-    :src="
-        ticketsActualizados[{{ $ticket->id }}]
-            ?.tomado_por
-            ?.foto
-        ??
-        {{ Js::from(
-            asset('storage/' . $ticket->tomadoPor->foto)
-        ) }}
-    "
-    class="w-full h-full object-cover"
-    alt="Usuario"
->
+                                                <img :src="ticketsActualizados[{{ $ticket->id }}]
+                                                    ?.tomado_por
+                                                    ?.foto ?
+                                                    '{{ asset('storage') }}/' +
+                                                    ticketsActualizados[{{ $ticket->id }}].tomado_por.foto :
+                                                    {{ Js::from(
+                                                        $ticket->tomadoPor?->foto ? asset('storage/' . $ticket->tomadoPor->foto) : asset('images/user.png'),
+                                                    ) }}"
+                                                    class="w-full h-full object-cover" alt="Usuario">
 
-        </div>
+                                            </div>
 
 
-        {{-- INFORMACIÓN DEL USUARIO --}}
-        <div class="flex flex-col min-w-0">
+                                            {{-- INFORMACIÓN DEL USUARIO --}}
+                                            <div class="flex flex-col min-w-0">
 
-            <span
-                class="text-slate-300 font-medium truncate"
-                x-text="
+                                                <span class="text-slate-300 font-medium truncate"
+                                                    x-text="
                     ticketsActualizados[{{ $ticket->id }}]
                         ?.tomado_por
                         ?.name
@@ -1042,28 +1126,25 @@
                     {{ Js::from($ticket->tomadoPor?->name) }}
                     ??
                     '—————'
-                "
-            >
-            </span>
+                ">
+                                                </span>
 
-            <span
-                class="text-[10px] text-slate-500"
-                x-show="
+                                                <span class="text-[10px] text-slate-500"
+                                                    x-show="
                     ticketsActualizados[{{ $ticket->id }}]
                         ?.tomado_por
                         ?.name
                     ||
                     {{ Js::from($ticket->tomadoPor?->name) }}
-                "
-            >
-                Tecnologías
-            </span>
+                ">
+                                                    Tecnologías
+                                                </span>
 
-        </div>
+                                            </div>
 
-    </div>
+                                        </div>
 
-</td>
+                                    </td>
 
 
                                     {{-- FECHA --}}
@@ -1806,16 +1887,40 @@
                                 class="p-5 border-t border-slate-800/80 bg-[#030712] flex items-center justify-between shrink-0">
 
                                 <button type="button" @click="cerrarModal()"
-                                    class="px-5 py-2.5 text-xs font-semibold text-slate-400 hover:text-white transition">
+                                    class="px-5 py-2.5 text-xs font-semibold text-slate-400
+               hover:text-white hover:bg-slate-800/60
+               rounded-xl transition-all duration-200">
+
                                     Cerrar
+
                                 </button>
 
 
                                 <button type="button" x-show="!selectedTicket?.tomado_por" @click="tomarTicket()"
-                                    class="...">
+                                    class="inline-flex items-center gap-2
+               px-5 py-2.5
+               rounded-xl
+               bg-blue-600
+               hover:bg-blue-500
+               text-white
+               text-xs
+               font-semibold
+               border border-blue-500/40
+               shadow-lg shadow-blue-600/20
+               hover:shadow-blue-500/30
+               transition-all duration-200
+               focus:outline-none
+               focus:ring-2
+               focus:ring-blue-500/40">
+
                                     <i data-lucide="hand" class="w-4 h-4"></i>
-                                    Tomar ticket
+
+                                    <span>
+                                        Tomar ticket
+                                    </span>
+
                                 </button>
+
                             </div>
                         </div>
                     </div>

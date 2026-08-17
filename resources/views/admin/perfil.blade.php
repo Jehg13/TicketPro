@@ -158,28 +158,122 @@
 
                     </button>
 
-                    <div
-                        class="flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4">
+<!-- USUARIO -->
+<div class="relative z-[100]">
 
-                        <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
-                            alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+    <!-- BOTÓN DEL USUARIO -->
+    <button
+        id="profile-button"
+        type="button"
+        class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                        <div class="text-left leading-tight hidden sm:block">
+        <img
+            src="{{ auth()->user()->foto
+                ? asset('storage/' . auth()->user()->foto)
+                : asset('images/default-avatar.png') }}"
+            alt="{{ auth()->user()->name }}"
+            class="w-8 h-8 rounded-full object-cover">
 
-                            <p class="text-xs font-semibold text-white">
-                                {{ auth()->user()->name ?? 'Desconocido' }}
-                            </p>
+        <div class="text-left leading-tight hidden sm:block">
 
-                            <p class="text-[10px] text-blue-400 font-medium">
-                                {{ auth()->user()->departamento->nombre ?? 'Sin departamento' }}
-                            </p>
+            <p class="text-xs font-semibold text-white">
+                {{ auth()->user()->name ?? 'Desconocido' }}
+            </p>
 
-                        </div>
+            <p class="text-[10px] text-blue-400 font-medium">
+                {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+            </p>
 
-                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 ml-1"></i>
+        </div>
 
-                    </div>
+        <svg
+            id="profile-arrow"
+            class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
 
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7">
+            </path>
+
+        </svg>
+
+    </button>
+
+
+    <!-- DROPDOWN -->
+    <div
+        id="profile-dropdown"
+        class="hidden absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
+
+        <!-- PERFIL -->
+        <a
+            href="{{ route('perfilusuario') }}"
+            class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
+
+            <svg
+                class="w-5 h-5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                </path>
+
+            </svg>
+
+            <span>Perfil</span>
+
+        </a>
+
+
+        <!-- SEPARADOR -->
+        <div class="border-t border-[#1e295d]"></div>
+
+
+        <!-- CERRAR SESIÓN -->
+        <form
+            method="POST"
+            action="{{ route('logout') }}">
+
+            @csrf
+
+            <button
+                type="submit"
+                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
+
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
+
+                </svg>
+
+                <span>Cerrar sesión</span>
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
                 </div>
 
             </header>
@@ -496,7 +590,7 @@
                                         Contraseña de acceso
                                     </h4>
 
-                                    <p class="text-xs text-gray-400 mt-0.5">
+                                     <p class="text-xs text-gray-400 mt-0.5">
                                         Última actualización:
                                         {{ Auth::user()->password_updated_at
                                             ? Auth::user()->password_updated_at->locale('es')->translatedFormat('d M Y')
@@ -507,16 +601,6 @@
                                 </div>
 
                             </div>
-
-                            <button type="button"
-                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-slate-200 border border-slate-700 hover:bg-slate-800 transition shrink-0">
-
-                                <i data-lucide="shield" class="w-4 h-4 text-blue-400"></i>
-
-                                Actualizar contraseña
-
-                            </button>
-
                         </div>
 
                     </div>

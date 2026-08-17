@@ -12,6 +12,7 @@ use App\Http\Controllers\AvisosController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\TicketComentarioController;
 use App\Http\Controllers\AvisosusuarioController;
+use App\Http\Controllers\SolicitudCambioController;
 use App\Models\User;
 
 /*
@@ -188,6 +189,9 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
     Route::delete('/dashboard/perfil/foto', [PerfilController::class, 'delete'])
         ->name('eliminarfoto');
 
+    Route::post('/dashboard/solicitar-cambio', [PerfilController::class, 'solicitarCambio'])
+    ->name('solicitar.cambio.store');
+
 });
 
 
@@ -214,9 +218,20 @@ Route::middleware(['auth', 'role:tecnologias'])->group(function () {
     Route::delete('/tecnologias/avisos/{aviso}', [AvisosController::class, 'destroy'])
         ->name('avisos.destroy');
 
-    Route::get('/tecnologias/cambios', function () {
-        return view('admin.cambios');
-    })->name('cambiostecnologias');
+    Route::get(
+        '/tecnologias/cambios',
+        [SolicitudCambioController::class, 'index']
+    )->name('cambiostecnologias');
+
+    Route::post(
+        '/tecnologias/cambios/{solicitud}/aprobar',
+        [SolicitudCambioController::class, 'aprobar']
+    )->name('cambios.aprobar');
+
+    Route::post(
+        '/tecnologias/cambios/{solicitud}/rechazar',
+        [SolicitudCambioController::class, 'rechazar']
+    )->name('cambios.rechazar');
 
     Route::get('/tecnologias/perfil', [PerfilController::class, 'create'])
         ->name('perfiltecnologias');

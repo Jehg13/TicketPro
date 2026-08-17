@@ -15,3 +15,7 @@
     ::-webkit-scrollbar-thumb:hover {
         background: #2563eb
     }
+
+    [x-cloak] {
+    display: none !important;
+}

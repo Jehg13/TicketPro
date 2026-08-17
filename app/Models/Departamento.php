@@ -9,12 +9,20 @@ class Departamento extends Model
 {
     use HasFactory;
 
+    protected $table = 'departamentos';
+
+    protected $fillable = [
+        'nombre',
+        'oficina_id',
+    ];
+
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'departamento_id');
     }
 
-    public function oficina(){
+    public function oficina()
+    {
         return $this->belongsTo(Oficina::class, 'oficina_id');
     }
 }

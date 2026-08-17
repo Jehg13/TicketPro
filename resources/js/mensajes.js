@@ -1,684 +1,346 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const formulario =
-        document.getElementById('formComentario');
-
-    const listaComentarios =
-        document.getElementById('listaComentarios');
-
-    const botonEnviar =
-        document.getElementById('btnEnviarComentario');
-
-    const inputComentario =
-        document.getElementById('inputComentario');
-
-
-    /*
-     * ---------------------------------------------------------
-     * VERIFICAR FORMULARIO
-     * ---------------------------------------------------------
-     */
+    const formulario = document.getElementById('formComentario');
+    const botonEnviar = document.getElementById('btnEnviarComentario');
+    const inputComentario = document.getElementById('inputComentario');
 
     if (!formulario) {
-
-        console.warn(
-            'No se encontró #formComentario'
-        );
-
         return;
     }
 
-
     let ticketActual = null;
-
-
-    /*
-     * ---------------------------------------------------------
-     * CARGAR TICKET Y COMENTARIOS
-     * ---------------------------------------------------------
-     *
-     * Alpine es el encargado de mostrar los comentarios.
-     *
-     * ---------------------------------------------------------
-     */
-
-    window.cargarTicketComentarios =
-        function (
-            ticketId,
-            comentarios = []
-        ) {
-
-            ticketActual =
-                ticketId;
-
-
-            formulario.action =
-                `/tickets/${ticketId}/comentarios`;
-
-
-            formulario.reset();
-
-        };
-
-
-    /*
-     * ---------------------------------------------------------
-     * OBTENER DATOS DE ALPINE
-     * ---------------------------------------------------------
-     */
+    let enviandoComentario = false;
 
     function obtenerAlpineTicketModal() {
 
-        const modal =
-            document.querySelector(
-                '[x-data*="ticketModal"]'
-            );
+        const modal = document.querySelector('[x-data*="ticketModal"]');
 
-
-        if (
-            !modal ||
-            !modal._x_dataStack
-        ) {
-
+        if (!modal || !modal._x_dataStack) {
             return null;
-
         }
 
-
-        for (
-            const data
-            of modal._x_dataStack
-        ) {
-
+        for (const data of modal._x_dataStack) {
             if (data) {
-
                 return data;
-
             }
-
         }
-
 
         return null;
-
     }
 
+    function obtenerFechaComentario(comentario) {
 
-    /*
-     * ---------------------------------------------------------
-     * OBTENER TICKET ACTUAL
-     * ---------------------------------------------------------
-     */
+        if (!comentario) {
+            return 0;
+        }
+
+        const fecha =
+            comentario.created_at ||
+            comentario.fecha ||
+            comentario.createdAt;
+
+        if (!fecha) {
+            return 0;
+        }
+
+        const timestamp = new Date(fecha).getTime();
+
+        return isNaN(timestamp) ? 0 : timestamp;
+    }
+
+    function ordenarComentarios(comentarios) {
+
+        if (!Array.isArray(comentarios)) {
+            return [];
+        }
+
+        return [...comentarios].sort(function (a, b) {
+
+            const fechaA = obtenerFechaComentario(a);
+            const fechaB = obtenerFechaComentario(b);
+
+            if (fechaA !== fechaB) {
+                return fechaB - fechaA;
+            }
+
+            const idA = Number(a?.id || 0);
+            const idB = Number(b?.id || 0);
+
+            return idB - idA;
+        });
+    }
+
+    function actualizarComentariosAlpine(comentarios) {
+
+        const alpineData = obtenerAlpineTicketModal();
+
+        if (!alpineData) {
+            return;
+        }
+
+        alpineData.comentarios = ordenarComentarios(comentarios);
+
+        if (typeof alpineData.$nextTick === 'function') {
+
+            alpineData.$nextTick(function () {
+
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+
+            });
+        }
+    }
+
+    window.cargarTicketComentarios = function (
+        ticketId,
+        comentarios = []
+    ) {
+
+        ticketActual = ticketId;
+
+        formulario.action =
+            `/tickets/${ticketId}/comentarios`;
+
+        formulario.reset();
+
+        if (Array.isArray(comentarios)) {
+            actualizarComentariosAlpine(comentarios);
+        }
+    };
 
     function obtenerTicketActual() {
 
-        /*
-         * Si ya tenemos el ticket guardado,
-         * utilizarlo directamente.
-         */
-
         if (ticketActual) {
-
             return ticketActual;
-
         }
-
-
-        /*
-         * Intentar obtenerlo desde el formulario.
-         */
 
         const formularioData =
             formulario._x_dataStack?.[0];
 
-
-        if (
-            formularioData?.selectedTicket?.id
-        ) {
+        if (formularioData?.selectedTicket?.id) {
 
             ticketActual =
                 formularioData.selectedTicket.id;
 
             return ticketActual;
-
         }
-
-
-        /*
-         * Intentar obtenerlo desde Alpine.
-         */
 
         const alpineData =
             obtenerAlpineTicketModal();
 
-
-        if (
-            alpineData?.selectedTicket?.id
-        ) {
+        if (alpineData?.selectedTicket?.id) {
 
             ticketActual =
                 alpineData.selectedTicket.id;
 
             return ticketActual;
-
         }
-
 
         return null;
-
     }
-
-
-    /*
-     * ---------------------------------------------------------
-     * DETECTAR CUANDO ALPINE SELECCIONA UN TICKET
-     * ---------------------------------------------------------
-     */
-
-    document.addEventListener(
-        'click',
-        function (event) {
-
-            const boton =
-                event.target.closest('button');
-
-
-            if (!boton) {
-
-                return;
-
-            }
-
-
-            /*
-             * Esperar a que Alpine termine de actualizar
-             * selectedTicket.
-             */
-
-            setTimeout(
-                function () {
-
-                    const alpineData =
-                        obtenerAlpineTicketModal();
-
-
-                    if (
-                        !alpineData ||
-                        !alpineData.selectedTicket ||
-                        !alpineData.selectedTicket.id
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    ticketActual =
-                        alpineData.selectedTicket.id;
-
-
-                    formulario.action =
-                        `/tickets/${ticketActual}/comentarios`;
-
-                },
-                0
-            );
-
-        }
-    );
-
-
-    /*
-     * ---------------------------------------------------------
-     * AGREGAR COMENTARIO AL ESTADO DE ALPINE
-     * ---------------------------------------------------------
-     *
-     * IMPORTANTE:
-     *
-     * Usamos unshift() en lugar de push().
-     *
-     * push():
-     *
-     * comentario viejo
-     * comentario viejo
-     * comentario nuevo
-     *
-     * unshift():
-     *
-     * comentario nuevo
-     * comentario viejo
-     * comentario viejo
-     *
-     * De esta manera el comentario nuevo aparece ARRIBA.
-     *
-     * ---------------------------------------------------------
-     */
 
     function agregarComentarioAlpine(comentario) {
 
         if (!comentario) {
-
             return;
-
         }
-
 
         const alpineData =
             obtenerAlpineTicketModal();
 
-
         if (!alpineData) {
-
-            console.warn(
-                'No se encontró el componente Alpine ticketModal.'
-            );
-
             return;
-
         }
 
-
-        /*
-         * Asegurarnos de que comentarios sea un array.
-         */
-
-        if (
-            !Array.isArray(
-                alpineData.comentarios
-            )
-        ) {
-
+        if (!Array.isArray(alpineData.comentarios)) {
             alpineData.comentarios = [];
-
         }
 
+        const comentarioId =
+            comentario.id
+                ? String(comentario.id)
+                : null;
 
-        /*
-         * Evitar comentarios duplicados.
-         */
+        const existe =
+            comentarioId &&
+            alpineData.comentarios.some(function (item) {
 
-        if (
-            comentario.id &&
-            alpineData.comentarios.some(
-                function (item) {
+                return (
+                    item &&
+                    item.id &&
+                    String(item.id) === comentarioId
+                );
 
-                    return (
-                        item &&
-                        item.id === comentario.id
-                    );
+            });
 
-                }
-            )
-        ) {
-
+        if (existe) {
             return;
-
         }
 
+        alpineData.comentarios = [
+            comentario,
+            ...alpineData.comentarios
+        ];
 
-        /*
-         * -----------------------------------------------------
-         * AGREGAR AL PRINCIPIO
-         * -----------------------------------------------------
-         *
-         * Antes teníamos:
-         *
-         * alpineData.comentarios.push(comentario);
-         *
-         * Ahora usamos:
-         *
-         * alpineData.comentarios.unshift(comentario);
-         *
-         * -----------------------------------------------------
-         */
+        alpineData.comentarios =
+            ordenarComentarios(
+                alpineData.comentarios
+            );
 
-        alpineData.comentarios.unshift(
-            comentario
-        );
+        if (typeof alpineData.$nextTick === 'function') {
 
+            alpineData.$nextTick(function () {
 
-        /*
-         * Alpine actualizará automáticamente:
-         *
-         * x-if="comentarios.length === 0"
-         *
-         * y:
-         *
-         * x-for="comentario in comentarios"
-         *
-         */
-
-
-        /*
-         * Esperar a que Alpine termine de renderizar.
-         */
-
-        if (
-            alpineData.$nextTick
-        ) {
-
-            alpineData.$nextTick(
-                function () {
-
-                    /*
-                     * Inicializar iconos Lucide.
-                     */
-
-                    if (
-                        window.lucide
-                    ) {
-
-                        window.lucide.createIcons();
-
-                    }
-
-
-                    /*
-                     * Mantener el scroll arriba porque
-                     * los comentarios nuevos aparecen arriba.
-                     */
-
-                    if (listaComentarios) {
-
-                        listaComentarios.scrollTop =
-                            0;
-
-                    }
-
+                if (window.lucide) {
+                    window.lucide.createIcons();
                 }
-            );
 
-        } else {
-
-            /*
-             * Fallback por si $nextTick no está disponible.
-             */
-
-            setTimeout(
-                function () {
-
-                    if (
-                        window.lucide
-                    ) {
-
-                        window.lucide.createIcons();
-
-                    }
-
-
-                    if (listaComentarios) {
-
-                        listaComentarios.scrollTop =
-                            0;
-
-                    }
-
-                },
-                50
-            );
-
+            });
         }
-
     }
-
-
-    /*
-     * ---------------------------------------------------------
-     * ENVIAR COMENTARIO
-     * ---------------------------------------------------------
-     */
 
     formulario.addEventListener(
         'submit',
         async function (e) {
 
             e.preventDefault();
-
             e.stopPropagation();
 
+            if (enviandoComentario) {
+                return;
+            }
 
-            /*
-             * Obtener ticket actual.
-             */
-
-            const idTicket =
-                obtenerTicketActual();
-
+            const idTicket = obtenerTicketActual();
 
             if (!idTicket) {
-
-                console.error(
-                    'No hay un ticket seleccionado.'
-                );
-
 
                 alert(
                     'Selecciona un ticket antes de enviar un comentario.'
                 );
 
-
                 return;
-
             }
-
-
-            /*
-             * Actualizar action.
-             */
 
             formulario.action =
                 `/tickets/${idTicket}/comentarios`;
 
-
-            /*
-             * Crear FormData.
-             */
-
             const formData =
                 new FormData(formulario);
-
 
             const mensaje =
                 formData.get('mensaje');
 
-
             const archivo =
                 formData.get('archivo');
 
+            const mensajeVacio =
+                !mensaje ||
+                mensaje.trim() === '';
 
-            /*
-             * Verificar mensaje o archivo.
-             */
+            const archivoVacio =
+                !archivo ||
+                archivo.size === 0;
 
-            if (
-                (!mensaje ||
-                    mensaje.trim() === '') &&
-                (!archivo ||
-                    archivo.size === 0)
-            ) {
+            if (mensajeVacio && archivoVacio) {
 
                 alert(
                     'Escribe un comentario o selecciona un archivo.'
                 );
 
-
                 return;
-
             }
 
-
-            /*
-             * Deshabilitar botón.
-             */
+            enviandoComentario = true;
 
             if (botonEnviar) {
 
-                botonEnviar.disabled =
-                    true;
-
+                botonEnviar.disabled = true;
 
                 botonEnviar.classList.add(
                     'opacity-50',
                     'pointer-events-none'
                 );
-
             }
 
-
             try {
-
-                /*
-                 * -------------------------------------------------
-                 * PETICIÓN AL SERVIDOR
-                 * -------------------------------------------------
-                 */
 
                 const response =
                     await fetch(
                         formulario.action,
                         {
                             method: 'POST',
-
                             body: formData,
-
                             headers: {
-
                                 'X-Requested-With':
                                     'XMLHttpRequest',
-
                                 'Accept':
                                     'application/json'
-
                             }
-
                         }
                     );
 
-
-                /*
-                 * Obtener tipo de respuesta.
-                 */
-
                 const contentType =
-                    response.headers.get(
-                        'content-type'
-                    );
-
+                    response.headers.get('content-type');
 
                 let data = null;
 
-
                 if (
                     contentType &&
-                    contentType.includes(
-                        'application/json'
-                    )
+                    contentType.includes('application/json')
                 ) {
 
-                    data =
-                        await response.json();
+                    data = await response.json();
 
                 } else {
 
                     throw new Error(
                         'El servidor no devolvió una respuesta JSON válida.'
                     );
-
                 }
 
-
-                /*
-                 * Verificar respuesta.
-                 */
-
-                if (
-                    !response.ok ||
-                    !data.success
-                ) {
+                if (!response.ok || !data.success) {
 
                     throw new Error(
                         data?.message ||
                         'No se pudo enviar el comentario.'
                     );
-
                 }
-
-
-                /*
-                 * -------------------------------------------------
-                 * AGREGAR NUEVO COMENTARIO ARRIBA
-                 * -------------------------------------------------
-                 */
 
                 if (data.comentario) {
 
                     agregarComentarioAlpine(
                         data.comentario
                     );
-
                 }
-
-
-                /*
-                 * -------------------------------------------------
-                 * LIMPIAR FORMULARIO
-                 * -------------------------------------------------
-                 */
 
                 formulario.reset();
 
-
-                /*
-                 * Limpiar archivo de Alpine.
-                 */
-
                 limpiarArchivoAlpine();
 
-
             } catch (error) {
-
-                console.error(
-                    'Error al enviar comentario:',
-                    error
-                );
-
 
                 alert(
                     error.message ||
                     'Ocurrió un error al enviar el comentario.'
                 );
 
-
             } finally {
 
-                /*
-                 * Volver a habilitar botón.
-                 */
+                enviandoComentario = false;
 
                 if (botonEnviar) {
 
-                    botonEnviar.disabled =
-                        false;
-
+                    botonEnviar.disabled = false;
 
                     botonEnviar.classList.remove(
                         'opacity-50',
                         'pointer-events-none'
                     );
-
                 }
-
             }
-
         }
     );
-
-
-    /*
-     * ---------------------------------------------------------
-     * ENTER PARA ENVIAR
-     * ---------------------------------------------------------
-     */
 
     if (inputComentario) {
 
@@ -686,45 +348,23 @@ document.addEventListener('DOMContentLoaded', function () {
             'keydown',
             function (e) {
 
-                /*
-                 * Enter sin Shift = enviar.
-                 *
-                 * Shift + Enter = salto de línea.
-                 */
-
                 if (
                     e.key === 'Enter' &&
                     !e.shiftKey
                 ) {
 
                     e.preventDefault();
-
                     e.stopPropagation();
 
-
                     formulario.requestSubmit();
-
                 }
-
             }
         );
-
     }
-
-
-    /*
-     * ---------------------------------------------------------
-     * LIMPIAR ARCHIVO DE ALPINE
-     * ---------------------------------------------------------
-     */
 
     function limpiarArchivoAlpine() {
 
         try {
-
-            /*
-             * Revisar formulario.
-             */
 
             if (
                 formulario._x_dataStack &&
@@ -742,26 +382,17 @@ document.addEventListener('DOMContentLoaded', function () {
                             )
                         ) {
 
-                            data.archivoAdjunto =
-                                null;
-
+                            data.archivoAdjunto = null;
                         }
 
                     }
                 );
-
             }
-
-
-            /*
-             * Revisar modal.
-             */
 
             const modal =
                 document.querySelector(
                     '[x-data*="ticketModal"]'
                 );
-
 
             if (
                 modal &&
@@ -779,110 +410,75 @@ document.addEventListener('DOMContentLoaded', function () {
                             )
                         ) {
 
-                            data.archivoAdjunto =
-                                null;
-
+                            data.archivoAdjunto = null;
                         }
 
                     }
                 );
-
             }
-
-
-            /*
-             * Limpiar físicamente el input file.
-             */
 
             const inputArchivo =
                 formulario.querySelector(
                     'input[type="file"]'
                 );
 
-
             if (inputArchivo) {
-
-                inputArchivo.value =
-                    '';
-
+                inputArchivo.value = '';
             }
 
         } catch (error) {
-
-            console.warn(
-                'No se pudo limpiar archivoAdjunto:',
-                error
-            );
-
         }
-
     }
-
-
-    /*
-     * ---------------------------------------------------------
-     * INICIALIZAR LUCIDE
-     * ---------------------------------------------------------
-     */
 
     document.addEventListener(
         'alpine:initialized',
         function () {
 
-            if (
-                window.lucide
-            ) {
-
+            if (window.lucide) {
                 window.lucide.createIcons();
-
             }
 
         }
     );
 
+    document.addEventListener(
+        'click',
+        function (event) {
 
-    /*
-     * ---------------------------------------------------------
-     * OBSERVAR CAMBIOS DEL MODAL
-     * ---------------------------------------------------------
-     *
-     * Mantiene actualizada la referencia del ticket.
-     *
-     * ---------------------------------------------------------
-     */
+            const boton =
+                event.target.closest('button');
 
-    setInterval(
-        function () {
+            if (!boton) {
+                return;
+            }
 
-            const alpineData =
-                obtenerAlpineTicketModal();
+            setTimeout(function () {
 
+                const alpineData =
+                    obtenerAlpineTicketModal();
 
-            if (
-                alpineData?.selectedTicket?.id
-            ) {
+                if (
+                    !alpineData ||
+                    !alpineData.selectedTicket ||
+                    !alpineData.selectedTicket.id
+                ) {
+                    return;
+                }
 
                 const nuevoTicket =
                     alpineData.selectedTicket.id;
 
-
-                if (
-                    ticketActual !== nuevoTicket
-                ) {
+                if (ticketActual !== nuevoTicket) {
 
                     ticketActual =
                         nuevoTicket;
 
-
                     formulario.action =
                         `/tickets/${ticketActual}/comentarios`;
-
                 }
 
-            }
-
-        },
-        500
+            }, 0);
+        }
     );
 
 });

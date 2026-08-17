@@ -199,6 +199,94 @@
                 <!-- HEADER DERECHO -->
 
                 <div class="flex items-center gap-4 self-end md:self-auto">
+                     @if (session('success'))
+    <div id="successMessage"
+         class="fixed right-5 top-5 z-[9999] w-full max-w-sm
+                rounded-2xl border border-green-500/30
+                bg-[#0f1535] p-4
+                shadow-[0_0_30px_rgba(34,197,94,0.20)]">
+
+        <div class="flex items-start gap-3">
+
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center
+                        rounded-full bg-green-500/15 text-green-400">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="h-5 w-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M5 13l4 4L19 7"/>
+                </svg>
+
+            </div>
+
+            <div class="flex-1">
+                <p class="font-bold text-white">
+                    ¡Éxito!
+                </p>
+
+                <p class="mt-1 text-sm text-slate-400">
+                    {{ session('success') }}
+                </p>
+            </div>
+
+            <button onclick="document.getElementById('successMessage').remove()"
+                    class="text-slate-500 hover:text-white">
+                ✕
+            </button>
+
+        </div>
+    </div>
+@endif
+@if (session('error'))
+                    <div id="errorMessage"
+                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm
+                rounded-2xl border border-red-500/30
+                bg-[#0f1535] p-4
+                shadow-[0_0_30px_rgba(239,68,68,0.20)]">
+
+                        <div class="flex items-start gap-3">
+
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center
+                        rounded-full bg-red-500/15 text-red-400">
+
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+
+                                </svg>
+
+                            </div>
+
+                            <div class="flex-1">
+
+                                <p class="font-bold text-white">
+                                    ¡Error!
+                                </p>
+
+                                <p class="mt-1 text-sm text-slate-400">
+                                    {{ session('error') }}
+                                </p>
+
+                            </div>
+
+                            <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
+                                class="text-slate-500 hover:text-white transition">
+
+                                ✕
+
+                            </button>
+
+                        </div>
+
+                    </div>
+                @endif
 
                     <div class="flex items-center gap-6 self-end md:self-auto">
 

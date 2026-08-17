@@ -1,61 +1,73 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\TicketComentario;
 use App\Models\TicketU;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TicketComentarioController extends Controller
 {
-     public function index(TicketU $ticket)
+    /*
+    |--------------------------------------------------------------------------
+    | OBTENER COMENTARIOS
+    |--------------------------------------------------------------------------
+    */
+
+    public function index(TicketU $ticket)
     {
-        $comentarios = $ticket->historialComentarios()
+        /*
+         * IMPORTANTE:
+         *
+         * Usamos ID ASC.
+         *
+         * ID menor = comentario más viejo
+         * ID mayor = comentario más nuevo
+         */
+        $comentarios = TicketComentario::query()
+            ->where('ticket_id', $ticket->id)
             ->with('usuario')
+            ->orderBy('id', 'asc')
             ->get();
 
         return response()->json([
             'success' => true,
 
-            'comentarios' => $comentarios->map(function ($comentario) {
+            'comentarios' => $comentarios->map(
+                fn ($comentario) =>
+                    $this->formatearComentario($comentario)
+            )->values(),
 
-                return [
+        ], 200, [
+            'Cache-Control' =>
+                'no-store, no-cache, must-revalidate, max-age=0',
 
-                    'id' => $comentario->id,
+            'Pragma' =>
+                'no-cache',
 
-                    'mensaje' => $comentario->mensaje,
-
-                    'archivo' => $comentario->archivo,
-
-                    'url_archivo' => $comentario->archivo
-                        ? Storage::url($comentario->archivo)
-                        : null,
-
-                    'nombre_archivo' => $comentario->archivo
-                        ? basename($comentario->archivo)
-                        : null,
-
-                    'usuario' => [
-
-                        'id' => $comentario->usuario->id,
-
-                        'name' => $comentario->usuario->name,
-
-                        'rol' => $comentario->usuario->rol ?? 'Usuario',
-
-                    ],
-
-                    'fecha' => $comentario->created_at
-                        ->format('d M Y h:i A'),
-
-                ];
-
-            }),
+            'Expires' =>
+                '0',
         ]);
     }
 
-    public function store(Request $request, TicketU $ticket)
-    {
+
+    /*
+    |--------------------------------------------------------------------------
+    | GUARDAR COMENTARIO
+    |--------------------------------------------------------------------------
+    */
+
+    public function store(
+        Request $request,
+        TicketU $ticket
+    ) {
+
+        /*
+         * Validación.
+         */
         $request->validate([
+
             'mensaje' => [
                 'nullable',
                 'string',
@@ -67,18 +79,27 @@ class TicketComentarioController extends Controller
                 'file',
                 'max:10240',
             ],
+
         ]);
 
+
+        /*
+         * No permitir comentario completamente vacío.
+         */
         if (
             !$request->filled('mensaje') &&
             !$request->hasFile('archivo')
         ) {
 
             if ($request->expectsJson()) {
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Debes escribir un comentario o adjuntar un archivo.'
+
+                    'message' =>
+                        'Debes escribir un comentario o adjuntar un archivo.',
                 ], 422);
+
             }
 
             return back()
@@ -89,81 +110,203 @@ class TicketComentarioController extends Controller
                 ->withInput();
         }
 
+
+        /*
+         * Guardar archivo.
+         */
         $archivo = null;
 
         if ($request->hasFile('archivo')) {
 
-            $archivo = $request->file('archivo')
-                ->store(
-                    'comentarios_tickets',
-                    'public'
-                );
+            $archivo =
+                $request
+                    ->file('archivo')
+                    ->store(
+                        'comentarios_tickets',
+                        'public'
+                    );
         }
 
-        $comentario = TicketComentario::create([
 
-            'ticket_id' => $ticket->id,
+        /*
+         * Crear comentario.
+         */
+        $comentario =
+            TicketComentario::create([
 
-            'usuario_id' => auth()->id(),
+                'ticket_id' =>
+                    $ticket->id,
 
-            'mensaje' => $request->input('mensaje'),
+                'usuario_id' =>
+                    auth()->id(),
 
-            'archivo' => $archivo,
+                'mensaje' =>
+                    $request->input('mensaje'),
 
-        ]);
+                'archivo' =>
+                    $archivo,
 
-        $comentario->load('usuario');
+            ]);
 
+
+        /*
+         * IMPORTANTE:
+         *
+         * Recargar desde BD.
+         *
+         * Así nos aseguramos de tener:
+         * - ID real
+         * - created_at real
+         * - usuario real
+         */
+        $comentario =
+            TicketComentario::query()
+                ->whereKey($comentario->id)
+                ->with('usuario')
+                ->firstOrFail();
+
+
+        /*
+         * Respuesta AJAX.
+         */
         if ($request->expectsJson()) {
 
             return response()->json([
 
                 'success' => true,
 
-                'message' => 'Comentario agregado correctamente.',
+                'message' =>
+                    'Comentario agregado correctamente.',
 
-                'comentario' => [
+                /*
+                 * Este es EL comentario recién creado.
+                 */
+                'comentario' =>
+                    $this->formatearComentario(
+                        $comentario
+                    ),
 
-                    'id' => $comentario->id,
+            ], 201, [
 
-                    'mensaje' => $comentario->mensaje,
+                'Cache-Control' =>
+                    'no-store, no-cache, must-revalidate, max-age=0',
 
-                    'archivo' => $comentario->archivo,
+                'Pragma' =>
+                    'no-cache',
 
-                    'url_archivo' => $comentario->archivo
-                        ? asset(
-                            'storage/' .
-                            $comentario->archivo
-                        )
-                        : null,
-
-                    'nombre_archivo' => $comentario->archivo
-                        ? basename(
-                            $comentario->archivo
-                        )
-                        : null,
-
-                    'usuario' => [
-
-                        'id' => $comentario->usuario->id,
-
-                        'name' => $comentario->usuario->name,
-
-                        'rol' => $comentario->usuario->rol ?? 'Usuario',
-
-                    ],
-
-                    'fecha' => $comentario->created_at
-                        ->format('d M Y h:i A'),
-
-                ],
+                'Expires' =>
+                    '0',
 
             ]);
         }
 
+
+        /*
+         * Petición normal.
+         */
         return back()->with(
             'success',
             'Comentario agregado correctamente.'
         );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORMATEAR COMENTARIO
+    |--------------------------------------------------------------------------
+    |
+    | Utilizamos exactamente la misma estructura tanto para:
+    |
+    | GET /comentarios
+    |
+    | como para:
+    |
+    | POST /comentarios
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    private function formatearComentario(
+        TicketComentario $comentario
+    ) {
+
+        return [
+
+            'id' =>
+                $comentario->id,
+
+            'ticket_id' =>
+                $comentario->ticket_id,
+
+            'usuario_id' =>
+                $comentario->usuario_id,
+
+            'mensaje' =>
+                $comentario->mensaje,
+
+            'archivo' =>
+                $comentario->archivo,
+
+            'url_archivo' =>
+                $comentario->archivo
+                    ? Storage::url(
+                        $comentario->archivo
+                    )
+                    : null,
+
+            'nombre_archivo' =>
+                $comentario->archivo
+                    ? basename(
+                        $comentario->archivo
+                    )
+                    : null,
+
+            'extension' =>
+                $comentario->archivo
+                    ? pathinfo(
+                        $comentario->archivo,
+                        PATHINFO_EXTENSION
+                    )
+                    : null,
+
+            'usuario' =>
+                $comentario->usuario
+                    ? [
+
+                        'id' =>
+                            $comentario->usuario->id,
+
+                        'name' =>
+                            $comentario->usuario->name,
+
+                        'rol' =>
+                            $comentario->usuario->rol ??
+                            'Usuario',
+
+                    ]
+                    : null,
+
+            /*
+             * Fecha original de BD.
+             */
+            'created_at' =>
+                $comentario->created_at
+                    ? $comentario->created_at
+                        ->toISOString()
+                    : null,
+
+            /*
+             * Fecha para mostrar.
+             */
+            'fecha' =>
+                $comentario->created_at
+                    ? $comentario->created_at
+                        ->format(
+                            'd M Y h:i A'
+                        )
+                    : null,
+
+        ];
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\TicketComentarioController;
 use App\Http\Controllers\AvisosusuarioController;
 use App\Http\Controllers\SolicitudCambioController;
+use App\Http\Controllers\SolucionController;
 use App\Models\User;
 
 /*
@@ -205,6 +206,9 @@ Route::middleware(['auth', 'role:tecnologias'])->group(function () {
 
     Route::get('/tecnologias/tickets', [MisticketsController::class, 'tecnologias'])
         ->name('tickettecnologias');
+    Route::post(
+        '/tecnologias/tickets/{ticket}/solucion', [SolucionController::class, 'store'])
+        ->name('tickets.solucion.store');
 
     Route::get('/tecnologias/avisos', [AvisosController::class, 'index'])
         ->name('avisostecnologias');

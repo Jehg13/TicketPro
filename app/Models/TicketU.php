@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\TicketComentario;
+use App\Models\Solucion;
 
 class TicketU extends Model
 {
@@ -22,6 +23,9 @@ class TicketU extends Model
         'es_recurrente',
         'comentarios',
         'evidencia',
+        'estado',
+         'tomado_por',
+        'solucion_id',
     ];
 
     protected $casts = [
@@ -52,5 +56,10 @@ class TicketU extends Model
     public function tomadoPor()
 {
     return $this->belongsTo(User::class, 'tomado_por');
+}
+
+public function solucion()
+{
+    return $this->hasOne(Solucion::class, 'ticket_id', 'id');
 }
 }

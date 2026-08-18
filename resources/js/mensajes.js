@@ -308,7 +308,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (data.comentario) {
-
+                    console.log('COMENTARIO AJAX:', data.comentario);
+console.log('USUARIO AJAX:', data.comentario?.usuario);
+console.log('FOTO AJAX:', data.comentario?.usuario?.foto);
                     agregarComentarioAlpine(
                         data.comentario
                     );

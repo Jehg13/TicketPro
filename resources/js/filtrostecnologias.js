@@ -29,7 +29,7 @@ document.addEventListener('alpine:init', () => {
         _firmaContext: null,
         solucionForm: {
             solucion: '',
-            solucionado: null,
+            problema_solucionado: null,
             fecha_solucion: '',
             nombre_firmante: '',
             fecha_firma: ''
@@ -513,6 +513,8 @@ document.addEventListener('alpine:init', () => {
                         data.tomado_por ||
                         data.usuario ||
                         null;
+                        console.log('TÉCNICO RECIBIDO:', tecnico);
+console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                     const nuevoEstado =
                         data.estado ||
@@ -1410,41 +1412,70 @@ document.addEventListener('alpine:init', () => {
 
         obtenerDatosTicket(ticket) {
 
-            if (!ticket) {
-                return {};
-            }
+    if (!ticket) {
+        return {};
+    }
 
-            const actualizado =
-                this.ticketActualizado(
-                    ticket.id
-                );
+    const actualizado = this.ticketActualizado(ticket.id);
 
-            if (!actualizado) {
-                return ticket;
-            }
+    if (!actualizado) {
+        return ticket;
+    }
 
-            return {
-                ...ticket,
+    let tomadoPor =
+        actualizado.tomado_por !== undefined
+            ? actualizado.tomado_por
+            : ticket.tomado_por;
 
-                estado:
-                    actualizado.estado ??
-                    ticket.estado,
+    /*
+     * Normalizar foto del técnico
+     *
+     * AJAX puede enviar:
+     * http://127.0.0.1:8000/storage/profile-photos/foto.jpg
+     *
+     * Blade normalmente tiene:
+     * profile-photos/foto.jpg
+     *
+     * Dejamos siempre:
+     * profile-photos/foto.jpg
+     */
+    if (tomadoPor?.foto) {
 
-                tomado_por:
-                    actualizado.tomado_por ??
-                    ticket.tomado_por,
+        tomadoPor = {
+            ...tomadoPor,
 
-                fecha_tomado:
-                    actualizado.fecha_tomado ??
-                    ticket.fecha_tomado,
+            foto:
+                tomadoPor.foto
+                    .replace(
+                        window.location.origin + '/storage/',
+                        ''
+                    )
+                    .replace(
+                        '/storage/',
+                        ''
+                    )
+        };
+    }
 
-                solucion:
-                    actualizado.solucion ??
-                    ticket.solucion
-            };
+    return {
+        ...ticket,
 
-        },
+        estado:
+            actualizado.estado ??
+            ticket.estado,
 
+        tomado_por:
+            tomadoPor,
+
+        fecha_tomado:
+            actualizado.fecha_tomado ??
+            ticket.fecha_tomado,
+
+        solucion:
+            actualizado.solucion ??
+            ticket.solucion
+    };
+},
         obtenerEstado(ticket) {
 
             const datos =
@@ -3960,7 +3991,8 @@ document.addEventListener('alpine:init', () => {
 
             });
 
-        }
+        },
+        
 
     }));
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\TicketU;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class MisticketsController extends Controller
@@ -20,40 +19,23 @@ class MisticketsController extends Controller
     {
         $usuario = Auth::user();
 
-        $buscar = trim(
-            $request->input('buscar', '')
-        );
+        $buscar = trim($request->input('buscar', ''));
 
         $tickets = TicketU::with([
             'user',
+            'tomadoPor',
             'historialComentarios.usuario'
         ])
-        ->where(
-            'user_id',
-            $usuario->id
-        )
-        ->when(
-            $buscar !== '',
-            function ($query) use ($buscar) {
+            ->where('user_id', $usuario->id)
+
+            ->when($buscar !== '', function ($query) use ($buscar) {
 
                 $query->where(function ($q) use ($buscar) {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | BUSCAR FOLIO
-                    |--------------------------------------------------------------------------
-                    */
 
                     $q->whereRaw(
                         'CAST(folio AS CHAR) LIKE ?',
                         ["%{$buscar}%"]
                     )
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | BUSCAR TITULO
-                    |--------------------------------------------------------------------------
-                    */
 
                     ->orWhere(
                         'titulo',
@@ -63,7 +45,7 @@ class MisticketsController extends Controller
 
                     /*
                     |--------------------------------------------------------------------------
-                    | BUSCAR FECHA DD/MM/YYYY
+                    | FECHA DD/MM/YYYY
                     |--------------------------------------------------------------------------
                     */
 
@@ -83,7 +65,7 @@ class MisticketsController extends Controller
 
                         /*
                         |--------------------------------------------------------------------------
-                        | BUSCAR FECHA YYYY-MM-DD
+                        | FECHA YYYY-MM-DD
                         |--------------------------------------------------------------------------
                         */
 
@@ -101,18 +83,20 @@ class MisticketsController extends Controller
 
                         } catch (\Exception $e) {
 
-                            // No es una fecha válida.
+                            // No es una fecha.
                         }
                     }
                 });
-            }
-        )
-        ->orderBy(
-            'created_at',
-            'desc'
-        )
-        ->paginate(5)
-        ->withQueryString();
+            })
+
+            ->orderBy(
+                'created_at',
+                'desc'
+            )
+
+            ->paginate(5)
+
+            ->withQueryString();
 
         return view(
             'user.mistickets',
@@ -145,22 +129,17 @@ class MisticketsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $inicioMesActual =
-            Carbon::now()->startOfMonth();
+        $inicioMesActual = Carbon::now()->startOfMonth();
 
-        $finMesActual =
-            Carbon::now();
+        $finMesActual = Carbon::now();
 
+        $inicioMesAnterior = Carbon::now()
+            ->subMonth()
+            ->startOfMonth();
 
-        $inicioMesAnterior =
-            Carbon::now()
-                ->subMonth()
-                ->startOfMonth();
-
-        $finMesAnterior =
-            Carbon::now()
-                ->subMonth()
-                ->endOfMonth();
+        $finMesAnterior = Carbon::now()
+            ->subMonth()
+            ->endOfMonth();
 
 
         /*
@@ -168,117 +147,107 @@ class MisticketsController extends Controller
         | TICKETS
         |--------------------------------------------------------------------------
         |
-        | Se muestran:
+        | IMPORTANTE:
         |
-        | 1. Tickets pendientes que todavía no tienen técnico.
+        | Aquí obtenemos:
         |
-        | 2. Tickets que fueron tomados por el técnico actualmente
-        |    autenticado.
+        | - Pendientes sin técnico
+        | - Tickets tomados por el técnico actual
+        |
+        | Esto incluye:
+        |
+        | - pendiente
+        | - en proceso
+        | - solucionado
+        | - cancelado
+        |
+        | siempre que estén relacionados con el técnico actual.
         |
         */
 
         $tickets = TicketU::with([
             'user',
+            'tomadoPor',
             'historialComentarios.usuario'
         ])
-        ->where(function ($query) use ($usuario) {
 
-            /*
-            |--------------------------------------------------------------------------
-            | TICKETS DISPONIBLES
-            |--------------------------------------------------------------------------
-            */
+            ->where(function ($query) use ($usuario) {
 
-            $query->where(function ($q) {
+                /*
+                |--------------------------------------------------------------------------
+                | TICKETS PENDIENTES DISPONIBLES
+                |--------------------------------------------------------------------------
+                */
 
-                $q->where(
-                    'estado',
-                    'pendiente'
-                )
-                ->whereNull(
-                    'tomado_por'
-                );
+                $query->where(function ($q) {
 
-            })
-
-            /*
-            |--------------------------------------------------------------------------
-            | TICKETS DEL TÉCNICO ACTUAL
-            |--------------------------------------------------------------------------
-            */
-
-            ->orWhere(
-                'tomado_por',
-                $usuario->id
-            );
-        })
-
-        /*
-        |--------------------------------------------------------------------------
-        | BÚSQUEDA
-        |--------------------------------------------------------------------------
-        */
-
-        ->when(
-            $buscar !== '',
-            function ($query) use ($buscar) {
-
-                $query->where(function ($q) use ($buscar) {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | BUSCAR FOLIO
-                    |--------------------------------------------------------------------------
-                    */
-
-                    $q->whereRaw(
-                        'CAST(folio AS CHAR) LIKE ?',
-                        ["%{$buscar}%"]
+                    $q->where(
+                        'estado',
+                        'pendiente'
                     )
+                        ->whereNull(
+                            'tomado_por'
+                        );
+                })
 
                     /*
                     |--------------------------------------------------------------------------
-                    | BUSCAR TITULO
+                    | TICKETS DEL TÉCNICO ACTUAL
                     |--------------------------------------------------------------------------
                     */
 
                     ->orWhere(
-                        'titulo',
-                        'LIKE',
-                        "%{$buscar}%"
+                        'tomado_por',
+                        $usuario->id
                     );
+            })
 
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | BUSCAR FECHA DD/MM/YYYY
-                    |--------------------------------------------------------------------------
-                    */
+            /*
+            |--------------------------------------------------------------------------
+            | BÚSQUEDA
+            |--------------------------------------------------------------------------
+            */
 
-                    try {
+            ->when(
+                $buscar !== '',
+                function ($query) use ($buscar) {
 
-                        $fecha = Carbon::createFromFormat(
-                            'd/m/Y',
-                            $buscar
-                        )->format('Y-m-d');
-
-                        $q->orWhereDate(
-                            'created_at',
-                            $fecha
-                        );
-
-                    } catch (\Exception $e) {
+                    $query->where(function ($q) use ($buscar) {
 
                         /*
                         |--------------------------------------------------------------------------
-                        | BUSCAR FECHA YYYY-MM-DD
+                        | FOLIO
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $q->whereRaw(
+                            'CAST(folio AS CHAR) LIKE ?',
+                            ["%{$buscar}%"]
+                        )
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | TÍTULO
+                            |--------------------------------------------------------------------------
+                            */
+
+                            ->orWhere(
+                                'titulo',
+                                'LIKE',
+                                "%{$buscar}%"
+                            );
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | FECHA DD/MM/YYYY
                         |--------------------------------------------------------------------------
                         */
 
                         try {
 
                             $fecha = Carbon::createFromFormat(
-                                'Y-m-d',
+                                'd/m/Y',
                                 $buscar
                             )->format('Y-m-d');
 
@@ -289,278 +258,301 @@ class MisticketsController extends Controller
 
                         } catch (\Exception $e) {
 
-                            // No es una fecha válida.
+                            /*
+                            |--------------------------------------------------------------------------
+                            | FECHA YYYY-MM-DD
+                            |--------------------------------------------------------------------------
+                            */
+
+                            try {
+
+                                $fecha = Carbon::createFromFormat(
+                                    'Y-m-d',
+                                    $buscar
+                                )->format('Y-m-d');
+
+                                $q->orWhereDate(
+                                    'created_at',
+                                    $fecha
+                                );
+
+                            } catch (\Exception $e) {
+
+                                // No es una fecha.
+                            }
                         }
-                    }
-                });
-            }
-        )
-
-        ->orderBy(
-            'created_at',
-            'desc'
-        )
-
-        ->paginate(10)
-
-        ->withQueryString();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL DE TICKETS
-        |--------------------------------------------------------------------------
-        */
-
-        $totalTickets =
-            TicketU::count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | ESTADOS
-        |--------------------------------------------------------------------------
-        */
-
-        $pendientes =
-            TicketU::where(
-                'estado',
-                'pendiente'
-            )->count();
-
-
-        $enProceso =
-            TicketU::where(
-                'estado',
-                'en proceso'
-            )->count();
-
-
-        $solucionados =
-            TicketU::where(
-                'estado',
-                'solucionado'
-            )->count();
-
-
-        $cancelados =
-            TicketU::where(
-                'estado',
-                'cancelado'
-            )->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | TOTALES MES ACTUAL
-        |--------------------------------------------------------------------------
-        */
-
-        $pendientesMesActual =
-            TicketU::where(
-                'estado',
-                'pendiente'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesActual,
-                    $finMesActual
-                ]
-            )
-            ->count();
-
-
-        $enProcesoMesActual =
-            TicketU::where(
-                'estado',
-                'en proceso'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesActual,
-                    $finMesActual
-                ]
-            )
-            ->count();
-
-
-        $solucionadosMesActual =
-            TicketU::where(
-                'estado',
-                'solucionado'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesActual,
-                    $finMesActual
-                ]
-            )
-            ->count();
-
-
-        $canceladosMesActual =
-            TicketU::where(
-                'estado',
-                'cancelado'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesActual,
-                    $finMesActual
-                ]
-            )
-            ->count();
-
-
-        $totalMesActual =
-            TicketU::whereBetween(
-                'created_at',
-                [
-                    $inicioMesActual,
-                    $finMesActual
-                ]
-            )->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | TOTALES MES ANTERIOR
-        |--------------------------------------------------------------------------
-        */
-
-        $totalMesAnterior =
-            TicketU::whereBetween(
-                'created_at',
-                [
-                    $inicioMesAnterior,
-                    $finMesAnterior
-                ]
-            )->count();
-
-
-        $pendientesMesAnterior =
-            TicketU::where(
-                'estado',
-                'pendiente'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesAnterior,
-                    $finMesAnterior
-                ]
-            )
-            ->count();
-
-
-        $enProcesoMesAnterior =
-            TicketU::where(
-                'estado',
-                'en proceso'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesAnterior,
-                    $finMesAnterior
-                ]
-            )
-            ->count();
-
-
-        $solucionadosMesAnterior =
-            TicketU::where(
-                'estado',
-                'solucionado'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesAnterior,
-                    $finMesAnterior
-                ]
-            )
-            ->count();
-
-
-        $canceladosMesAnterior =
-            TicketU::where(
-                'estado',
-                'cancelado'
-            )
-            ->whereBetween(
-                'created_at',
-                [
-                    $inicioMesAnterior,
-                    $finMesAnterior
-                ]
-            )
-            ->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CALCULAR PORCENTAJES
-        |--------------------------------------------------------------------------
-        */
-
-        $calcularPorcentaje =
-            function ($actual, $anterior) {
-
-                if ($anterior == 0) {
-
-                    return $actual > 0
-                        ? 100
-                        : 0;
+                    });
                 }
-
-                return round(
-                    (
-                        ($actual - $anterior)
-                        / $anterior
-                    ) * 100,
-                    1
-                );
-            };
+            )
 
 
-        $porcentajeTotal =
-            $calcularPorcentaje(
-                $totalMesActual,
-                $totalMesAnterior
+            /*
+            |--------------------------------------------------------------------------
+            | ORDEN
+            |--------------------------------------------------------------------------
+            */
+
+            ->orderBy(
+                'created_at',
+                'desc'
+            )
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAGINACIÓN
+            |--------------------------------------------------------------------------
+            |
+            | IMPORTANTE:
+            |
+            | NO usamos get().
+            |
+            | paginate() devuelve un LengthAwarePaginator.
+            |
+            */
+
+            ->paginate(10)
+
+            ->withQueryString();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL GENERAL
+        |--------------------------------------------------------------------------
+        */
+
+        $totalTickets = TicketU::count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ESTADOS GENERALES
+        |--------------------------------------------------------------------------
+        */
+
+        $pendientes = TicketU::where(
+            'estado',
+            'pendiente'
+        )->count();
+
+
+        $enProceso = TicketU::where(
+            'estado',
+            'en proceso'
+        )->count();
+
+
+        $solucionados = TicketU::where(
+            'estado',
+            'solucionado'
+        )->count();
+
+
+        $cancelados = TicketU::where(
+            'estado',
+            'cancelado'
+        )->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MES ACTUAL
+        |--------------------------------------------------------------------------
+        */
+
+        $pendientesMesActual = TicketU::where(
+            'estado',
+            'pendiente'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesActual,
+                    $finMesActual
+                ]
+            )
+            ->count();
+
+
+        $enProcesoMesActual = TicketU::where(
+            'estado',
+            'en proceso'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesActual,
+                    $finMesActual
+                ]
+            )
+            ->count();
+
+
+        $solucionadosMesActual = TicketU::where(
+            'estado',
+            'solucionado'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesActual,
+                    $finMesActual
+                ]
+            )
+            ->count();
+
+
+        $canceladosMesActual = TicketU::where(
+            'estado',
+            'cancelado'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesActual,
+                    $finMesActual
+                ]
+            )
+            ->count();
+
+
+        $totalMesActual = TicketU::whereBetween(
+            'created_at',
+            [
+                $inicioMesActual,
+                $finMesActual
+            ]
+        )->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MES ANTERIOR
+        |--------------------------------------------------------------------------
+        */
+
+        $totalMesAnterior = TicketU::whereBetween(
+            'created_at',
+            [
+                $inicioMesAnterior,
+                $finMesAnterior
+            ]
+        )->count();
+
+
+        $pendientesMesAnterior = TicketU::where(
+            'estado',
+            'pendiente'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesAnterior,
+                    $finMesAnterior
+                ]
+            )
+            ->count();
+
+
+        $enProcesoMesAnterior = TicketU::where(
+            'estado',
+            'en proceso'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesAnterior,
+                    $finMesAnterior
+                ]
+            )
+            ->count();
+
+
+        $solucionadosMesAnterior = TicketU::where(
+            'estado',
+            'solucionado'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesAnterior,
+                    $finMesAnterior
+                ]
+            )
+            ->count();
+
+
+        $canceladosMesAnterior = TicketU::where(
+            'estado',
+            'cancelado'
+        )
+            ->whereBetween(
+                'created_at',
+                [
+                    $inicioMesAnterior,
+                    $finMesAnterior
+                ]
+            )
+            ->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PORCENTAJES
+        |--------------------------------------------------------------------------
+        */
+
+        $calcularPorcentaje = function (
+            $actual,
+            $anterior
+        ) {
+
+            if ($anterior == 0) {
+
+                return $actual > 0
+                    ? 100
+                    : 0;
+            }
+
+            return round(
+                (
+                    ($actual - $anterior)
+                    / $anterior
+                ) * 100,
+                1
             );
+        };
 
 
-        $porcentajePendientes =
-            $calcularPorcentaje(
-                $pendientesMesActual,
-                $pendientesMesAnterior
-            );
+        $porcentajeTotal = $calcularPorcentaje(
+            $totalMesActual,
+            $totalMesAnterior
+        );
 
 
-        $porcentajeEnProceso =
-            $calcularPorcentaje(
-                $enProcesoMesActual,
-                $enProcesoMesAnterior
-            );
+        $porcentajePendientes = $calcularPorcentaje(
+            $pendientesMesActual,
+            $pendientesMesAnterior
+        );
 
 
-        $porcentajeSolucionados =
-            $calcularPorcentaje(
-                $solucionadosMesActual,
-                $solucionadosMesAnterior
-            );
+        $porcentajeEnProceso = $calcularPorcentaje(
+            $enProcesoMesActual,
+            $enProcesoMesAnterior
+        );
 
 
-        $porcentajeCancelados =
-            $calcularPorcentaje(
-                $canceladosMesActual,
-                $canceladosMesAnterior
-            );
+        $porcentajeSolucionados = $calcularPorcentaje(
+            $solucionadosMesActual,
+            $solucionadosMesAnterior
+        );
+
+
+        $porcentajeCancelados = $calcularPorcentaje(
+            $canceladosMesActual,
+            $canceladosMesAnterior
+        );
 
 
         /*
@@ -569,18 +561,15 @@ class MisticketsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $formatearPorcentaje =
-            function ($porcentaje) {
+        $formatearPorcentaje = function ($porcentaje) {
 
-                if ($porcentaje > 0) {
+            if ($porcentaje > 0) {
 
-                    return '+' .
-                        $porcentaje .
-                        '%';
-                }
+                return '+' . $porcentaje . '%';
+            }
 
-                return $porcentaje . '%';
-            };
+            return $porcentaje . '%';
+        };
 
 
         $porcentajeTotalTexto =
@@ -629,60 +618,49 @@ class MisticketsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $colorPorcentaje =
-            function ($porcentaje) {
+        $colorPorcentaje = function ($porcentaje) {
 
-                if ($porcentaje > 0) {
+            if ($porcentaje > 0) {
 
-                    return 'text-emerald-400';
-                }
+                return 'text-emerald-400';
+            }
 
-                if ($porcentaje < 0) {
+            if ($porcentaje < 0) {
 
-                    return 'text-rose-400';
-                }
+                return 'text-rose-400';
+            }
 
-                return 'text-slate-400';
-            };
+            return 'text-slate-400';
+        };
 
 
         $colorTotal =
             $totalMesAnterior > 0
-                ? $colorPorcentaje(
-                    $porcentajeTotal
-                )
+                ? $colorPorcentaje($porcentajeTotal)
                 : 'text-slate-400';
 
 
         $colorPendientes =
             $pendientesMesAnterior > 0
-                ? $colorPorcentaje(
-                    $porcentajePendientes
-                )
+                ? $colorPorcentaje($porcentajePendientes)
                 : 'text-slate-400';
 
 
         $colorEnProceso =
             $enProcesoMesAnterior > 0
-                ? $colorPorcentaje(
-                    $porcentajeEnProceso
-                )
+                ? $colorPorcentaje($porcentajeEnProceso)
                 : 'text-slate-400';
 
 
         $colorSolucionados =
             $solucionadosMesAnterior > 0
-                ? $colorPorcentaje(
-                    $porcentajeSolucionados
-                )
+                ? $colorPorcentaje($porcentajeSolucionados)
                 : 'text-slate-400';
 
 
         $colorCancelados =
             $canceladosMesAnterior > 0
-                ? $colorPorcentaje(
-                    $porcentajeCancelados
-                )
+                ? $colorPorcentaje($porcentajeCancelados)
                 : 'text-slate-400';
 
 
@@ -749,19 +727,12 @@ class MisticketsController extends Controller
     {
         $usuario = Auth::user();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | BUSCAR TICKET
-        |--------------------------------------------------------------------------
-        */
-
         $ticket = TicketU::findOrFail($id);
 
 
         /*
         |--------------------------------------------------------------------------
-        | EVITAR QUE OTRO TÉCNICO TOME EL TICKET
+        | YA LO TOMÓ OTRO TÉCNICO
         |--------------------------------------------------------------------------
         */
 
@@ -780,14 +751,12 @@ class MisticketsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | SI EL MISMO TÉCNICO YA LO TOMÓ
+        | YA LO TOMÓ ESTE TÉCNICO
         |--------------------------------------------------------------------------
-        |
-        | No generamos una nueva fecha.
-        |
         */
 
         if (
+            !is_null($ticket->tomado_por) &&
             (int) $ticket->tomado_por === (int) $usuario->id
         ) {
 
@@ -812,8 +781,7 @@ class MisticketsController extends Controller
                     'foto' =>
                         $usuario->foto
                             ? asset(
-                                'storage/' .
-                                $usuario->foto
+                                'storage/' . $usuario->foto
                             )
                             : null,
                 ],
@@ -823,21 +791,14 @@ class MisticketsController extends Controller
 
                 'estado' =>
                     $ticket->estado,
-
             ]);
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | TOMAR TICKET DE FORMA SEGURA
+        | TOMAR TICKET
         |--------------------------------------------------------------------------
-        |
-        | Actualizamos únicamente si tomado_por continúa siendo NULL.
-        |
-        | Esto evita que dos técnicos puedan tomar el mismo ticket
-        | al mismo tiempo.
-        |
         */
 
         $fechaTomado = now();
@@ -847,33 +808,32 @@ class MisticketsController extends Controller
             'id',
             $ticket->id
         )
-        ->whereNull(
-            'tomado_por'
-        )
-        ->where(
-            'estado',
-            'pendiente'
-        )
-        ->update([
+            ->whereNull(
+                'tomado_por'
+            )
+            ->where(
+                'estado',
+                'pendiente'
+            )
+            ->update([
 
-            'tomado_por' =>
-                $usuario->id,
+                'tomado_por' =>
+                    $usuario->id,
 
-            'fecha_tomado' =>
-                $fechaTomado,
+                'fecha_tomado' =>
+                    $fechaTomado,
 
-            'estado' =>
-                'en proceso',
+                'estado' =>
+                    'en proceso',
 
-            'updated_at' =>
-                now(),
-
-        ]);
+                'updated_at' =>
+                    now(),
+            ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | OTRO TÉCNICO LO TOMÓ ANTES
+        | NO SE PUDO TOMAR
         |--------------------------------------------------------------------------
         */
 
@@ -898,12 +858,6 @@ class MisticketsController extends Controller
             }
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | ESTADO CAMBIÓ POR OTRA OPERACIÓN
-            |--------------------------------------------------------------------------
-            */
-
             return response()->json([
 
                 'success' => false,
@@ -917,7 +871,7 @@ class MisticketsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | RECARGAR TICKET
+        | RECARGAR
         |--------------------------------------------------------------------------
         */
 
@@ -926,7 +880,7 @@ class MisticketsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | RESPUESTA AJAX
+        | RESPUESTA
         |--------------------------------------------------------------------------
         */
 
@@ -962,7 +916,6 @@ class MisticketsController extends Controller
 
             'estado' =>
                 $ticket->estado,
-
         ]);
     }
 }

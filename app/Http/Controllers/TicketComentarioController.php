@@ -271,21 +271,26 @@ class TicketComentarioController extends Controller
                     : null,
 
             'usuario' =>
-                $comentario->usuario
-                    ? [
+    $comentario->usuario
+        ? [
+            'id' =>
+                $comentario->usuario->id,
 
-                        'id' =>
-                            $comentario->usuario->id,
+            'name' =>
+                $comentario->usuario->name,
 
-                        'name' =>
-                            $comentario->usuario->name,
+            'rol' =>
+                $comentario->usuario->rol ??
+                'Usuario',
 
-                        'rol' =>
-                            $comentario->usuario->rol ??
-                            'Usuario',
-
-                    ]
+            'foto' =>
+                $comentario->usuario->foto
+                    ? Storage::url(
+                        $comentario->usuario->foto
+                    )
                     : null,
+        ]
+        : null,
 
             /*
              * Fecha original de BD.

@@ -151,112 +151,205 @@
                 </div>
 
                 <div class="flex items-center gap-4 self-end md:self-auto">
-
-                    <button type="button"
-                        class="relative p-2.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition">
-
-                        <i data-lucide="bell" class="w-5 h-5"></i>
-
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
-
-                    </button>
-
-                    <div class="relative z-[100]">
-
-                        <button id="profile-button" type="button"
-                            class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
-
-                            <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
-                                alt="{{ auth()->user()->name }}"
-                                class="w-8 h-8 rounded-full object-cover">
-
-                            <div class="text-left leading-tight hidden sm:block">
-
-                                <p class="text-xs font-semibold text-white">
-                                    {{ auth()->user()->name ?? 'Desconocido' }}
-                                </p>
-
-                                <p class="text-[10px] text-blue-400 font-medium">
-                                    {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
-                                </p>
-
-                            </div>
-
-                            <svg id="profile-arrow"
-                                class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7">
-                                </path>
-
-                            </svg>
-
-                        </button>
-
-                        <div id="profile-dropdown"
-                            class="hidden absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
-
-                            <a href="{{ route('perfilusuario') }}"
-                                class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
-
-                                <svg class="w-5 h-5 text-slate-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-
-                                    <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                    </path>
-
-                                </svg>
-
-                                <span>
-                                    Perfil
-                                </span>
-
-                            </a>
-
-                            <div class="border-t border-[#1e295d]"></div>
-
-                            <form method="POST" action="{{ route('logout') }}">
-
-                                @csrf
-
-                                <button type="submit"
-                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
-
-                                    <svg class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                        </path>
-
+                    @if (session('success'))
+                        <div id="successMessage"
+                            class="fixed right-5 top-5 z-[9999] w-full max-w-sm
+                            rounded-2xl border border-green-500/30
+                            bg-[#0f1535] p-4
+                            shadow-[0_0_30px_rgba(34,197,94,0.20)]">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center
+                                    rounded-full bg-green-500/15 text-green-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                     </svg>
-
-                                    <span>
-                                        Cerrar sesión
-                                    </span>
-
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white">
+                                        ¡Éxito!
+                                    </p>
+                                    <p class="mt-1 text-sm text-slate-400">
+                                        {{ session('success') }}
+                                    </p>
+                                </div>
+                                <button onclick="document.getElementById('successMessage').remove()"
+                                    class="text-slate-500 hover:text-white">
+                                    ✕
                                 </button>
-
-                            </form>
-
+                            </div>
                         </div>
-
+                    @endif
+                    @if (session('error'))
+                        <div id="errorMessage"
+                            class="fixed right-5 top-5 z-[9999] w-full max-w-sm
+                            rounded-2xl border border-red-500/30
+                            bg-[#0f1535] p-4
+                            shadow-[0_0_30px_rgba(239,68,68,0.20)]">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center
+                                    rounded-full bg-red-500/15 text-red-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white">
+                                        ¡Error!
+                                    </p>
+                                    <p class="mt-1 text-sm text-slate-400">
+                                        {{ session('error') }}
+                                    </p>
+                                </div>
+                                <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
+                                    class="text-slate-500 hover:text-white transition">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                    <div class="flex items-center gap-6 self-end md:self-auto">
+                        <div class="relative inline-block text-left">
+                            <button id="notif-button" type="button"
+                                class="relative p-2 text-gray-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 group shadow-lg"
+                                aria-label="Ver notificaciones">
+                                <svg class="w-6 h-6 transition-transform group-hover:scale-110 duration-200"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                                    </path>
+                                </svg>
+                                <span class="absolute top-1.5 right-1.5 flex h-3 w-3">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span
+                                        class="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-slate-900"></span>
+                                </span>
+                            </button>
+                            <div id="notif-dropdown"
+                                class="hidden absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-2xl z-50 overflow-hidden divide-y divide-slate-800">
+                                <div class="p-4 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-sm font-semibold text-white">
+                                            Notificaciones
+                                        </h3>
+                                        <span
+                                            class="px-2 py-0.5 text-xs font-medium bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20">
+                                            3 nuevas
+                                        </span>
+                                    </div>
+                                    <button type="button"
+                                        class="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+                                        Marcar leídas
+                                    </button>
+                                </div>
+                                <div class="max-h-80 overflow-y-auto divide-y divide-slate-800/50">
+                                    <a href="#"
+                                        class="flex gap-3 p-4 bg-slate-800/40 hover:bg-slate-800/80 transition-colors group">
+                                        <div class="relative shrink-0">
+                                            <img class="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/30"
+                                                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                                                alt="Avatar">
+                                            <span
+                                                class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-slate-300 leading-relaxed">
+                                                <strong class="font-semibold text-white">
+                                                    Elena Rostova
+                                                </strong>
+                                                comentó en tu proyecto
+                                                <span class="text-slate-400">
+                                                    Dashboard UI
+                                                </span>
+                                            </p>
+                                            <span class="text-[10px] text-slate-500 mt-1 block">
+                                                Hace 2 minutos
+                                            </span>
+                                        </div>
+                                        <span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0 self-center"></span>
+                                    </a>
+                                    <a href="#" class="flex gap-3 p-4 hover:bg-slate-800/50 transition-colors group">
+                                        <div class="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-slate-300 leading-relaxed">
+                                                Tu despliegue en
+                                                <strong class="font-semibold text-white">
+                                                    Vite/Production
+                                                </strong>
+                                                se completó con éxito.
+                                            </p>
+                                            <span class="text-[10px] text-slate-500 mt-1 block">
+                                                Hace 1 hora
+                                            </span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <a href="#"
+                                    class="block p-3 text-center text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+                                    Ver todas las notificaciones
+                                </a>
+                            </div>
+                        </div>
+                        <div class="relative z-[100]">
+                            <button id="profile-button" type="button"
+                                class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
+                                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                                    alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                                <div class="text-left leading-tight hidden sm:block">
+                                    <p class="text-xs font-semibold text-white">
+                                        {{ auth()->user()->name ?? 'Desconocido' }}
+                                    </p>
+                                    <p class="text-[10px] text-blue-400 font-medium">
+                                        {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+                                    </p>
+                                </div>
+                                <svg id="profile-arrow"
+                                    class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7">
+                                    </path>
+                                </svg>
+                            </button>
+                            <div id="profile-dropdown"
+                                class="hidden absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
+                                <a href="{{ route('perfiltecnologias') }}"
+                                    class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
+                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                        </path>
+                                    </svg>
+                                    <span>Perfil</span>
+                                </a>
+                                <div class="border-t border-[#1e295d]"></div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                            </path>
+                                        </svg>
+                                        <span>Cerrar sesión</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-
                 </div>
 
             </header>

@@ -24,14 +24,18 @@ class TicketU extends Model
         'comentarios',
         'evidencia',
         'estado',
-         'tomado_por',
+        'tomado_por',
+        'fecha_tomado',
         'solucion_id',
+        'equipo',
+        'informacion_adicional',
     ];
 
     protected $casts = [
         'afecta_otros' => 'boolean',
         'es_recurrente' => 'boolean',
         'evidencia' => 'array',
+        'fecha_tomado' => 'datetime',
     ];
 
     public function user()
@@ -54,12 +58,16 @@ class TicketU extends Model
     }
 
     public function tomadoPor()
-{
-    return $this->belongsTo(User::class, 'tomado_por');
-}
+    {
+        return $this->belongsTo(User::class, 'tomado_por');
+    }
 
-public function solucion()
-{
-    return $this->hasOne(Solucion::class, 'ticket_id', 'id');
-}
+    public function solucion()
+    {
+        return $this->hasOne(
+            Solucion::class,
+            'ticket_id',
+            'id'
+        );
+    }
 }

@@ -13,7 +13,7 @@ class SolicitudCambio extends Model
 
     protected $fillable = [
         'folio',
-        'usuario_id',
+        'user_id',
         'campo',
         'valor_actual',
         'nuevo_valor',

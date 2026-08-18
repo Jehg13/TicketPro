@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil - TicketPro</title>
         <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js','alpine.js', 'resources/js/modalcambio.js'])
 </head>
 
 <body class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden">

@@ -14,6 +14,8 @@ use App\Http\Controllers\TicketComentarioController;
 use App\Http\Controllers\AvisosusuarioController;
 use App\Http\Controllers\SolicitudCambioController;
 use App\Http\Controllers\SolucionController;
+use App\Http\Controllers\TecnologiasController;
+use App\Http\Controllers\UsuarioController;
 use App\Models\User;
 
 /*
@@ -165,9 +167,8 @@ Route::middleware(['guest'])->group(function () {
 
 Route::middleware(['auth', 'role:usuario'])->group(function () {
 
-    Route::get('/dashboard', function () {
-        return view('user.index');
-    })->name('dashboard');
+   Route::get('/dashboard', [ UsuarioController::class,'index'])
+   ->name('dashboard');
 
     Route::get('/dashboard/tickets', [TicketController::class, 'create'])
         ->name('ticketusuario');
@@ -175,7 +176,10 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
     Route::post('/dashboard/tickets', [TicketController::class, 'store'])
         ->name('ticketusuario.store');
 
-    Route::get('/dashboard/mistickets', [MisticketsController::class, 'create'])
+    Route::get('/dashboard/tickets/{ticket}', [UsuarioController::class, 'verTicket'])
+    ->name('ticketusuario.detalles');
+    
+        Route::get('/dashboard/mistickets', [MisticketsController::class, 'create'])
         ->name('misticketusuario');
 
     Route::get('/dashboard/avisos', [AvisosusuarioController::class, 'create'])
@@ -200,9 +204,10 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
 
 Route::middleware(['auth', 'role:tecnologias'])->group(function () {
 
-    Route::get('/tecnologias', function () {
-        return view('admin.index');
-    })->name('tecnologias');
+ Route::get('/tecnologias', [TecnologiasController::class, 'index'])
+    ->name('tecnologias');
+Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
+    ->name('tecnologias.evolucion');
 
     Route::get('/tecnologias/tickets', [MisticketsController::class, 'tecnologias'])
         ->name('tickettecnologias');

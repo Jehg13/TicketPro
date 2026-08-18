@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
-
+    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     <title>TicketPro | Dashboard</title>
 </head>
 
@@ -15,8 +14,7 @@
 
     <div class="flex min-h-screen w-full">
 
-        <div id="sidebarOverlay" onclick="toggleSidebar()"
-            class="fixed inset-0 z-40 hidden bg-black/60 lg:hidden">
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 z-40 hidden bg-black/60 lg:hidden">
         </div>
 
         <aside
@@ -27,8 +25,7 @@
             </div>
 
             <div class="mb-10 flex items-center gap-3 px-2">
-                <img src="{{ asset('storage/' . auth()->user()->foto) }}"
-                    alt="{{ auth()->user()->name }}"
+                <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
                     class="h-12 w-12 rounded-full border-2 border-gray-500 object-cover">
 
                 <div>
@@ -47,8 +44,7 @@
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center gap-3 rounded-lg bg-blue-600 px-4 py-3 font-medium text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]">
 
-                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
                         </path>
@@ -62,8 +58,7 @@
                 <a href="{{ route('misticketusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
 
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
                         </path>
@@ -77,8 +72,7 @@
                 <a href="{{ route('ticketusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
 
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
                         </path>
@@ -92,8 +86,7 @@
                 <a href="{{ route('avisosusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
 
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
                         </path>
@@ -107,8 +100,7 @@
                 <a href="{{ route('perfilusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
 
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
                         </path>
@@ -128,8 +120,7 @@
                     <button type="submit"
                         class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
 
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                             </path>
@@ -151,18 +142,11 @@
 
                 <div class="flex items-center gap-3">
 
-                    <button type="button"
-                        onclick="toggleSidebar()"
+                    <button type="button" onclick="toggleSidebar()"
                         class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#151b3b] text-white transition hover:bg-[#1c244d] lg:hidden">
 
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
                             <path d="M4 7h16M4 12h16M4 17h16" />
 
@@ -189,19 +173,14 @@
 
                     <div class="relative inline-block text-left">
 
-                        <button id="notif-button"
-                            type="button"
+                        <button id="notif-button" type="button"
                             class="group relative rounded-xl border border-slate-700/50 bg-slate-800/80 p-2 text-gray-300 shadow-lg transition-all duration-200 hover:bg-slate-700/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                             aria-label="Ver notificaciones">
 
                             <svg class="h-6 w-6 transition-transform duration-200 group-hover:scale-110"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
-                                <path stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
                                 </path>
 
@@ -253,8 +232,7 @@
 
                                     <div class="relative shrink-0">
 
-                                        <img
-                                            class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/30"
+                                        <img class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/30"
                                             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
                                             alt="Avatar">
 
@@ -287,8 +265,7 @@
 
                                     </div>
 
-                                    <span
-                                        class="h-2 w-2 shrink-0 self-center rounded-full bg-indigo-500">
+                                    <span class="h-2 w-2 shrink-0 self-center rounded-full bg-indigo-500">
                                     </span>
 
                                 </a>
@@ -299,14 +276,10 @@
                                     <div
                                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
 
-                                        <svg class="h-5 w-5"
-                                            fill="none"
-                                            stroke="currentColor"
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
 
-                                            <path stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M13 10V3L4 14h7v7l9-11h-7z">
                                             </path>
 
@@ -346,14 +319,8 @@
                     <a href="{{ route('ticketusuario') }}"
                         class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] transition hover:bg-blue-700 sm:text-base">
 
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.4"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
 
                             <path d="M12 5v14M5 12h14" />
 
@@ -376,16 +343,10 @@
 
                         <div class="flex items-center gap-2.5">
 
-                            <div
-                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                     stroke-linejoin="round">
 
                                     <path d="M12 3a9 9 0 109 9h-9V3z" />
@@ -408,8 +369,8 @@
                                 Total
                             </p>
 
-                            <p class="-mt-0.5 text-2xl font-extrabold text-fuchsia-400">
-                                {{ $resumen['total'] ?? 18 }}
+                            <p class="text-2xl font-extrabold text-fuchsia-400">
+                                {{ $resumen['total'] }}
                             </p>
 
                             <p class="text-[10px] text-gray-400">
@@ -424,7 +385,7 @@
 
                         <div class="rounded-lg border border-yellow-500/40 bg-[#4a4213] p-4 text-center">
                             <p class="text-3xl font-extrabold text-white">
-                                {{ $resumen['abiertos'] ?? 3 }}
+                                {{ $resumen['abiertos'] }}
                             </p>
 
                             <p class="mt-1 text-sm font-bold text-white">
@@ -438,7 +399,7 @@
 
                         <div class="rounded-lg border border-blue-500/40 bg-[#1d2757] p-4 text-center">
                             <p class="text-3xl font-extrabold text-blue-400">
-                                {{ $resumen['en_proceso'] ?? 4 }}
+                                {{ $resumen['en_proceso'] }}
                             </p>
 
                             <p class="mt-1 text-sm font-bold text-white">
@@ -452,7 +413,7 @@
 
                         <div class="rounded-lg border border-green-500/40 bg-[#133d28] p-4 text-center">
                             <p class="text-3xl font-extrabold text-green-400">
-                                {{ $resumen['solucionados'] ?? 8 }}
+                                {{ $resumen['solucionados'] }}
                             </p>
 
                             <p class="mt-1 text-sm font-bold text-white">
@@ -466,7 +427,7 @@
 
                         <div class="rounded-lg border border-red-500/40 bg-[#4d1616] p-4 text-center">
                             <p class="text-3xl font-extrabold text-red-400">
-                                {{ $resumen['cancelados'] ?? 1 }}
+                                {{ $resumen['cancelados'] }}
                             </p>
 
                             <p class="mt-1 text-sm font-bold text-white">
@@ -487,16 +448,10 @@
 
                     <div class="flex items-center gap-2.5">
 
-                        <div
-                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
 
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                 stroke-linejoin="round">
 
                                 <circle cx="12" cy="8" r="3.2" />
@@ -514,22 +469,16 @@
 
                     <div class="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
 
-                        <img src="{{ asset('storage/' . auth()->user()->foto) }}"
-                            alt="{{ auth()->user()->name }}"
+                        <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
                             class="h-24 w-24 shrink-0 rounded-full border border-gray-600 object-cover">
 
                         <dl class="grid w-full grid-cols-1 gap-y-2.5 text-sm">
 
                             <div class="flex items-center gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
 
                                     <circle cx="12" cy="8" r="3.2" />
                                     <path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6" />
@@ -548,14 +497,9 @@
 
                             <div class="flex items-center gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
 
                                     <rect x="4" y="8" width="16" height="12" rx="1" />
                                     <path d="M9 8V5a1 1 0 011-1h4a1 1 0 011 1v3" />
@@ -574,14 +518,9 @@
 
                             <div class="flex items-center gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
 
                                     <rect x="4" y="4" width="16" height="16" rx="2" />
                                     <path d="M8 9h8M8 13h5" />
@@ -600,14 +539,9 @@
 
                             <div class="flex items-center gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
 
                                     <rect x="3" y="5" width="18" height="14" rx="2" />
                                     <path d="M3 7l9 6 9-6" />
@@ -626,14 +560,9 @@
 
                             <div class="flex items-center gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
 
                                     <rect x="4" y="8" width="16" height="12" rx="1" />
                                     <path d="M9 8V5a1 1 0 011-1h4a1 1 0 011 1v3" />
@@ -650,7 +579,7 @@
 
                             </div>
 
-                            <div class="flex items-start gap-2">
+                            {{-- <div class="flex items-start gap-2">
 
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     class="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
@@ -674,7 +603,7 @@
                                     {{ $usuario['ubicacion'] ?? 'Edificio A, piso 2 Area administrativa' }}
                                 </dd>
 
-                            </div>
+                            </div> --}}
 
                         </dl>
 
@@ -684,14 +613,9 @@
 
                         <div class="flex items-center gap-2">
 
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4 shrink-0 text-gray-500"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
-                                stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round">
 
                                 <path d="M16 3v4M8 3v4M4 8h16" />
                                 <rect x="4" y="5" width="16" height="16" rx="2" />
@@ -710,14 +634,9 @@
 
                         <div class="flex items-center gap-2">
 
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4 shrink-0 text-gray-500"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
-                                stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round">
 
                                 <path d="M16 3v4M8 3v4M4 8h16" />
                                 <rect x="4" y="5" width="16" height="16" rx="2" />
@@ -741,20 +660,18 @@
                 <div
                     class="order-3 rounded-xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:order-4 lg:col-span-7">
 
+                    {{-- ========================================================= --}}
+                    {{-- ENCABEZADO --}}
+                    {{-- ========================================================= --}}
+
                     <div class="flex items-center justify-between">
 
                         <div class="flex items-center gap-2.5">
 
-                            <div
-                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                     stroke-linejoin="round">
 
                                     <path d="M4 6h16M4 12h16M4 18h10" />
@@ -769,120 +686,182 @@
 
                         </div>
 
-                        <a href="#"
-                            class="text-sm font-bold text-blue-400 hover:text-blue-300">
+
+                        {{-- VER TODOS --}}
+
+                        <a href="{{ route('misticketusuario') }}"
+                            class="text-sm font-bold text-blue-400 transition hover:text-blue-300">
+
                             Ver todos
+
                         </a>
 
                     </div>
 
-                    @php
-                        $ticketsRecientes = [
-                            [
-                                'folio' => 'TKT-2026-0015',
-                                'tipo_falla' => 'Equipo de computo',
-                                'estado' => 'En proceso',
-                                'fecha' => '05 Ago 2026',
-                                'soporte' => 'Carlos Martinez',
-                            ],
-                            [
-                                'folio' => 'TKT-2026-0015',
-                                'tipo_falla' => 'Impresora',
-                                'estado' => 'Solucionado',
-                                'fecha' => '05 Ago 2026',
-                                'soporte' => 'Carlos Martinez',
-                            ],
-                            [
-                                'folio' => 'TKT-2026-0015',
-                                'tipo_falla' => 'VPN / Red',
-                                'estado' => 'Solucionado',
-                                'fecha' => '05 Ago 2026',
-                                'soporte' => 'Carlos Martinez',
-                            ],
-                            [
-                                'folio' => 'TKT-2026-0015',
-                                'tipo_falla' => 'Correo outlook',
-                                'estado' => 'En proceso',
-                                'fecha' => '05 Ago 2026',
-                                'soporte' => 'Carlos Martinez',
-                            ],
-                            [
-                                'folio' => 'TKT-2026-0015',
-                                'tipo_falla' => 'Acceso a sistema',
-                                'estado' => 'Cancelado',
-                                'fecha' => '05 Ago 2026',
-                                'soporte' => 'Carlos Martinez',
-                            ],
-                        ];
 
-                        $estadoClases = [
-                            'En proceso' => 'bg-[#1d2757] text-blue-400',
-                            'Solucionado' => 'bg-[#133d28] text-green-400',
-                            'Cancelado' => 'bg-[#4d1616] text-red-400',
-                        ];
-                    @endphp
+                    {{-- ========================================================= --}}
+                    {{-- TABLA --}}
+                    {{-- ========================================================= --}}
 
                     <div class="mt-4 overflow-x-auto">
 
                         <table class="w-full min-w-[560px] text-left text-sm">
 
+                            {{-- ENCABEZADOS --}}
+
                             <thead>
+
                                 <tr class="text-xs uppercase tracking-wide text-gray-500">
-                                    <th class="pb-3 font-semibold">Folio</th>
-                                    <th class="pb-3 font-semibold">Tipo de falla</th>
-                                    <th class="pb-3 font-semibold">Estado</th>
-                                    <th class="pb-3 font-semibold">Fecha de reporte</th>
-                                    <th class="pb-3 font-semibold">Soporte</th>
-                                    <th class="pb-3"></th>
+
+                                    <th class="pb-3 font-semibold">
+                                        Folio
+                                    </th>
+
+                                    <th class="pb-3 font-semibold">
+                                        Tipo de falla
+                                    </th>
+
+                                    <th class="pb-3 font-semibold">
+                                        Estado
+                                    </th>
+
+                                    <th class="pb-3 font-semibold">
+                                        Fecha de reporte
+                                    </th>
+
+                                    <th class="pb-3 font-semibold">
+                                        Soporte
+                                    </th>
+
+                                    <th class="pb-3 text-right">
+                                        Ver
+                                    </th>
+
                                 </tr>
+
                             </thead>
+
+
+                            {{-- TICKETS --}}
 
                             <tbody class="divide-y divide-[#1e295d]/60">
 
-                                @foreach ($ticketsRecientes as $ticket)
+                                @forelse ($ticketsRecientes as $ticket)
+                                    @php
 
-                                    <tr>
+                                        $estado = match ($ticket->estado) {
+                                            'pendiente' => 'Abierto',
+
+                                            'en proceso' => 'En proceso',
+
+                                            'solucionado' => 'Solucionado',
+
+                                            'cancelado' => 'Cancelado',
+
+                                            default => ucfirst($ticket->estado ?? 'Desconocido'),
+                                        };
+
+                                        $estadoClase = match ($ticket->estado) {
+                                            'pendiente' => 'bg-[#4a4213] text-yellow-400',
+
+                                            'en proceso' => 'bg-[#1d2757] text-blue-400',
+
+                                            'solucionado' => 'bg-[#133d28] text-green-400',
+
+                                            'cancelado' => 'bg-[#4d1616] text-red-400',
+
+                                            default => 'bg-slate-700 text-slate-300',
+                                        };
+
+                                    @endphp
+
+
+                                    <tr class="transition hover:bg-[#151b3b]/40">
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- FOLIO --}}
+                                        {{-- ================================================= --}}
 
                                         <td class="py-3 font-bold text-white">
-                                            {{ $ticket['folio'] }}
+
+                                            {{ $ticket->folio }}
+
                                         </td>
 
+
+                                        {{-- ================================================= --}}
+                                        {{-- TIPO DE FALLA --}}
+                                        {{-- ================================================= --}}
+
                                         <td class="py-3 text-gray-300">
-                                            {{ $ticket['tipo_falla'] }}
+
+                                            {{ $ticket->tipo_falla ?? 'No especificado' }}
+
                                         </td>
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- ESTADO --}}
+                                        {{-- ================================================= --}}
 
                                         <td class="py-3">
 
                                             <span
-                                                class="inline-block rounded-lg px-2.5 py-1 text-xs font-bold {{ $estadoClases[$ticket['estado']] }}">
-                                                {{ $ticket['estado'] }}
+                                                class="inline-block rounded-lg px-2.5 py-1 text-xs font-bold {{ $estadoClase }}">
+
+                                                {{ $estado }}
+
                                             </span>
 
                                         </td>
 
-                                        <td class="py-3 text-gray-300">
-                                            {{ $ticket['fecha'] }}
-                                        </td>
+
+                                        {{-- ================================================= --}}
+                                        {{-- FECHA --}}
+                                        {{-- ================================================= --}}
 
                                         <td class="py-3 text-gray-300">
-                                            {{ $ticket['soporte'] }}
+
+                                            {{ $ticket->created_at ? $ticket->created_at->timezone('America/Matamoros')->format('d M Y') : '—' }}
+
                                         </td>
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- SOPORTE --}}
+                                        {{-- ================================================= --}}
+
+                                        <td class="py-3 text-gray-300">
+
+                                            @if ($ticket->tomadoPor)
+                                                {{ $ticket->tomadoPor->name }}
+                                            @else
+                                                <span class="text-gray-500">
+                                                    Sin asignar
+                                                </span>
+                                            @endif
+
+                                        </td>
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- VER DETALLES --}}
+                                        {{-- ================================================= --}}
 
                                         <td class="py-3 text-right">
 
-                                            <a href="#"
-                                                class="inline-flex text-gray-400 transition hover:text-white">
+                                            <a href="{{ route('ticketusuario.detalles', $ticket->id) }}"
+                                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-500/10 hover:text-blue-400"
+                                                title="Ver ticket">
 
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-4 w-4"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="1.8"
-                                                    stroke-linecap="round"
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.8" stroke-linecap="round"
                                                     stroke-linejoin="round">
 
                                                     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+
                                                     <circle cx="12" cy="12" r="3" />
 
                                                 </svg>
@@ -893,7 +872,24 @@
 
                                     </tr>
 
-                                @endforeach
+
+                                @empty
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- SIN TICKETS --}}
+                                    {{-- ================================================= --}}
+
+                                    <tr>
+
+                                        <td colspan="6" class="py-10 text-center text-sm text-gray-500">
+
+                                            No tienes tickets registrados.
+
+                                        </td>
+
+                                    </tr>
+                                @endforelse
 
                             </tbody>
 
@@ -910,16 +906,10 @@
 
                         <div class="flex items-center gap-2.5">
 
-                            <div
-                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                     stroke-linejoin="round">
 
                                     <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -935,7 +925,7 @@
 
                         </div>
 
-                        <a href="#"
+                        <a href="{{ route('ticketusuario.detalles', $ultimoTicket['id']) }}"
                             class="rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700">
                             Ver detalles
                         </a>
@@ -1018,31 +1008,36 @@
                         <div>
                             <p class="text-gray-400">¿Se solucionó?</p>
 
-                            <span
-                                class="mt-1 inline-block rounded-lg bg-[#4d1616] px-2.5 py-1 text-xs font-bold text-red-400">
-                                {{ $ultimoTicket['solucionado'] ?? 'No' }}
-                            </span>
+                            @if (($ultimoTicket['estado'] ?? '') === 'pendiente')
+                                <span
+                                    class="mt-1 inline-block rounded-lg bg-yellow-500/10 px-2.5 py-1 text-xs font-bold text-yellow-400">
+                                    Pendiente de solución
+                                </span>
+                            @elseif ($ultimoTicket['problema_solucionado'] ?? false)
+                                <span
+                                    class="mt-1 inline-block rounded-lg bg-green-500/10 px-2.5 py-1 text-xs font-bold text-green-400">
+                                    Problema solucionado
+                                </span>
+                            @else
+                                <span
+                                    class="mt-1 inline-block rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-400">
+                                    Problema no solucionado
+                                </span>
+                            @endif
                         </div>
 
                     </div>
 
                 </div>
 
-                <div
-                    class="order-5 rounded-xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:col-span-5">
+                <div class="order-5 rounded-xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:col-span-5">
 
                     <div class="flex items-center gap-2.5">
 
-                        <div
-                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
 
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                 stroke-linejoin="round">
 
                                 <circle cx="12" cy="12" r="9" />
@@ -1081,17 +1076,14 @@
                     <div class="mt-4">
 
                         @foreach ($actividad as $item)
-
                             <div class="relative flex gap-3 pb-5 last:pb-0">
 
                                 @if (!$loop->last)
-                                    <span
-                                        class="absolute left-[5px] top-3 h-full w-px bg-white/10">
+                                    <span class="absolute left-[5px] top-3 h-full w-px bg-white/10">
                                     </span>
                                 @endif
 
-                                <span
-                                    class="relative mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {{ $item['color'] }}">
+                                <span class="relative mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {{ $item['color'] }}">
                                 </span>
 
                                 <div class="text-sm">
@@ -1107,171 +1099,812 @@
                                 </div>
 
                             </div>
-
                         @endforeach
 
                     </div>
 
                 </div>
 
-                <div
-                    class="order-6 rounded-xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:col-span-7">
-
+                <div class="order-6 rounded-2xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:col-span-7">
+                    {{-- ENCABEZADO --}}
                     <div class="flex items-center justify-between">
 
-                        <div class="flex items-center gap-2.5">
+                        <div class="flex items-center gap-3">
 
                             <div
-                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/15 to-indigo-500/10 text-blue-400 shadow-inner">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                     stroke-linejoin="round">
 
-                                    <circle cx="12" cy="12" r="9" />
-                                    <path d="M12 8v5M12 16h.01" />
+                                    <path d="M18 8a6 6 0 00-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                                    <path d="M10 21h4" />
 
                                 </svg>
 
                             </div>
 
-                            <h2 class="text-lg font-bold text-white">
-                                Avisos importantes
-                            </h2>
+                            <div>
+
+                                <h2 class="text-lg font-bold tracking-tight text-white">
+                                    Avisos importantes
+                                </h2>
+
+                                <p class="text-[11px] text-gray-500">
+                                    Información reciente para ti
+                                </p>
+
+                            </div>
 
                         </div>
 
-                        <a href="#"
-                            class="text-sm font-bold text-blue-400 hover:text-blue-300">
-                            Ver todos los avisos
+                        <a href="{{ route('avisosusuario') }}"
+                            class="group flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-bold text-blue-400 transition-all duration-200 hover:bg-blue-500/10 hover:text-blue-300">
+
+                            Ver todos
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+
+                                <path d="M5 12h14" />
+                                <path d="m12 5 7 7-7 7" />
+
+                            </svg>
+
                         </a>
 
                     </div>
 
-                    @php
-                        $avisos = [
-                            [
-                                'tipo' => 'warning',
-                                'titulo' => 'Mantenimiento programado',
-                                'fecha' => '05 de agosto',
-                                'texto' => 'El area de TI dara mantenimiento el 09 de agosto del 2026 de 20:00 PM a 21:00 PM',
-                            ],
-                            [
-                                'tipo' => 'info',
-                                'titulo' => 'Actualizacion del sistema',
-                                'fecha' => '03 de agosto',
-                                'texto' => 'Ya esta disponible la nueva actualización del sistema interno',
-                            ],
-                            [
-                                'tipo' => 'success',
-                                'titulo' => 'Politica de seguridad',
-                                'fecha' => '01 de agosto',
-                                'texto' => 'Recuerda mantener tus credenciales seguras y no compartir',
-                            ],
-                        ];
-                    @endphp
 
-                    <div class="mt-4 divide-y divide-[#1e295d]/60">
+                    {{-- ========================================================= --}}
+                    {{-- AVISOS --}}
+                    {{-- ========================================================= --}}
 
-                        @foreach ($avisos as $aviso)
+                    <div x-data="avisosModal()" @keydown.escape.window="cerrarAviso()" class="relative">
 
-                            <div class="flex gap-3 py-3.5 first:pt-4">
+                        <div class="mt-4 space-y-2.5">
+
+                            @forelse ($avisos as $aviso)
+                                @php
+                                    $config = match ($aviso->tipo) {
+                                        'mantenimiento' => [
+                                            'label' => 'Mantenimiento',
+                                            'iconBg' => 'bg-amber-500/10',
+                                            'iconBorder' => 'border-amber-500/20',
+                                            'iconText' => 'text-amber-400',
+                                            'accent' => 'bg-amber-500',
+                                            'badge' => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                                        ],
+
+                                        'incidente' => [
+                                            'label' => 'Incidente',
+                                            'iconBg' => 'bg-red-500/10',
+                                            'iconBorder' => 'border-red-500/20',
+                                            'iconText' => 'text-red-400',
+                                            'accent' => 'bg-red-500',
+                                            'badge' => 'bg-red-500/10 text-red-400 border-red-500/20',
+                                        ],
+
+                                        'informativo' => [
+                                            'label' => 'Informativo',
+                                            'iconBg' => 'bg-cyan-500/10',
+                                            'iconBorder' => 'border-cyan-500/20',
+                                            'iconText' => 'text-cyan-400',
+                                            'accent' => 'bg-cyan-500',
+                                            'badge' => 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+                                        ],
+
+                                        default => [
+                                            'label' => 'General',
+                                            'iconBg' => 'bg-blue-500/10',
+                                            'iconBorder' => 'border-blue-500/20',
+                                            'iconText' => 'text-blue-400',
+                                            'accent' => 'bg-blue-500',
+                                            'badge' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                        ],
+                                    };
+
+                                    /*
+                |--------------------------------------------------------------------------
+                | AFECTA A
+                |--------------------------------------------------------------------------
+                */
+
+                                    $afecta = $aviso->afecta_a;
+
+                                    if (is_string($afecta)) {
+                                        $decoded = json_decode($afecta, true);
+
+                                        if (json_last_error() === JSON_ERROR_NONE) {
+                                            $afecta = $decoded;
+                                        }
+                                    }
+
+                                    if (is_array($afecta) && ($afecta['tipo'] ?? null) === 'todos') {
+                                        $afectaTexto = 'Todos los usuarios';
+                                    } elseif (is_array($afecta) && ($afecta['tipo'] ?? null) === 'departamentos') {
+                                        $ids = $afecta['ids'] ?? [];
+
+                                        $nombres = \App\Models\Departamento::whereIn('id', $ids)
+                                            ->orderBy('nombre')
+                                            ->pluck('nombre')
+                                            ->toArray();
+
+                                        $afectaTexto = !empty($nombres)
+                                            ? implode(', ', $nombres)
+                                            : 'Departamentos seleccionados';
+                                    } elseif (is_array($afecta) && ($afecta['tipo'] ?? null) === 'usuarios') {
+                                        $ids = $afecta['ids'] ?? [];
+
+                                        $nombres = \App\Models\User::whereIn('id', $ids)
+                                            ->orderBy('name')
+                                            ->pluck('name')
+                                            ->toArray();
+
+                                        $afectaTexto = !empty($nombres)
+                                            ? implode(', ', $nombres)
+                                            : 'Usuarios seleccionados';
+                                    } else {
+                                        $afectaTexto = 'Todos los usuarios';
+                                    }
+                                @endphp
+
+
+                                {{-- ========================================================= --}}
+                                {{-- CARD --}}
+                                {{-- ========================================================= --}}
 
                                 <div
-                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-                                    @if ($aviso['tipo'] === 'warning')
-                                        bg-[#4a4213]
-                                    @elseif ($aviso['tipo'] === 'info')
-                                        bg-blue-600
+                                    class="group relative overflow-hidden rounded-xl border border-[#1e295d]/90 bg-gradient-to-r from-[#0b102b] to-[#0d1330] transition-all duration-200 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-950/20">
+
+                                    {{-- INDICADOR LATERAL --}}
+                                    <div class="absolute inset-y-0 left-0 w-[3px] {{ $config['accent'] }}"></div>
+
+
+                                    <div class="flex min-h-[112px] items-center gap-4 p-3.5 sm:p-4">
+
+                                        {{-- ================================================= --}}
+                                        {{-- ICONO --}}
+                                        {{-- ================================================= --}}
+
+                                        <div
+                                            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border {{ $config['iconBg'] }} {{ $config['iconBorder'] }} {{ $config['iconText'] }} shadow-inner transition-transform duration-200 group-hover:scale-[1.03]">
+
+                                            @if ($aviso->tipo === 'mantenimiento')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.7" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path
+                                                        d="M14.7 6.3a4.2 4.2 0 00-5.9 5.9L4 17l3 3 4.8-4.8a4.2 4.2 0 005.9-5.9l-2.2 2.2-2.9-.9-.9-2.9z" />
+                                                </svg>
+                                            @elseif ($aviso->tipo === 'incidente')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.7" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M12 3l9 17H3L12 3z" />
+                                                    <path d="M12 9v4" />
+                                                    <path d="M12 16h.01" />
+                                                </svg>
+                                            @elseif ($aviso->tipo === 'informativo')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.7" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="9" />
+                                                    <path d="M12 11v5" />
+                                                    <path d="M12 8h.01" />
+                                                </svg>
+                                            @else
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.7" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M4 6h16" />
+                                                    <path d="M4 12h16" />
+                                                    <path d="M4 18h10" />
+                                                </svg>
+                                            @endif
+
+                                        </div>
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- CONTENIDO --}}
+                                        {{-- ================================================= --}}
+
+                                        <div class="min-w-0 flex-1">
+
+                                            {{-- TIPO + FECHA --}}
+                                            <div class="flex items-center justify-between gap-3">
+
+                                                <span
+                                                    class="inline-flex rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider {{ $config['badge'] }}">
+                                                    {{ $config['label'] }}
+                                                </span>
+
+
+                                                <span
+                                                    class="flex shrink-0 items-center gap-1 text-[10px] text-gray-500">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <rect x="3" y="4" width="18" height="18"
+                                                            rx="2" />
+                                                        <path d="M16 2v4M8 2v4M3 10h18" />
+                                                    </svg>
+
+                                                    {{ optional($aviso->fecha_inicio)->timezone('America/Matamoros')->format('d M Y') }}
+
+                                                </span>
+
+                                            </div>
+
+
+                                            {{-- TITULO --}}
+                                            <h3
+                                                class="mt-1.5 truncate text-sm font-bold text-white transition-colors duration-200 group-hover:text-blue-300">
+                                                {{ $aviso->titulo }}
+                                            </h3>
+
+
+                                            {{-- DESCRIPCION --}}
+                                            <p class="mt-1 line-clamp-1 text-xs leading-5 text-gray-400">
+                                                {{ $aviso->descripcion }}
+                                            </p>
+
+
+                                            {{-- FOOTER --}}
+                                            <div class="mt-2 flex items-center justify-between gap-3">
+
+                                                {{-- AFECTADOS --}}
+                                                <div
+                                                    class="flex min-w-0 items-center gap-1.5 text-[10px] text-gray-500">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                                                        <circle cx="9" cy="7" r="4" />
+                                                        <path d="M22 21v-2a4 4 0 00-3-3.87" />
+                                                        <path d="M16 3.13a4 4 0 010 7.75" />
+                                                    </svg>
+
+                                                    <span class="truncate">
+                                                        {{ $afectaTexto }}
+                                                    </span>
+
+                                                </div>
+
+
+                                                {{-- IMPORTANCIA --}}
+                                                @if ($aviso->importancia)
+                                                    <span
+                                                        class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider
+                                    @if ($aviso->importancia === 'critica') border-red-500/30 bg-red-500/10 text-red-400
+                                    @elseif ($aviso->importancia === 'alta')
+                                        border-orange-500/30 bg-orange-500/10 text-orange-400
+                                    @elseif ($aviso->importancia === 'media')
+                                        border-yellow-500/30 bg-yellow-500/10 text-yellow-400
                                     @else
-                                        bg-green-600
-                                    @endif">
+                                        border-blue-500/30 bg-blue-500/10 text-blue-400 @endif">
 
-                                    @if ($aviso['tipo'] === 'warning')
+                                                        <span
+                                                            class="h-1.5 w-1.5 rounded-full
+                                        @if ($aviso->importancia === 'critica') bg-red-400
+                                        @elseif ($aviso->importancia === 'alta')
+                                            bg-orange-400
+                                        @elseif ($aviso->importancia === 'media')
+                                            bg-yellow-400
+                                        @else
+                                            bg-blue-400 @endif"></span>
 
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="h-4 w-4 text-[#0b0f2a]"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2.2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round">
+                                                        {{ ucfirst($aviso->importancia) }}
 
-                                            <path d="M12 3l10 18H2L12 3z" />
-                                            <path d="M12 10v4M12 17h.01" />
+                                                    </span>
+                                                @endif
 
-                                        </svg>
 
-                                    @elseif ($aviso['tipo'] === 'info')
+                                                {{-- VER AVISO --}}
+                                                <button type="button"
+                                                    @click="abrirAviso(@js($aviso))"
+                                                    class="group/ver inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-blue-500/10 bg-blue-500/5 px-2.5 py-1.5 text-[10px] font-bold text-blue-400 transition-all duration-200 hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-300">
 
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="h-4 w-4 text-white"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2.2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round">
+                                                    Ver aviso
 
-                                            <circle cx="12" cy="12" r="9" />
-                                            <path d="M12 11v5M12 8h.01" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-3 w-3 transition-transform duration-200 group-hover/ver:translate-x-0.5"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path d="M5 12h14" />
+                                                        <path d="m12 5 7 7-7 7" />
+                                                    </svg>
 
-                                        </svg>
+                                                </button>
 
-                                    @else
+                                            </div>
 
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="h-4 w-4 text-white"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2.2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round">
-
-                                            <path d="M5 13l4 4L19 7" />
-
-                                        </svg>
-
-                                    @endif
-
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-
-                                    <div class="flex flex-wrap items-baseline justify-between gap-x-3">
-
-                                        <p class="text-sm font-bold text-white">
-                                            {{ $aviso['titulo'] }}
-                                        </p>
-
-                                        <p class="text-xs text-gray-500">
-                                            {{ $aviso['fecha'] }}
-                                        </p>
+                                        </div>
 
                                     </div>
 
-                                    <p class="mt-0.5 text-sm text-gray-400">
-                                        {{ $aviso['texto'] }}
+                                </div>
+
+
+                            @empty
+
+                                {{-- ========================================================= --}}
+                                {{-- SIN AVISOS --}}
+                                {{-- ========================================================= --}}
+
+                                <div
+                                    class="rounded-xl border border-dashed border-[#26335f] bg-[#0b102b]/60 px-5 py-8 text-center">
+
+                                    <div
+                                        class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-[#26335f] bg-[#151b3b] text-gray-500">
+
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="1.8"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M18 8a6 6 0 00-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                                            <path d="M10 21h4" />
+                                        </svg>
+
+                                    </div>
+
+                                    <p class="text-sm font-semibold text-gray-400">
+                                        No hay avisos disponibles
                                     </p>
+
+                                    <p class="mt-1 text-xs text-gray-600">
+                                        No se han publicado avisos recientemente.
+                                    </p>
+
+                                </div>
+                            @endforelse
+
+                        </div>
+
+
+                        {{-- ========================================================= --}}
+                        {{-- MODAL --}}
+                        {{-- ========================================================= --}}
+
+                        <div x-cloak x-show="abierto" x-transition.opacity
+                            class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+                            @click.self="cerrarAviso()">
+
+                            {{-- BACKDROP --}}
+                            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+
+
+                            {{-- =========================================================
+     MODAL DE AVISO
+========================================================= --}}
+
+                            <div x-cloak x-show="abierto" @keydown.escape.window="cerrarAviso()"
+                                class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
+                                role="dialog" aria-modal="true">
+
+                                {{-- OVERLAY --}}
+                                <div x-show="abierto" x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    @click="cerrarAviso()" class="absolute inset-0 bg-black/70 backdrop-blur-sm">
+                                </div>
+
+
+                                {{-- CONTENEDOR --}}
+                                <div x-show="abierto" x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 translate-y-4 scale-[0.97]"
+                                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                    x-transition:leave-end="opacity-0 translate-y-4 scale-[0.97]" @click.stop
+                                    class="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[#26335f] bg-[#0b102b] shadow-2xl shadow-black/60">
+
+                                    {{-- =====================================================
+             BARRA SUPERIOR DE COLOR
+        ====================================================== --}}
+
+                                    <div class="h-[3px] w-full" :class="colorTipo()"></div>
+
+
+                                    {{-- =====================================================
+             HEADER
+        ====================================================== --}}
+
+                                    <div
+                                        class="border-b border-[#1e295d] bg-gradient-to-r from-[#101638] to-[#0c122e] px-5 py-4 sm:px-6">
+
+                                        <div class="flex items-start gap-4">
+
+                                            {{-- ICONO --}}
+                                            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border shadow-lg"
+                                                :class="iconoClase()">
+
+                                                {{-- MANTENIMIENTO --}}
+                                                <template x-if="aviso.tipo === 'mantenimiento'">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path
+                                                            d="M14.7 6.3a4.2 4.2 0 00-5.9 5.9L4 17l3 3 4.8-4.8a4.2 4.2 0 005.9-5.9l-2.2 2.2-2.9-.9-.9-2.9z" />
+                                                    </svg>
+
+                                                </template>
+
+
+                                                {{-- INCIDENTE --}}
+                                                <template x-if="aviso.tipo === 'incidente'">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path d="M12 3l9 17H3L12 3z" />
+                                                        <path d="M12 9v4" />
+                                                        <path d="M12 16h.01" />
+                                                    </svg>
+
+                                                </template>
+
+
+                                                {{-- INFORMATIVO --}}
+                                                <template x-if="aviso.tipo === 'informativo'">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="9" />
+                                                        <path d="M12 11v5" />
+                                                        <path d="M12 8h.01" />
+                                                    </svg>
+
+                                                </template>
+
+
+                                                {{-- GENERAL --}}
+                                                <template
+                                                    x-if="
+                            aviso.tipo !== 'mantenimiento' &&
+                            aviso.tipo !== 'incidente' &&
+                            aviso.tipo !== 'informativo'
+                        ">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path d="M4 6h16" />
+                                                        <path d="M4 12h16" />
+                                                        <path d="M4 18h10" />
+                                                    </svg>
+
+                                                </template>
+
+                                            </div>
+
+
+                                            {{-- INFORMACIÓN DEL HEADER --}}
+                                            <div class="min-w-0 flex-1">
+
+                                                <div class="flex flex-wrap items-center gap-2">
+
+                                                    {{-- TIPO --}}
+                                                    <span
+                                                        class="inline-flex items-center rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider"
+                                                        :class="badgeTipo()" x-text="nombreTipo()"></span>
+
+
+                                                    {{-- IMPORTANCIA --}}
+                                                    <span x-show="aviso.importancia"
+                                                        class="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider"
+                                                        :class="badgeImportancia()">
+
+                                                        <span class="h-1.5 w-1.5 rounded-full"
+                                                            :class="{
+                                                                'bg-red-400': aviso.importancia === 'critica',
+                                                                'bg-orange-400': aviso.importancia === 'alta',
+                                                                'bg-yellow-400': aviso.importancia === 'media',
+                                                                'bg-blue-400': aviso.importancia === 'normal'
+                                                            }"></span>
+
+                                                        <span x-text="capitalizar(aviso.importancia)"></span>
+
+                                                    </span>
+
+                                                </div>
+
+
+                                                {{-- TITULO --}}
+                                                <h2 class="mt-2 text-base font-bold leading-6 text-white sm:text-lg"
+                                                    x-text="aviso.titulo || 'Aviso'"></h2>
+
+                                            </div>
+
+
+                                            {{-- BOTÓN CERRAR --}}
+                                            <button type="button" @click="cerrarAviso()"
+                                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-transparent text-gray-500 transition hover:border-[#26335f] hover:bg-white/5 hover:text-white"
+                                                aria-label="Cerrar">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.8" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M18 6L6 18" />
+                                                    <path d="M6 6l12 12" />
+                                                </svg>
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- =====================================================
+             CONTENIDO
+        ====================================================== --}}
+
+                                    <div class="max-h-[65vh] overflow-y-auto px-5 py-5 sm:px-6">
+
+                                        {{-- DESCRIPCIÓN --}}
+                                        <div>
+
+                                            <div class="mb-2 flex items-center gap-2">
+
+                                                <div class="h-1 w-5 rounded-full bg-blue-500"></div>
+
+                                                <p
+                                                    class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                                                    Descripción
+                                                </p>
+
+                                            </div>
+
+
+                                            <div
+                                                class="relative overflow-hidden rounded-xl border border-[#1e295d] bg-[#080d24] p-4">
+
+                                                {{-- DETALLE DECORATIVO --}}
+                                                <div class="absolute left-0 top-0 h-full w-[2px]"
+                                                    :class="colorTipo()"></div>
+
+                                                <p class="whitespace-pre-line text-sm leading-6 text-gray-300"
+                                                    x-text="aviso.descripcion || 'Sin descripción disponible.'"></p>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {{-- =================================================
+                 INFORMACIÓN
+            ================================================== --}}
+
+                                        <div class="mt-5">
+
+                                            <div class="mb-3 flex items-center gap-2">
+
+                                                <div class="h-1 w-5 rounded-full bg-blue-500"></div>
+
+                                                <p
+                                                    class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                                                    Información del aviso
+                                                </p>
+
+                                            </div>
+
+
+                                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+                                                {{-- FECHA --}}
+                                                <div
+                                                    class="group rounded-xl border border-[#1e295d] bg-[#080d24] p-3.5 transition hover:border-blue-500/20 hover:bg-[#0a102b]">
+
+                                                    <div class="flex items-center gap-3">
+
+                                                        <div
+                                                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-500/10 bg-blue-500/10 text-blue-400">
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                                viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="1.8"
+                                                                stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="3" y="4" width="18" height="18"
+                                                                    rx="2" />
+                                                                <path d="M16 2v4M8 2v4M3 10h18" />
+                                                            </svg>
+
+                                                        </div>
+
+
+                                                        <div class="min-w-0">
+
+                                                            <p
+                                                                class="text-[9px] font-bold uppercase tracking-wider text-gray-600">
+                                                                Fecha
+                                                            </p>
+
+                                                            <p class="mt-0.5 text-xs font-semibold text-gray-300"
+                                                                x-text="formatearFecha(aviso.fecha_inicio)"></p>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                {{-- HORA --}}
+                                                <div
+                                                    class="group rounded-xl border border-[#1e295d] bg-[#080d24] p-3.5 transition hover:border-cyan-500/20 hover:bg-[#0a102b]">
+
+                                                    <div class="flex items-center gap-3">
+
+                                                        <div
+                                                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-500/10 bg-cyan-500/10 text-cyan-400">
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                                viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="1.8"
+                                                                stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="9" />
+                                                                <path d="M12 7v5l3 2" />
+                                                            </svg>
+
+                                                        </div>
+
+
+                                                        <div class="min-w-0">
+
+                                                            <p
+                                                                class="text-[9px] font-bold uppercase tracking-wider text-gray-600">
+                                                                Hora
+                                                            </p>
+
+                                                            <p class="mt-0.5 text-xs font-semibold text-gray-300"
+                                                                x-text="formatearHora(aviso.fecha_inicio)"></p>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                {{-- AFECTA A --}}
+                                                <div
+                                                    class="rounded-xl border border-[#1e295d] bg-[#080d24] p-3.5 transition hover:border-purple-500/20 hover:bg-[#0a102b] sm:col-span-2">
+
+                                                    <div class="flex items-start gap-3">
+
+                                                        <div
+                                                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-purple-500/10 bg-purple-500/10 text-purple-400">
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                                viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="1.8"
+                                                                stroke-linecap="round" stroke-linejoin="round">
+                                                                <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                                                                <circle cx="9" cy="7" r="4" />
+                                                                <path d="M22 21v-2a4 4 0 00-3-3.87" />
+                                                                <path d="M16 3.13a4 4 0 010 7.75" />
+                                                            </svg>
+
+                                                        </div>
+
+
+                                                        <div class="min-w-0">
+
+                                                            <p
+                                                                class="text-[9px] font-bold uppercase tracking-wider text-gray-600">
+                                                                Dirigido a
+                                                            </p>
+
+                                                            <p class="mt-0.5 text-xs font-semibold leading-5 text-gray-300"
+                                                                x-text="obtenerAfectados()"></p>
+
+                                                        </div>
+
+
+                                                    </div>
+
+                                                </div>
+                                                <template x-if="aviso.archivo">
+                                                    <div class="mt-5">
+
+                                                        <p class="mb-2 text-xs font-bold uppercase text-gray-500">
+                                                            Archivo adjunto
+                                                        </p>
+
+                                                        {{-- IMAGEN --}}
+                                                        <template x-if="esImagen(aviso.archivo)">
+                                                            <div>
+                                                                <img :src="obtenerUrlArchivo(aviso.archivo)"
+                                                                    alt="Archivo adjunto"
+                                                                    class="max-h-72 w-full rounded-xl object-contain bg-[#080d24]">
+
+                                                                <a :href="obtenerUrlArchivo(aviso.archivo)"
+                                                                    target="_blank"
+                                                                    class="mt-2 inline-block text-xs text-blue-400 hover:text-blue-300">
+                                                                    Abrir imagen
+                                                                </a>
+                                                            </div>
+                                                        </template>
+
+                                                        {{-- OTROS ARCHIVOS --}}
+                                                        <template x-if="!esImagen(aviso.archivo)">
+                                                            <a :href="obtenerUrlArchivo(aviso.archivo)" target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                class="inline-flex rounded-lg bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-400">
+                                                                Abrir archivo
+                                                            </a>
+                                                        </template>
+
+                                                    </div>
+                                                </template>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- =====================================================
+             FOOTER
+        ====================================================== --}}
+
+                                    <div
+                                        class="flex items-center justify-between border-t border-[#1e295d] bg-[#080d24]/80 px-5 py-3.5 sm:px-6">
+
+                                        <div class="hidden items-center gap-2 text-[10px] text-gray-600 sm:flex">
+
+                                            <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+
+                                            Aviso publicado
+
+                                        </div>
+
+
+                                        <button type="button" @click="cerrarAviso()"
+                                            class="inline-flex items-center gap-2 rounded-lg border border-[#26335f] bg-[#111832] px-4 py-2 text-xs font-semibold text-gray-300 transition hover:border-blue-500/30 hover:bg-[#151d3d] hover:text-white">
+
+                                            Cerrar
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M18 6L6 18" />
+                                                <path d="M6 6l12 12" />
+                                            </svg>
+
+                                        </button>
+
+                                    </div>
 
                                 </div>
 
                             </div>
 
-                        @endforeach
+                        </div>
 
                     </div>
-
-                </div>
-
-            </div>
 
         </main>
 

@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>TicketPro - Dashboard</title>
-        <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
         window.usuarioActualId = {{ auth()->id() }};
@@ -407,7 +407,7 @@
                                 class="hidden absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
 
 
-                                <a href="{{ route('perfilusuario') }}"
+                                <a href="{{ route('perfiltecnologias') }}"
                                     class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
 
                                     <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor"
@@ -917,7 +917,6 @@
                                     ]);
 
                                     $ticketData = $ticket->toArray();
-
                                     $comentariosData = $ticket->historialComentarios
                                         ->map(function ($comentario) {
                                             return [
@@ -940,11 +939,13 @@
                                                     : null,
 
                                                 'usuario' => [
-                                                    'id' => $comentario->usuario->id ?? null,
+                                                    'id' => $comentario->usuario?->id,
+                                                    'name' => $comentario->usuario?->name ?? 'Usuario',
+                                                    'rol' => $comentario->usuario?->rol ?? 'Usuario',
 
-                                                    'name' => $comentario->usuario->name ?? 'Usuario',
-
-                                                    'rol' => $comentario->usuario->rol ?? 'Usuario',
+                                                    'foto' => $comentario->usuario?->foto
+                                                        ? Storage::url($comentario->usuario->foto)
+                                                        : null,
                                                 ],
 
                                                 'fecha' => $comentario->created_at
@@ -953,7 +954,6 @@
                                             ];
                                         })
                                         ->values();
-
                                 @endphp
 
 
@@ -1046,6 +1046,7 @@
                                         'folio' => $ticket->folio,
                                         'titulo' => $ticket->titulo,
                                         'tipo_falla' => $ticket->tipo_falla,
+                                        'equipo' => $ticket->equipo,
                                         'prioridad' => $ticket->prioridad,
                                         'descripcion' => $ticket->descripcion,
                                         'estado' => strtolower($ticket->estado ?? ''),
@@ -1062,8 +1063,10 @@
                                             ? [
                                                 'id' => $ticket->user->id,
                                                 'name' => $ticket->user->name,
+                                                'foto' => $ticket->user->foto ? Storage::url($ticket->user->foto) : null,
                                             ]
                                             : null,
+                                        'comentarios' => $comentariosData,
                                     
                                         'solucion' => $ticket->solucion
                                             ? [
@@ -1073,6 +1076,7 @@
                                                 'solucion' => $ticket->solucion->solucion,
                                                 'problema_solucionado' => (bool) $ticket->solucion->problema_solucionado,
                                                 'firma' => $ticket->solucion->firma,
+                                                'url_firma' => $ticket->solucion->firma ? Storage::url($ticket->solucion->firma) : null,
                                                 'nombre_firmante' => $ticket->solucion->nombre_firmante,
                                                 'fecha_solucion' => $ticket->solucion->fecha_solucion,
                                                 'fecha_firma' => $ticket->solucion->fecha_firma,
@@ -1235,32 +1239,31 @@
                                             <div
                                                 class="w-8 h-8 rounded-full border border-blue-500/20 overflow-hidden shrink-0">
 
-                                                <img :src="(() => {
-                                                
-                                                    const datos = obtenerDatosTicket({
-                                                        id: {{ $ticket->id }},
-                                                        tomado_por: @js(
-    $ticket->tomadoPor
-        ? [
-            'id' => $ticket->tomadoPor->id,
-            'name' => $ticket->tomadoPor->name,
-            'foto' => $ticket->tomadoPor->foto,
-            'departamento' => $ticket->tomadoPor->departamento?->nombre,
-        ]
-        : null,
-)
-                                                    });
-                                                
-                                                    const tecnico = obtenerTecnico(datos);
-                                                
-                                                    return tecnico?.foto ?
-                                                        `/storage/${tecnico.foto}` :
-                                                        `{{ asset('images/user.png') }}`;
-                                                
-                                                })
-                                                ()"
-                                                    class="w-full h-full object-cover" alt="Usuario">
+                                   <img
+    :src="
+        (() => {
+            const datos = obtenerDatosTicket({
+                id: {{ $ticket->id }},
+                tomado_por: @js(
+                    $ticket->tomadoPor
+                        ? [
+                            'id' => $ticket->tomadoPor->id,
+                            'name' => $ticket->tomadoPor->name,
+                            'foto' => $ticket->tomadoPor->foto,
+                            'departamento' => $ticket->tomadoPor->departamento?->nombre,
+                        ]
+                        : null
+                )
+            });
 
+            return datos.tomado_por?.foto
+                ? '{{ asset('storage') }}/' + datos.tomado_por.foto
+                : '{{ asset('storage/profile-photos/user.png') }}';
+        })()
+    "
+    class="w-full h-full object-cover"
+    alt="Usuario"
+>
                                             </div>
 
 
@@ -1270,11 +1273,10 @@
                                                 <!-- NOMBRE -->
                                                 <span class="text-slate-300 font-medium truncate"
                                                     x-text="
-                    (() => {
-
-                        const datos = obtenerDatosTicket({
-                            id: {{ $ticket->id }},
-                            tomado_por: @js(
+                                                    (() => {
+                                                    const datos = obtenerDatosTicket({
+                                                    id: {{ $ticket->id }},
+                                                    tomado_por: @js(
     $ticket->tomadoPor
         ? [
             'id' => $ticket->tomadoPor->id,
@@ -1284,12 +1286,11 @@
         ]
         : null,
 )
-                        });
-
-                        return nombreTomadoPor(datos);
-
-                    })()
-                ">
+                                                        });
+                                                        return nombreTomadoPor(datos);
+                                                        })
+()
+                                                        ">
                                                     {{ $ticket->tomadoPor?->name ?? '—————' }}
                                                 </span>
 
@@ -1359,24 +1360,22 @@
 
                                         <button type="button"
                                             @click="abrirTicket(
-    {{ Js::from($ticketData) }}
-)"
+                                                {{ Js::from($ticketData) }}
+                                                    )"
                                             class="text-slate-400 hover:text-blue-400 p-2 rounded-lg hover:bg-blue-500/10 transition"
                                             title="Ver ticket">
 
                                             <i data-lucide="eye" class="w-4 h-4">
                                             </i>
-
                                         </button>
-                                        <template x-if="ticket.tomado_por && ticket.tomado_por.id == usuarioActualId">
-
+                                        <template x-if="esMiTicket(ticket)">
                                             <button type="button"
                                                 @click="
-        abrirModalSolucion(
-            ticket,
-            ['solucionado', 'cancelado'].includes(filtro)
-        )
-    "
+                                                    abrirModalSolucion(
+                                                        obtenerDatosTicket(ticket),
+                                                        ['solucionado', 'cancelado'].includes(filtro)
+                                                    )
+                                                "
                                                 :disabled="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro)"
                                                 :class="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro) ?
                                                     'opacity-40 cursor-not-allowed' :
@@ -1452,9 +1451,96 @@
                         </tbody>
 
                     </table>
-
+                    
                 </div>
+   {{-- PAGINACIÓN --}}
+                    <div
+                        class="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
 
+                        {{-- INFORMACIÓN --}}
+                        <span class="text-xs text-slate-400">
+
+                            Mostrando
+                            {{ $tickets->firstItem() ?? 0 }}
+                            a
+                            {{ $tickets->lastItem() ?? 0 }}
+                            de
+                            {{ $tickets->total() }}
+                            tickets
+
+                        </span>
+
+
+                        {{-- CONTROLES --}}
+                        <div class="flex items-center gap-1">
+
+                            {{-- ANTERIOR --}}
+                            @if ($tickets->onFirstPage())
+
+                                <span
+                                    class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+
+                                </span>
+
+                            @else
+
+                                <a href="{{ $tickets->previousPageUrl() }}"
+                                    class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
+
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+
+                                </a>
+
+                            @endif
+
+
+                            {{-- NÚMEROS --}}
+                            @foreach (
+                                $tickets->getUrlRange(
+                                    max(1, $tickets->currentPage() - 2),
+                                    min($tickets->lastPage(), $tickets->currentPage() + 2)
+                                ) as $page => $url
+                            )
+
+                                <a href="{{ $url }}"
+                                    class="w-8 h-8 rounded-lg flex items-center justify-center text-xs transition
+                                    {{ $page == $tickets->currentPage()
+                                        ? 'bg-blue-600 text-white font-bold'
+                                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}">
+
+                                    {{ $page }}
+
+                                </a>
+
+                            @endforeach
+
+
+                            {{-- SIGUIENTE --}}
+                            @if ($tickets->hasMorePages())
+
+                                <a href="{{ $tickets->nextPageUrl() }}"
+                                    class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
+
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+
+                                </a>
+
+                            @else
+
+                                <span
+                                    class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+
+                                </span>
+
+                            @endif
+
+                        </div>
+
+                    </div>
 
                 <template x-teleport="body">
 
@@ -1826,9 +1912,9 @@
                                                         archivoUrl(ticketSolucion?.solucion?.firma)"
                                                     alt="Firma registrada" class="max-w-full max-h-40 object-contain"
                                                     x-on:error="console.error(
-                'No se pudo cargar la firma:',
-                $event.target.src
-            )">
+                                                    'No se pudo cargar la firma:',
+                                                    $event.target.src
+                                                    )">
 
                                                 <span x-show="!ticketSolucion?.solucion?.firma"
                                                     class="text-slate-500 text-xs">
@@ -2075,37 +2161,54 @@
 
                                                 {{-- TIPO --}}
 
+                                                {{-- TIPO DE FALLA --}}
+
                                                 <div class="flex justify-between items-center">
 
                                                     <span class="text-slate-400 font-semibold">
-
                                                         Tipo de falla:
-
                                                     </span>
 
                                                     <div class="flex items-center gap-1.5 text-slate-200 font-medium">
 
-                                                        <i data-lucide="ticket" class="w-3.5 h-3.5 text-slate-400">
-                                                        </i>
+                                                        <i data-lucide="ticket"
+                                                            class="w-3.5 h-3.5 text-slate-400"></i>
 
-                                                        <span x-text="selectedTicket?.tipo_falla ?? 'Sin especificar'">
-                                                        </span>
+                                                        <span
+                                                            x-text="selectedTicket?.tipo_falla ?? 'Sin especificar'"></span>
 
                                                     </div>
 
                                                 </div>
 
+                                                {{-- EQUIPO --}}
+
+                                                <div x-show="selectedTicket?.tipo_falla === 'Equipo'" x-cloak
+                                                    class="flex justify-between items-center">
+
+                                                    <span class="text-slate-400 font-semibold">
+                                                        Equipo:
+                                                    </span>
+
+                                                    <div class="flex items-center gap-1.5 text-slate-200 font-medium">
+
+                                                        <i data-lucide="laptop"
+                                                            class="w-3.5 h-3.5 text-slate-400"></i>
+
+                                                        <span
+                                                            x-text="selectedTicket?.equipo ?? 'No especificado'"></span>
+
+                                                    </div>
+
+                                                </div>
 
                                                 {{-- LEVANTADO POR --}}
 
                                                 <div class="flex justify-between items-start pt-1">
 
                                                     <span class="text-slate-400 font-semibold">
-
                                                         Levantado por:
-
                                                     </span>
-
 
                                                     <div class="flex items-center gap-2 text-right">
 
@@ -2121,7 +2224,6 @@
 
                                                         </div>
 
-
                                                         <img :src="avatarUsuario(
                                                             selectedTicket?.user?.name ??
                                                             selectedTicket?.usuario?.name ??
@@ -2132,7 +2234,6 @@
                                                     </div>
 
                                                 </div>
-
 
                                                 {{-- DEPARTAMENTO --}}
 
@@ -2409,36 +2510,79 @@
 
                                         <form id="formComentario"
                                             action="{{ route('tickets.comentarios.store', $ticket->id) }}"
-                                            method="POST" enctype="multipart/form-data">
+                                            method="POST" enctype="multipart/form-data"
+                                            class="flex items-end gap-3">
 
                                             @csrf
 
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Usuario') }}&background=0D8ABC&color=fff"
-                                                class="w-10 h-10 rounded-full object-cover border border-blue-400/40 shrink-0"
-                                                alt="Usuario">
+                                            {{-- FOTO DEL USUARIO --}}
+                                            <div class="shrink-0">
 
+                                                <img src="{{ auth()->user()->foto
+                                                    ? Storage::url(auth()->user()->foto)
+                                                    : 'https://ui-avatars.com/api/?name=' .
+                                                        urlencode(auth()->user()->name ?? 'Usuario') .
+                                                        '&background=0D8ABC&color=fff' }}"
+                                                    class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
+                                                    alt="{{ auth()->user()->name ?? 'Usuario' }}">
+
+                                            </div>
+
+
+                                            {{-- CONTENEDOR DEL COMENTARIO --}}
                                             <div class="relative flex-1">
 
+                                                {{-- ARCHIVO --}}
                                                 <input type="file" name="archivo" x-ref="fileInputModal"
                                                     @change="seleccionarArchivo($event)" class="hidden">
 
+
+                                                {{-- CAMPO --}}
                                                 <input type="text" name="mensaje"
                                                     placeholder="Escribe un comentario..." autocomplete="off"
-                                                    class="w-full pl-4 pr-16 py-3 text-xs bg-[#030712] border border-blue-900/60 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                                                    class="w-full h-11 pl-4 pr-24 text-xs
+                                                    bg-[#030712]
+                                                    border border-slate-800
+                                                    rounded-xl
+                                                    text-white
+                                                    placeholder-slate-500
+                                                    focus:outline-none
+                                                    focus:border-blue-500
+                                                    focus:ring-1
+                                                    focus:ring-blue-500/30
+                                                    transition">
 
+
+                                                {{-- BOTONES --}}
                                                 <div
-                                                    class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                                    class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
 
+                                                    {{-- ADJUNTAR --}}
                                                     <button type="button" @click="$refs.fileInputModal.click()"
-                                                        class="text-slate-400 hover:text-blue-400 transition"
+                                                        class="w-8 h-8 flex items-center justify-center
+                                                        rounded-lg
+                                                        text-slate-400
+                                                        hover:text-blue-400
+                                                        hover:bg-blue-500/10
+                                                        transition"
                                                         title="Adjuntar archivo">
-
                                                         <i data-lucide="paperclip" class="w-4 h-4"></i>
-
                                                     </button>
+                                                    <button type="submit" id="btnEnviarComentario"
+                                                        class="h-8 px-3
+                                                        flex items-center justify-center
+                                                        rounded-lg
+                                                        bg-blue-600
+                                                        hover:bg-blue-500
+                                                        text-white
+                                                        text-[11px]
+                                                        font-semibold
+                                                        transition
+                                                        shadow-lg shadow-blue-900/20">
+                                                        <i data-lucide="send" class="w-3.5 h-3.5 mr-1.5"></i>
 
-                                                    <button type="submit" id="btnEnviarComentario">
                                                         Enviar
+
                                                     </button>
 
                                                 </div>
@@ -2512,10 +2656,11 @@
 
                                                 <div class="flex items-start gap-3">
 
-
-                                                    <img :src="avatarUsuario(comentario.usuario?.name ?? 'Usuario')"
+                                                    <img :src="comentario.usuario?.foto ?
+                                                        comentario.usuario.foto :
+                                                        avatarUsuario(comentario.usuario?.name || 'Usuario')"
                                                         class="w-8 h-8 rounded-full object-cover shrink-0 border border-blue-400/30"
-                                                        :alt="comentario.usuario?.name ?? 'Usuario'">
+                                                        :alt="comentario.usuario?.name || 'Usuario'">
 
 
                                                     <div class="flex-1 min-w-0">

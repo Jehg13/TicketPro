@@ -7,7 +7,6 @@
     <title>TicketPro - Tecnologías / Soporte</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 

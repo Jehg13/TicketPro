@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\TicketComentario;
 use App\Models\TicketU;
+use App\Models\Notificacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class TicketComentarioController extends Controller
@@ -17,14 +19,6 @@ class TicketComentarioController extends Controller
 
     public function index(TicketU $ticket)
     {
-        /*
-         * IMPORTANTE:
-         *
-         * Usamos ID ASC.
-         *
-         * ID menor = comentario más viejo
-         * ID mayor = comentario más nuevo
-         */
         $comentarios = TicketComentario::query()
             ->where('ticket_id', $ticket->id)
             ->with('usuario')
@@ -40,6 +34,7 @@ class TicketComentarioController extends Controller
             )->values(),
 
         ], 200, [
+
             'Cache-Control' =>
                 'no-store, no-cache, must-revalidate, max-age=0',
 
@@ -64,8 +59,11 @@ class TicketComentarioController extends Controller
     ) {
 
         /*
-         * Validación.
-         */
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
 
             'mensaje' => [
@@ -84,8 +82,11 @@ class TicketComentarioController extends Controller
 
 
         /*
-         * No permitir comentario completamente vacío.
-         */
+        |--------------------------------------------------------------------------
+        | EVITAR COMENTARIO VACÍO
+        |--------------------------------------------------------------------------
+        */
+
         if (
             !$request->filled('mensaje') &&
             !$request->hasFile('archivo')
@@ -99,7 +100,6 @@ class TicketComentarioController extends Controller
                     'message' =>
                         'Debes escribir un comentario o adjuntar un archivo.',
                 ], 422);
-
             }
 
             return back()
@@ -112,63 +112,88 @@ class TicketComentarioController extends Controller
 
 
         /*
-         * Guardar archivo.
-         */
+        |--------------------------------------------------------------------------
+        | GUARDAR ARCHIVO
+        |--------------------------------------------------------------------------
+        */
+
         $archivo = null;
 
         if ($request->hasFile('archivo')) {
 
-            $archivo =
-                $request
-                    ->file('archivo')
-                    ->store(
-                        'comentarios_tickets',
-                        'public'
-                    );
+            $archivo = $request
+                ->file('archivo')
+                ->store(
+                    'comentarios_tickets',
+                    'public'
+                );
         }
 
 
         /*
-         * Crear comentario.
-         */
-        $comentario =
-            TicketComentario::create([
+        |--------------------------------------------------------------------------
+        | CREAR COMENTARIO
+        |--------------------------------------------------------------------------
+        */
 
-                'ticket_id' =>
-                    $ticket->id,
+        $comentario = TicketComentario::create([
 
-                'usuario_id' =>
-                    auth()->id(),
+            'ticket_id' =>
+                $ticket->id,
 
-                'mensaje' =>
-                    $request->input('mensaje'),
+            'usuario_id' =>
+                Auth::id(),
 
-                'archivo' =>
-                    $archivo,
+            'mensaje' =>
+                $request->input('mensaje'),
 
-            ]);
+            'archivo' =>
+                $archivo,
 
-
-        /*
-         * IMPORTANTE:
-         *
-         * Recargar desde BD.
-         *
-         * Así nos aseguramos de tener:
-         * - ID real
-         * - created_at real
-         * - usuario real
-         */
-        $comentario =
-            TicketComentario::query()
-                ->whereKey($comentario->id)
-                ->with('usuario')
-                ->firstOrFail();
+        ]);
 
 
         /*
-         * Respuesta AJAX.
-         */
+        |--------------------------------------------------------------------------
+        | RECARGAR COMENTARIO
+        |--------------------------------------------------------------------------
+        */
+
+        $comentario = TicketComentario::query()
+            ->whereKey($comentario->id)
+            ->with('usuario')
+            ->firstOrFail();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR NOTIFICACIONES
+        |--------------------------------------------------------------------------
+        |
+        | Se notifica a los demás involucrados en el ticket.
+        |
+        | Usuario comenta:
+        |   -> Notificar al técnico.
+        |
+        | Técnico comenta:
+        |   -> Notificar al usuario dueño del ticket.
+        |
+        | Nunca se notifica al usuario que acaba de comentar.
+        |
+        */
+
+        $this->notificarComentario(
+            $ticket,
+            $comentario
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPUESTA AJAX
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->expectsJson()) {
 
             return response()->json([
@@ -178,9 +203,6 @@ class TicketComentarioController extends Controller
                 'message' =>
                     'Comentario agregado correctamente.',
 
-                /*
-                 * Este es EL comentario recién creado.
-                 */
                 'comentario' =>
                     $this->formatearComentario(
                         $comentario
@@ -202,8 +224,11 @@ class TicketComentarioController extends Controller
 
 
         /*
-         * Petición normal.
-         */
+        |--------------------------------------------------------------------------
+        | PETICIÓN NORMAL
+        |--------------------------------------------------------------------------
+        */
+
         return back()->with(
             'success',
             'Comentario agregado correctamente.'
@@ -213,17 +238,178 @@ class TicketComentarioController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | FORMATEAR COMENTARIO
+    | NOTIFICAR COMENTARIO
     |--------------------------------------------------------------------------
-    |
-    | Utilizamos exactamente la misma estructura tanto para:
-    |
-    | GET /comentarios
-    |
-    | como para:
-    |
-    | POST /comentarios
-    |
+    */
+
+    private function notificarComentario(
+        TicketU $ticket,
+        TicketComentario $comentario
+    ) {
+
+        $usuarioActualId = Auth::id();
+
+        /*
+        |--------------------------------------------------------------------------
+        | RECARGAR TICKET
+        |--------------------------------------------------------------------------
+        */
+
+        $ticket->loadMissing([
+            'user',
+            'tomadoPor',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | USUARIOS QUE PUEDEN RECIBIR LA NOTIFICACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        $usuariosNotificar = collect();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DUEÑO DEL TICKET
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !is_null($ticket->user_id) &&
+            (int) $ticket->user_id !== (int) $usuarioActualId
+        ) {
+
+            $usuariosNotificar->push([
+                'id' => $ticket->user_id,
+
+                'url' => route(
+                    'ticketusuario'
+                ),
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TÉCNICO QUE TOMÓ EL TICKET
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !is_null($ticket->tomado_por) &&
+            (int) $ticket->tomado_por !== (int) $usuarioActualId
+        ) {
+
+            $usuariosNotificar->push([
+                'id' => $ticket->tomado_por,
+
+                'url' => route(
+                    'tickettecnologias'
+                ),
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR DUPLICADOS
+        |--------------------------------------------------------------------------
+        */
+
+        $usuariosNotificar = $usuariosNotificar
+            ->unique('id')
+            ->values();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MENSAJE DE NOTIFICACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        $nombreUsuario =
+            $comentario->usuario?->name
+            ?? 'Un usuario';
+
+
+        $mensaje =
+            $comentario->mensaje
+            ? $comentario->mensaje
+            : 'Se adjuntó un archivo al comentario.';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR NOTIFICACIONES
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            $usuariosNotificar
+            as $destinatario
+        ) {
+
+            /*
+             * Seguridad adicional:
+             *
+             * Nunca crear una notificación
+             * para quien hizo el comentario.
+             */
+
+            if (
+                (int) $destinatario['id'] ===
+                (int) $usuarioActualId
+            ) {
+                continue;
+            }
+
+
+            Notificacion::create([
+
+                'user_id' =>
+                    $destinatario['id'],
+
+                'tipo' =>
+                    'comentario',
+
+                'titulo' =>
+                    'Nuevo comentario en ticket ' .
+                    $ticket->folio,
+
+                'mensaje' =>
+                    $nombreUsuario .
+                    ': ' .
+                    $mensaje,
+
+                'url' =>
+                    $destinatario['url'],
+
+                'leida' =>
+                    false,
+
+                /*
+                 * Si tu tabla tiene estas columnas,
+                 * puedes dejarlas.
+                 *
+                 * Si NO existen en tu tabla,
+                 * elimina estas dos líneas.
+                 */
+
+                'icono' =>
+                    'message-circle',
+
+                'color' =>
+                    'blue',
+            ]);
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORMATEAR COMENTARIO
     |--------------------------------------------------------------------------
     */
 
@@ -271,30 +457,33 @@ class TicketComentarioController extends Controller
                     : null,
 
             'usuario' =>
-    $comentario->usuario
-        ? [
-            'id' =>
-                $comentario->usuario->id,
+                $comentario->usuario
+                    ? [
 
-            'name' =>
-                $comentario->usuario->name,
+                        'id' =>
+                            $comentario->usuario->id,
 
-            'rol' =>
-                $comentario->usuario->rol ??
-                'Usuario',
+                        'name' =>
+                            $comentario->usuario->name,
 
-            'foto' =>
-                $comentario->usuario->foto
-                    ? Storage::url(
-                        $comentario->usuario->foto
-                    )
+                        'rol' =>
+                            $comentario->usuario->rol ??
+                            'Usuario',
+
+                        'foto' =>
+                            $comentario->usuario->foto
+                                ? Storage::url(
+                                    $comentario->usuario->foto
+                                )
+                                : null,
+
+                    ]
                     : null,
-        ]
-        : null,
 
             /*
              * Fecha original de BD.
              */
+
             'created_at' =>
                 $comentario->created_at
                     ? $comentario->created_at
@@ -304,6 +493,7 @@ class TicketComentarioController extends Controller
             /*
              * Fecha para mostrar.
              */
+
             'fecha' =>
                 $comentario->created_at
                     ? $comentario->created_at
@@ -311,7 +501,6 @@ class TicketComentarioController extends Controller
                             'd M Y h:i A'
                         )
                     : null,
-
         ];
     }
 }

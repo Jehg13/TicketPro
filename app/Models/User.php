@@ -49,4 +49,9 @@ public function solicitudesRevisadas()
 {
     return $this->hasMany(SolicitudCambio::class, 'revisado_por');
 }
+
+public function notificaciones()
+{
+    return $this->hasMany(Notificacion::class);
+}
 }

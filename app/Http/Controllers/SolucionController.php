@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Solucion;
 use App\Models\TicketU;
+use App\Models\Notificacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -58,6 +59,12 @@ class SolucionController extends Controller
             ],
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFICAR SI YA TIENE SOLUCIÓN
+        |--------------------------------------------------------------------------
+        */
+
         if ($ticket->solucion_id) {
             return response()->json([
                 'success' => false,
@@ -65,6 +72,12 @@ class SolucionController extends Controller
                     'Este ticket ya tiene una solución o cancelación registrada.',
             ], 422);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR FIRMA
+        |--------------------------------------------------------------------------
+        */
 
         $firmaBase64 = $request->input('firma');
 
@@ -101,6 +114,12 @@ class SolucionController extends Controller
             ], 422);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | GUARDAR FIRMA
+        |--------------------------------------------------------------------------
+        */
+
         $nombreArchivo =
             'firma_' .
             $ticket->id .
@@ -126,6 +145,12 @@ class SolucionController extends Controller
             ], 500);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | DETERMINAR ESTADO
+        |--------------------------------------------------------------------------
+        */
+
         $problemaSolucionado =
             $request->boolean(
                 'problema_solucionado'
@@ -136,13 +161,21 @@ class SolucionController extends Controller
                 ? 'solucionado'
                 : 'cancelado';
 
+        /*
+        |--------------------------------------------------------------------------
+        | GUARDAR EVIDENCIAS
+        |--------------------------------------------------------------------------
+        */
+
         $evidencias = [];
 
         if ($request->hasFile('evidencias')) {
+
             foreach (
                 $request->file('evidencias')
                 as $archivo
             ) {
+
                 if (!$archivo->isValid()) {
                     continue;
                 }
@@ -178,6 +211,12 @@ class SolucionController extends Controller
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR SOLUCIÓN
+        |--------------------------------------------------------------------------
+        */
+
         $solucion = Solucion::create([
             'ticket_id' =>
                 $ticket->id,
@@ -207,6 +246,12 @@ class SolucionController extends Controller
                 $evidencias,
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR TICKET
+        |--------------------------------------------------------------------------
+        */
+
         $ticket->update([
             'solucion_id' =>
                 $solucion->id,
@@ -215,12 +260,91 @@ class SolucionController extends Controller
                 $estado,
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR NOTIFICACIÓN PARA EL USUARIO DEL TICKET
+        |--------------------------------------------------------------------------
+        |
+        | El ticket tiene un user_id que corresponde al usuario
+        | que creó el ticket.
+        |
+        */
+
+        if ($ticket->user_id) {
+
+            $tituloNotificacion =
+                $problemaSolucionado
+                    ? 'Ticket solucionado'
+                    : 'Ticket cancelado';
+
+            $mensajeNotificacion =
+                $problemaSolucionado
+                    ? "Tu ticket #{$ticket->folio} fue solucionado correctamente."
+                    : "Tu ticket #{$ticket->folio} fue cancelado.";
+
+            /*
+            |--------------------------------------------------------------------------
+            | IMPORTANTE
+            |--------------------------------------------------------------------------
+            |
+            | Aquí puedes cambiar la URL cuando tengas la ruta específica
+            | para abrir directamente el ticket del usuario.
+            |
+            */
+
+            $urlNotificacion = route(
+                'ticketusuario.detalles',
+                $ticket->id
+            );
+
+            Notificacion::create([
+                'user_id' =>
+                    $ticket->user_id,
+
+                'tipo' =>
+                    $problemaSolucionado
+                        ? 'ticket_solucionado'
+                        : 'ticket_cancelado',
+
+                'titulo' =>
+                    $tituloNotificacion,
+
+                'mensaje' =>
+                    $mensajeNotificacion,
+
+                'url' =>
+                    $urlNotificacion,
+
+                'leida' =>
+                    false,
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR MODELOS
+        |--------------------------------------------------------------------------
+        */
+
         $ticket->refresh();
+
         $solucion->refresh();
+
+        /*
+        |--------------------------------------------------------------------------
+        | URL DE FIRMA
+        |--------------------------------------------------------------------------
+        */
 
         $urlFirma =
             Storage::disk('public')
                 ->url($rutaFirma);
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPUESTA
+        |--------------------------------------------------------------------------
+        */
 
         return response()->json([
             'success' => true,

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\TicketU;
+use App\Models\Notificacion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TecnologiasController extends Controller
 {
@@ -12,19 +14,79 @@ class TecnologiasController extends Controller
 
     public function index(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | USUARIO ACTUAL
+        |--------------------------------------------------------------------------
+        */
+
+        $usuario = Auth::user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | NOTIFICACIONES
+        |--------------------------------------------------------------------------
+        |
+        | Obtenemos únicamente las notificaciones pertenecientes
+        | al usuario de tecnologías.
+        |
+        | Se excluyen las notificaciones relacionadas con avisos.
+        |
+        */
+
+        $notificaciones = Notificacion::where(
+            'user_id',
+            $usuario->id
+        )
+            ->where('tipo', '!=', 'aviso')
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        $notificacionesNoLeidas = Notificacion::where(
+            'user_id',
+            $usuario->id
+        )
+            ->where('tipo', '!=', 'aviso')
+            ->where('leida', false)
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | FECHAS
+        |--------------------------------------------------------------------------
+        */
+
         $ahora = Carbon::now($this->timezone);
 
-        [$fechaInicio, $fechaFin] = $this->obtenerRangoFiltro($request);
+        [$fechaInicio, $fechaFin] =
+            $this->obtenerRangoFiltro($request);
 
-        $rangoActivo = $fechaInicio && $fechaFin;
+        $rangoActivo =
+            $fechaInicio &&
+            $fechaFin;
 
-        $inicioFiltroUTC = $rangoActivo
-            ? $fechaInicio->copy()->startOfDay()->utc()
-            : null;
+        $inicioFiltroUTC =
+            $rangoActivo
+                ? $fechaInicio
+                    ->copy()
+                    ->startOfDay()
+                    ->utc()
+                : null;
 
-        $finFiltroUTC = $rangoActivo
-            ? $fechaFin->copy()->endOfDay()->utc()
-            : null;
+        $finFiltroUTC =
+            $rangoActivo
+                ? $fechaFin
+                    ->copy()
+                    ->endOfDay()
+                    ->utc()
+                : null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | QUERY BASE
+        |--------------------------------------------------------------------------
+        */
 
         $baseQuery = function () use (
             $rangoActivo,
@@ -34,34 +96,67 @@ class TecnologiasController extends Controller
             $query = TicketU::query();
 
             if ($rangoActivo) {
-                $query->whereBetween('ticket_u_s.created_at', [
-                    $inicioFiltroUTC,
-                    $finFiltroUTC
-                ]);
+                $query->whereBetween(
+                    'ticket_u_s.created_at',
+                    [
+                        $inicioFiltroUTC,
+                        $finFiltroUTC
+                    ]
+                );
             }
 
             return $query;
         };
 
-        $totalTickets = $baseQuery()->count();
+        /*
+        |--------------------------------------------------------------------------
+        | ESTADÍSTICAS PRINCIPALES
+        |--------------------------------------------------------------------------
+        */
 
-        $ticketsPendientes = $baseQuery()
-            ->where('estado', 'pendiente')
-            ->count();
+        $totalTickets =
+            $baseQuery()->count();
 
-        $ticketsResueltos = $baseQuery()
-            ->where('estado', 'solucionado')
-            ->count();
+        $ticketsPendientes =
+            $baseQuery()
+                ->where(
+                    'estado',
+                    'pendiente'
+                )
+                ->count();
 
-        $ticketsAbiertos = $baseQuery()
-            ->where('estado', 'en proceso')
-            ->count();
+        $ticketsResueltos =
+            $baseQuery()
+                ->where(
+                    'estado',
+                    'solucionado'
+                )
+                ->count();
+
+        $ticketsAbiertos =
+            $baseQuery()
+                ->where(
+                    'estado',
+                    'en proceso'
+                )
+                ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | COMPARACIONES DE PERIODOS
+        |--------------------------------------------------------------------------
+        */
 
         if ($rangoActivo) {
+
             $diasPeriodo =
-                $fechaInicio->copy()->startOfDay()
+                $fechaInicio
+                    ->copy()
+                    ->startOfDay()
                     ->diffInDays(
-                        $fechaFin->copy()->startOfDay()
+                        $fechaFin
+                            ->copy()
+                            ->startOfDay()
                     ) + 1;
 
             $inicioComparacion =
@@ -76,49 +171,87 @@ class TecnologiasController extends Controller
                     ->subDay()
                     ->endOfDay();
 
-            $ticketsMes = $totalTickets;
+            $ticketsMes =
+                $totalTickets;
 
-            $ticketsMesAnterior = TicketU::whereBetween(
-                'ticket_u_s.created_at',
-                [
-                    $inicioComparacion->copy()->utc(),
-                    $finComparacion->copy()->utc()
-                ]
-            )->count();
+            $ticketsMesAnterior =
+                TicketU::whereBetween(
+                    'ticket_u_s.created_at',
+                    [
+                        $inicioComparacion
+                            ->copy()
+                            ->utc(),
 
-            $ticketsSemana = $totalTickets;
+                        $finComparacion
+                            ->copy()
+                            ->utc()
+                    ]
+                )->count();
 
-            $ticketsSemanaAnterior = $ticketsMesAnterior;
+            $ticketsSemana =
+                $totalTickets;
+
+            $ticketsSemanaAnterior =
+                $ticketsMesAnterior;
 
             $inicioSemanaActual =
-                $fechaInicio->copy()->startOfDay();
+                $fechaInicio
+                    ->copy()
+                    ->startOfDay();
 
             $finSemanaActual =
-                $fechaFin->copy()->endOfDay();
+                $fechaFin
+                    ->copy()
+                    ->endOfDay();
 
             $inicioSemanaAnterior =
-                $inicioComparacion->copy();
+                $inicioComparacion
+                    ->copy();
 
             $finSemanaAnterior =
-                $finComparacion->copy();
+                $finComparacion
+                    ->copy();
 
         } else {
+
             $inicioComparacion = null;
             $finComparacion = null;
 
+            /*
+            |--------------------------------------------------------------------------
+            | MES ACTUAL
+            |--------------------------------------------------------------------------
+            */
+
             $inicioMesActual =
-                $ahora->copy()->startOfMonth();
+                $ahora
+                    ->copy()
+                    ->startOfMonth();
 
             $finMesActual =
-                $ahora->copy()->endOfMonth();
+                $ahora
+                    ->copy()
+                    ->endOfMonth();
 
-            $ticketsMes = TicketU::whereBetween(
-                'ticket_u_s.created_at',
-                [
-                    $inicioMesActual->copy()->utc(),
-                    $finMesActual->copy()->utc()
-                ]
-            )->count();
+            $ticketsMes =
+                TicketU::whereBetween(
+                    'ticket_u_s.created_at',
+                    [
+                        $inicioMesActual
+                            ->copy()
+                            ->utc(),
+
+                        $finMesActual
+                            ->copy()
+                            ->utc()
+                    ]
+                )->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | MES ANTERIOR
+            |--------------------------------------------------------------------------
+            */
 
             $inicioMesAnterior =
                 $ahora
@@ -132,27 +265,55 @@ class TecnologiasController extends Controller
                     ->subMonth()
                     ->endOfMonth();
 
-            $ticketsMesAnterior = TicketU::whereBetween(
-                'ticket_u_s.created_at',
-                [
-                    $inicioMesAnterior->copy()->utc(),
-                    $finMesAnterior->copy()->utc()
-                ]
-            )->count();
+            $ticketsMesAnterior =
+                TicketU::whereBetween(
+                    'ticket_u_s.created_at',
+                    [
+                        $inicioMesAnterior
+                            ->copy()
+                            ->utc(),
+
+                        $finMesAnterior
+                            ->copy()
+                            ->utc()
+                    ]
+                )->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | SEMANA ACTUAL
+            |--------------------------------------------------------------------------
+            */
 
             $inicioSemanaActual =
-                $ahora->copy()->startOfWeek();
+                $ahora
+                    ->copy()
+                    ->startOfWeek();
 
             $finSemanaActual =
-                $ahora->copy()->endOfWeek();
+                $ahora
+                    ->copy()
+                    ->endOfWeek();
 
-            $ticketsSemana = TicketU::whereBetween(
-                'ticket_u_s.created_at',
-                [
-                    $inicioSemanaActual->copy()->utc(),
-                    $finSemanaActual->copy()->utc()
-                ]
-            )->count();
+            $ticketsSemana =
+                TicketU::whereBetween(
+                    'ticket_u_s.created_at',
+                    [
+                        $inicioSemanaActual
+                            ->copy()
+                            ->utc(),
+
+                        $finSemanaActual
+                            ->copy()
+                            ->utc()
+                    ]
+                )->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | SEMANA ANTERIOR
+            |--------------------------------------------------------------------------
+            */
 
             $inicioSemanaAnterior =
                 $ahora
@@ -166,22 +327,40 @@ class TecnologiasController extends Controller
                     ->subWeek()
                     ->endOfWeek();
 
-            $ticketsSemanaAnterior = TicketU::whereBetween(
-                'ticket_u_s.created_at',
-                [
-                    $inicioSemanaAnterior->copy()->utc(),
-                    $finSemanaAnterior->copy()->utc()
-                ]
-            )->count();
+            $ticketsSemanaAnterior =
+                TicketU::whereBetween(
+                    'ticket_u_s.created_at',
+                    [
+                        $inicioSemanaAnterior
+                            ->copy()
+                            ->utc(),
+
+                        $finSemanaAnterior
+                            ->copy()
+                            ->utc()
+                    ]
+                )->count();
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | PORCENTAJE MES
+        |--------------------------------------------------------------------------
+        */
+
         if ($ticketsMesAnterior > 0) {
-            $porcentajeMes = round(
-                (
-                    ($ticketsMes - $ticketsMesAnterior)
-                    / $ticketsMesAnterior
-                ) * 100
-            );
+
+            $porcentajeMes =
+                round(
+                    (
+                        (
+                            $ticketsMes -
+                            $ticketsMesAnterior
+                        )
+                        /
+                        $ticketsMesAnterior
+                    ) * 100
+                );
 
             $textoMes =
                 ($porcentajeMes >= 0 ? '+' : '')
@@ -192,7 +371,9 @@ class TecnologiasController extends Controller
                 $rangoActivo
                     ? 'vs periodo anterior'
                     : 'vs mes pasado';
+
         } else {
+
             $porcentajeMes = null;
 
             $textoMes =
@@ -203,13 +384,25 @@ class TecnologiasController extends Controller
             $subtextoMes = '';
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | PORCENTAJE SEMANA
+        |--------------------------------------------------------------------------
+        */
+
         if ($ticketsSemanaAnterior > 0) {
-            $porcentajeSemana = round(
-                (
-                    ($ticketsSemana - $ticketsSemanaAnterior)
-                    / $ticketsSemanaAnterior
-                ) * 100
-            );
+
+            $porcentajeSemana =
+                round(
+                    (
+                        (
+                            $ticketsSemana -
+                            $ticketsSemanaAnterior
+                        )
+                        /
+                        $ticketsSemanaAnterior
+                    ) * 100
+                );
 
             $textoSemana =
                 ($porcentajeSemana >= 0 ? '+' : '')
@@ -220,7 +413,9 @@ class TecnologiasController extends Controller
                 $rangoActivo
                     ? 'vs periodo anterior'
                     : 'vs semana pasada';
+
         } else {
+
             $porcentajeSemana = null;
 
             $textoSemana =
@@ -231,58 +426,75 @@ class TecnologiasController extends Controller
             $subtextoSemana = '';
         }
 
-        $ticketsAtendidosSemanaActual = TicketU::whereNotNull(
-            'fecha_tomado'
-        )
-            ->whereHas('solucion')
-            ->with('solucion')
-            ->when(
-                $rangoActivo,
-                function ($query) use (
-                    $inicioFiltroUTC,
-                    $finFiltroUTC
-                ) {
-                    $query->whereBetween(
-                        'ticket_u_s.fecha_tomado',
-                        [
-                            $inicioFiltroUTC,
-                            $finFiltroUTC
-                        ]
-                    );
-                },
-                function ($query) use (
-                    $inicioSemanaActual,
-                    $finSemanaActual
-                ) {
-                    $query->whereBetween(
-                        'ticket_u_s.fecha_tomado',
-                        [
-                            $inicioSemanaActual->copy()->utc(),
-                            $finSemanaActual->copy()->utc()
-                        ]
-                    );
-                }
+        /*
+        |--------------------------------------------------------------------------
+        | TICKETS ATENDIDOS ESTA SEMANA
+        |--------------------------------------------------------------------------
+        */
+
+        $ticketsAtendidosSemanaActual =
+            TicketU::whereNotNull(
+                'fecha_tomado'
             )
-            ->get();
+                ->whereHas('solucion')
+                ->with('solucion')
+                ->when(
+                    $rangoActivo,
+                    function ($query) use (
+                        $inicioFiltroUTC,
+                        $finFiltroUTC
+                    ) {
+                        $query->whereBetween(
+                            'ticket_u_s.fecha_tomado',
+                            [
+                                $inicioFiltroUTC,
+                                $finFiltroUTC
+                            ]
+                        );
+                    },
+                    function ($query) use (
+                        $inicioSemanaActual,
+                        $finSemanaActual
+                    ) {
+                        $query->whereBetween(
+                            'ticket_u_s.fecha_tomado',
+                            [
+                                $inicioSemanaActual
+                                    ->copy()
+                                    ->utc(),
+
+                                $finSemanaActual
+                                    ->copy()
+                                    ->utc()
+                            ]
+                        );
+                    }
+                )
+                ->get();
 
         $tiemposSemanaActual =
             $ticketsAtendidosSemanaActual
-                ->map(function ($ticket) {
-                    if (
-                        !$ticket->solucion ||
-                        !$ticket->solucion->fecha_solucion
-                    ) {
-                        return null;
-                    }
+                ->map(
+                    function ($ticket) {
 
-                    return Carbon::parse(
-                        $ticket->fecha_tomado
-                    )->diffInSeconds(
-                        Carbon::parse(
-                            $ticket->solucion->fecha_solucion
-                        )
-                    );
-                })
+                        if (
+                            !$ticket->solucion ||
+                            !$ticket->solucion->fecha_solucion
+                        ) {
+                            return null;
+                        }
+
+                        return Carbon::parse(
+                            $ticket->fecha_tomado
+                        )->diffInSeconds(
+                            Carbon::parse(
+                                $ticket
+                                    ->solucion
+                                    ->fecha_solucion
+                            )
+                        );
+                    }
+                )
                 ->filter();
 
         $promedioSemanaActual =
@@ -290,58 +502,80 @@ class TecnologiasController extends Controller
                 ? $tiemposSemanaActual->avg()
                 : null;
 
-        $ticketsAtendidosSemanaAnterior = TicketU::whereNotNull(
-            'fecha_tomado'
-        )
-            ->whereHas('solucion')
-            ->with('solucion')
-            ->when(
-                $rangoActivo,
-                function ($query) use (
-                    $inicioComparacion,
-                    $finComparacion
-                ) {
-                    $query->whereBetween(
-                        'ticket_u_s.fecha_tomado',
-                        [
-                            $inicioComparacion->copy()->utc(),
-                            $finComparacion->copy()->utc()
-                        ]
-                    );
-                },
-                function ($query) use (
-                    $inicioSemanaAnterior,
-                    $finSemanaAnterior
-                ) {
-                    $query->whereBetween(
-                        'ticket_u_s.fecha_tomado',
-                        [
-                            $inicioSemanaAnterior->copy()->utc(),
-                            $finSemanaAnterior->copy()->utc()
-                        ]
-                    );
-                }
+        /*
+        |--------------------------------------------------------------------------
+        | TICKETS ATENDIDOS SEMANA ANTERIOR
+        |--------------------------------------------------------------------------
+        */
+
+        $ticketsAtendidosSemanaAnterior =
+            TicketU::whereNotNull(
+                'fecha_tomado'
             )
-            ->get();
+                ->whereHas('solucion')
+                ->with('solucion')
+                ->when(
+                    $rangoActivo,
+                    function ($query) use (
+                        $inicioComparacion,
+                        $finComparacion
+                    ) {
+                        $query->whereBetween(
+                            'ticket_u_s.fecha_tomado',
+                            [
+                                $inicioComparacion
+                                    ->copy()
+                                    ->utc(),
+
+                                $finComparacion
+                                    ->copy()
+                                    ->utc()
+                            ]
+                        );
+                    },
+                    function ($query) use (
+                        $inicioSemanaAnterior,
+                        $finSemanaAnterior
+                    ) {
+                        $query->whereBetween(
+                            'ticket_u_s.fecha_tomado',
+                            [
+                                $inicioSemanaAnterior
+                                    ->copy()
+                                    ->utc(),
+
+                                $finSemanaAnterior
+                                    ->copy()
+                                    ->utc()
+                            ]
+                        );
+                    }
+                )
+                ->get();
 
         $tiemposSemanaAnterior =
             $ticketsAtendidosSemanaAnterior
-                ->map(function ($ticket) {
-                    if (
-                        !$ticket->solucion ||
-                        !$ticket->solucion->fecha_solucion
-                    ) {
-                        return null;
-                    }
+                ->map(
+                    function ($ticket) {
 
-                    return Carbon::parse(
-                        $ticket->fecha_tomado
-                    )->diffInSeconds(
-                        Carbon::parse(
-                            $ticket->solucion->fecha_solucion
-                        )
-                    );
-                })
+                        if (
+                            !$ticket->solucion ||
+                            !$ticket->solucion->fecha_solucion
+                        ) {
+                            return null;
+                        }
+
+                        return Carbon::parse(
+                            $ticket->fecha_tomado
+                        )->diffInSeconds(
+                            Carbon::parse(
+                                $ticket
+                                    ->solucion
+                                    ->fecha_solucion
+                            )
+                        );
+                    }
+                )
                 ->filter();
 
         $promedioSemanaAnterior =
@@ -349,34 +583,59 @@ class TecnologiasController extends Controller
                 ? $tiemposSemanaAnterior->avg()
                 : null;
 
-        if ($promedioSemanaActual !== null) {
-            $horas = floor(
-                $promedioSemanaActual / 3600
-            );
+        /*
+        |--------------------------------------------------------------------------
+        | TIEMPO PROMEDIO
+        |--------------------------------------------------------------------------
+        */
 
-            $minutos = floor(
-                ($promedioSemanaActual % 3600) / 60
-            );
+        if ($promedioSemanaActual !== null) {
+
+            $horas =
+                floor(
+                    $promedioSemanaActual / 3600
+                );
+
+            $minutos =
+                floor(
+                    (
+                        $promedioSemanaActual % 3600
+                    ) / 60
+                );
 
             $tiempoPromedio =
                 $horas . 'h ' .
                 $minutos . 'm';
+
         } else {
-            $tiempoPromedio = 'Sin datos';
+
+            $tiempoPromedio =
+                'Sin datos';
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | PORCENTAJE TIEMPO
+        |--------------------------------------------------------------------------
+        */
 
         if (
             $promedioSemanaAnterior !== null &&
             $promedioSemanaActual !== null &&
             $promedioSemanaAnterior > 0
         ) {
-            $porcentajeTiempo = round(
-                (
-                    ($promedioSemanaActual -
-                        $promedioSemanaAnterior)
-                    / $promedioSemanaAnterior
-                ) * 100
-            );
+
+            $porcentajeTiempo =
+                round(
+                    (
+                        (
+                            $promedioSemanaActual -
+                            $promedioSemanaAnterior
+                        )
+                        /
+                        $promedioSemanaAnterior
+                    ) * 100
+                );
 
             $textoTiempo =
                 ($porcentajeTiempo >= 0 ? '+' : '')
@@ -387,7 +646,9 @@ class TecnologiasController extends Controller
                 $rangoActivo
                     ? 'vs periodo anterior'
                     : 'vs semana pasada';
+
         } else {
+
             $porcentajeTiempo = null;
 
             $textoTiempo =
@@ -398,26 +659,45 @@ class TecnologiasController extends Controller
             $subtextoTiempo = '';
         }
 
-        $quejasRecurrentes = $baseQuery()
-            ->select('tipo_falla')
-            ->selectRaw('COUNT(*) as total')
-            ->whereNotNull('tipo_falla')
-            ->where('tipo_falla', '!=', '')
-            ->groupBy('tipo_falla')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
+        /*
+        |--------------------------------------------------------------------------
+        | QUEJAS RECURRENTES
+        |--------------------------------------------------------------------------
+        */
+
+        $quejasRecurrentes =
+            $baseQuery()
+                ->select('tipo_falla')
+                ->selectRaw(
+                    'COUNT(*) as total'
+                )
+                ->whereNotNull('tipo_falla')
+                ->where(
+                    'tipo_falla',
+                    '!=',
+                    ''
+                )
+                ->groupBy('tipo_falla')
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get();
 
         $maxQuejas =
             $quejasRecurrentes->max('total') ?? 0;
 
         $quejasRecurrentes =
             $quejasRecurrentes->map(
-                function ($queja) use ($maxQuejas) {
+                function ($queja) use (
+                    $maxQuejas
+                ) {
+
                     $queja->porcentaje =
                         $maxQuejas > 0
                             ? round(
-                                ($queja->total / $maxQuejas) * 100,
+                                (
+                                    $queja->total /
+                                    $maxQuejas
+                                ) * 100,
                                 1
                             )
                             : 0;
@@ -426,31 +706,48 @@ class TecnologiasController extends Controller
                 }
             );
 
-        $equipos = $baseQuery()
-            ->select('equipo')
-            ->selectRaw(
-                'COUNT(*) as fallas'
-            )
-            ->selectRaw(
-                'MIN(ticket_u_s.created_at) as primera_incidencia'
-            )
-            ->selectRaw(
-                'MAX(ticket_u_s.created_at) as ultima_incidencia'
-            )
-            ->whereNotNull('equipo')
-            ->where('equipo', '!=', '')
-            ->groupBy('equipo')
-            ->orderByDesc('fallas')
-            ->orderBy('primera_incidencia')
-            ->limit(5)
-            ->get();
+        /*
+        |--------------------------------------------------------------------------
+        | EQUIPOS
+        |--------------------------------------------------------------------------
+        */
+
+        $equipos =
+            $baseQuery()
+                ->select('equipo')
+                ->selectRaw(
+                    'COUNT(*) as fallas'
+                )
+                ->selectRaw(
+                    'MIN(ticket_u_s.created_at) as primera_incidencia'
+                )
+                ->selectRaw(
+                    'MAX(ticket_u_s.created_at) as ultima_incidencia'
+                )
+                ->whereNotNull('equipo')
+                ->where(
+                    'equipo',
+                    '!=',
+                    ''
+                )
+                ->groupBy('equipo')
+                ->orderByDesc('fallas')
+                ->orderBy(
+                    'primera_incidencia'
+                )
+                ->limit(5)
+                ->get();
 
         $equipos =
             $equipos->map(
                 function ($equipo) {
-                    $nombre = strtoupper(
-                        trim($equipo->equipo)
-                    );
+
+                    $nombre =
+                        strtoupper(
+                            trim(
+                                $equipo->equipo
+                            )
+                        );
 
                     if (
                         str_starts_with(
@@ -458,33 +755,56 @@ class TecnologiasController extends Controller
                             'PC-'
                         )
                     ) {
-                        $equipo->tipo = 'Desktop';
-                        $equipo->icono = 'monitor';
+
+                        $equipo->tipo =
+                            'Desktop';
+
+                        $equipo->icono =
+                            'monitor';
+
                     } elseif (
                         str_starts_with(
                             $nombre,
                             'LAP-'
                         )
                     ) {
-                        $equipo->tipo = 'Laptop';
-                        $equipo->icono = 'laptop';
+
+                        $equipo->tipo =
+                            'Laptop';
+
+                        $equipo->icono =
+                            'laptop';
+
                     } elseif (
                         str_starts_with(
                             $nombre,
                             'IMP-'
                         )
                     ) {
-                        $equipo->tipo = 'Impresora';
-                        $equipo->icono = 'printer';
+
+                        $equipo->tipo =
+                            'Impresora';
+
+                        $equipo->icono =
+                            'printer';
+
                     } else {
-                        $equipo->tipo = 'Equipo';
-                        $equipo->icono = 'monitor';
+
+                        $equipo->tipo =
+                            'Equipo';
+
+                        $equipo->icono =
+                            'monitor';
                     }
 
-                    if ($equipo->ultima_incidencia) {
+                    if (
+                        $equipo->ultima_incidencia
+                    ) {
+
                         $equipo->ultima_incidencia =
                             Carbon::parse(
-                                $equipo->ultima_incidencia
+                                $equipo
+                                    ->ultima_incidencia
                             )->setTimezone(
                                 $this->timezone
                             );
@@ -497,39 +817,46 @@ class TecnologiasController extends Controller
         $equipoMayorRecurrencia =
             $equipos->first();
 
-        $ubicaciones = $baseQuery()
-            ->join(
-                'users',
-                'ticket_u_s.user_id',
-                '=',
-                'users.id'
-            )
-            ->join(
-                'departamentos',
-                'users.departamento_id',
-                '=',
-                'departamentos.id'
-            )
-            ->join(
-                'oficinas',
-                'departamentos.oficina_id',
-                '=',
-                'oficinas.id'
-            )
-            ->select(
-                'oficinas.id',
-                'oficinas.nombre'
-            )
-            ->selectRaw(
-                'COUNT(ticket_u_s.id) as total'
-            )
-            ->groupBy(
-                'oficinas.id',
-                'oficinas.nombre'
-            )
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
+        /*
+        |--------------------------------------------------------------------------
+        | UBICACIONES
+        |--------------------------------------------------------------------------
+        */
+
+        $ubicaciones =
+            $baseQuery()
+                ->join(
+                    'users',
+                    'ticket_u_s.user_id',
+                    '=',
+                    'users.id'
+                )
+                ->join(
+                    'departamentos',
+                    'users.departamento_id',
+                    '=',
+                    'departamentos.id'
+                )
+                ->join(
+                    'oficinas',
+                    'departamentos.oficina_id',
+                    '=',
+                    'oficinas.id'
+                )
+                ->select(
+                    'oficinas.id',
+                    'oficinas.nombre'
+                )
+                ->selectRaw(
+                    'COUNT(ticket_u_s.id) as total'
+                )
+                ->groupBy(
+                    'oficinas.id',
+                    'oficinas.nombre'
+                )
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get();
 
         $maxUbicaciones =
             $ubicaciones->max('total') ?? 0;
@@ -539,12 +866,13 @@ class TecnologiasController extends Controller
                 function ($ubicacion) use (
                     $maxUbicaciones
                 ) {
+
                     $ubicacion->porcentaje =
                         $maxUbicaciones > 0
                             ? round(
                                 (
-                                    $ubicacion->total
-                                    / $maxUbicaciones
+                                    $ubicacion->total /
+                                    $maxUbicaciones
                                 ) * 100,
                                 1
                             )
@@ -554,6 +882,12 @@ class TecnologiasController extends Controller
                 }
             );
 
+        /*
+        |--------------------------------------------------------------------------
+        | EVOLUCIÓN DE TICKETS
+        |--------------------------------------------------------------------------
+        */
+
         $datosEvolucion =
             $this->obtenerEvolucion(
                 'semana',
@@ -561,9 +895,34 @@ class TecnologiasController extends Controller
                 $fechaFin
             );
 
+        /*
+        |--------------------------------------------------------------------------
+        | VISTA
+        |--------------------------------------------------------------------------
+        */
+
         return view(
             'admin.index',
             [
+
+                /*
+                |--------------------------------------------------------------------------
+                | NOTIFICACIONES
+                |--------------------------------------------------------------------------
+                */
+
+                'notificaciones' =>
+                    $notificaciones,
+
+                'notificacionesNoLeidas' =>
+                    $notificacionesNoLeidas,
+
+                /*
+                |--------------------------------------------------------------------------
+                | TICKETS
+                |--------------------------------------------------------------------------
+                */
+
                 'totalTickets' =>
                     $totalTickets,
 
@@ -575,6 +934,12 @@ class TecnologiasController extends Controller
 
                 'ticketsAbiertos' =>
                     $ticketsAbiertos,
+
+                /*
+                |--------------------------------------------------------------------------
+                | MES
+                |--------------------------------------------------------------------------
+                */
 
                 'ticketsMes' =>
                     $ticketsMes,
@@ -588,6 +953,12 @@ class TecnologiasController extends Controller
                 'porcentajeMes' =>
                     $porcentajeMes,
 
+                /*
+                |--------------------------------------------------------------------------
+                | SEMANA
+                |--------------------------------------------------------------------------
+                */
+
                 'ticketsSemana' =>
                     $ticketsSemana,
 
@@ -599,6 +970,12 @@ class TecnologiasController extends Controller
 
                 'porcentajeSemana' =>
                     $porcentajeSemana,
+
+                /*
+                |--------------------------------------------------------------------------
+                | TIEMPO
+                |--------------------------------------------------------------------------
+                */
 
                 'tiempoPromedio' =>
                     $tiempoPromedio,
@@ -612,8 +989,20 @@ class TecnologiasController extends Controller
                 'porcentajeTiempo' =>
                     $porcentajeTiempo,
 
+                /*
+                |--------------------------------------------------------------------------
+                | QUEJAS
+                |--------------------------------------------------------------------------
+                */
+
                 'quejasRecurrentes' =>
                     $quejasRecurrentes,
+
+                /*
+                |--------------------------------------------------------------------------
+                | EQUIPOS
+                |--------------------------------------------------------------------------
+                */
 
                 'equipos' =>
                     $equipos,
@@ -621,8 +1010,20 @@ class TecnologiasController extends Controller
                 'equipoMayorRecurrencia' =>
                     $equipoMayorRecurrencia,
 
+                /*
+                |--------------------------------------------------------------------------
+                | UBICACIONES
+                |--------------------------------------------------------------------------
+                */
+
                 'ubicaciones' =>
                     $ubicaciones,
+
+                /*
+                |--------------------------------------------------------------------------
+                | EVOLUCIÓN
+                |--------------------------------------------------------------------------
+                */
 
                 'evolucionTickets' =>
                     $datosEvolucion['datos'],
@@ -680,20 +1081,29 @@ class TecnologiasController extends Controller
     private function obtenerRangoFiltro(
         Request $request
     ): array {
+
         $fechaInicioInput =
-            $request->input('fecha_inicio');
+            $request->input(
+                'fecha_inicio'
+            );
 
         $fechaFinInput =
-            $request->input('fecha_fin');
+            $request->input(
+                'fecha_fin'
+            );
 
         if (
             !$fechaInicioInput &&
             !$fechaFinInput
         ) {
-            return [null, null];
+            return [
+                null,
+                null
+            ];
         }
 
         try {
+
             $fechaInicio =
                 $fechaInicioInput
                     ? Carbon::createFromFormat(
@@ -712,14 +1122,22 @@ class TecnologiasController extends Controller
                     )->endOfDay()
                     : null;
 
-            if (!$fechaInicio && $fechaFin) {
+            if (
+                !$fechaInicio &&
+                $fechaFin
+            ) {
+
                 $fechaInicio =
                     $fechaFin
                         ->copy()
                         ->startOfDay();
             }
 
-            if ($fechaInicio && !$fechaFin) {
+            if (
+                $fechaInicio &&
+                !$fechaFin
+            ) {
+
                 $fechaFin =
                     $fechaInicio
                         ->copy()
@@ -733,8 +1151,14 @@ class TecnologiasController extends Controller
                     $fechaFin
                 )
             ) {
-                [$fechaInicio, $fechaFin] =
-                    [$fechaFin, $fechaInicio];
+
+                [
+                    $fechaInicio,
+                    $fechaFin
+                ] = [
+                    $fechaFin,
+                    $fechaInicio
+                ];
 
                 $fechaInicio->startOfDay();
                 $fechaFin->endOfDay();
@@ -746,7 +1170,11 @@ class TecnologiasController extends Controller
             ];
 
         } catch (\Throwable $e) {
-            return [null, null];
+
+            return [
+                null,
+                null
+            ];
         }
     }
 
@@ -755,6 +1183,7 @@ class TecnologiasController extends Controller
         ?Carbon $fechaInicio = null,
         ?Carbon $fechaFin = null
     ): array {
+
         $ahora =
             Carbon::now(
                 $this->timezone
@@ -765,6 +1194,7 @@ class TecnologiasController extends Controller
             $fechaFin;
 
         if ($filtroActivo) {
+
             $inicio =
                 $fechaInicio
                     ->copy()
@@ -779,35 +1209,53 @@ class TecnologiasController extends Controller
                 TicketU::whereBetween(
                     'ticket_u_s.created_at',
                     [
-                        $inicio->copy()->utc(),
-                        $fin->copy()->utc()
+                        $inicio
+                            ->copy()
+                            ->utc(),
+
+                        $fin
+                            ->copy()
+                            ->utc()
                     ]
                 )->get([
                     'ticket_u_s.created_at'
                 ]);
 
-            if ($periodo === 'hoy') {
+            if (
+                $periodo === 'hoy'
+            ) {
+
                 $datos =
                     $this->agruparPorHora(
                         $tickets,
                         $inicio,
                         $fin
                     );
-            } elseif ($periodo === 'mes') {
+
+            } elseif (
+                $periodo === 'mes'
+            ) {
+
                 $datos =
                     $this->agruparPorDia(
                         $tickets,
                         $inicio,
                         $fin
                     );
-            } elseif ($periodo === 'año') {
+
+            } elseif (
+                $periodo === 'año'
+            ) {
+
                 $datos =
                     $this->agruparPorMes(
                         $tickets,
                         $inicio,
                         $fin
                     );
+
             } else {
+
                 $datos =
                     $this->agruparPorDia(
                         $tickets,
@@ -821,7 +1269,10 @@ class TecnologiasController extends Controller
             );
         }
 
-        if ($periodo === 'hoy') {
+        if (
+            $periodo === 'hoy'
+        ) {
+
             $inicio =
                 $ahora
                     ->copy()
@@ -836,8 +1287,13 @@ class TecnologiasController extends Controller
                 TicketU::whereBetween(
                     'ticket_u_s.created_at',
                     [
-                        $inicio->copy()->utc(),
-                        $fin->copy()->utc()
+                        $inicio
+                            ->copy()
+                            ->utc(),
+
+                        $fin
+                            ->copy()
+                            ->utc()
                     ]
                 )->get([
                     'ticket_u_s.created_at'
@@ -850,7 +1306,10 @@ class TecnologiasController extends Controller
                     $fin
                 );
 
-        } elseif ($periodo === 'semana') {
+        } elseif (
+            $periodo === 'semana'
+        ) {
+
             $inicio =
                 $ahora
                     ->copy()
@@ -866,8 +1325,13 @@ class TecnologiasController extends Controller
                 TicketU::whereBetween(
                     'ticket_u_s.created_at',
                     [
-                        $inicio->copy()->utc(),
-                        $fin->copy()->utc()
+                        $inicio
+                            ->copy()
+                            ->utc(),
+
+                        $fin
+                            ->copy()
+                            ->utc()
                     ]
                 )->get([
                     'ticket_u_s.created_at'
@@ -880,7 +1344,10 @@ class TecnologiasController extends Controller
                     $fin
                 );
 
-        } elseif ($periodo === 'mes') {
+        } elseif (
+            $periodo === 'mes'
+        ) {
+
             $inicio =
                 $ahora
                     ->copy()
@@ -895,8 +1362,13 @@ class TecnologiasController extends Controller
                 TicketU::whereBetween(
                     'ticket_u_s.created_at',
                     [
-                        $inicio->copy()->utc(),
-                        $fin->copy()->utc()
+                        $inicio
+                            ->copy()
+                            ->utc(),
+
+                        $fin
+                            ->copy()
+                            ->utc()
                     ]
                 )->get([
                     'ticket_u_s.created_at'
@@ -910,6 +1382,7 @@ class TecnologiasController extends Controller
                 );
 
         } else {
+
             $inicio =
                 $ahora
                     ->copy()
@@ -924,8 +1397,13 @@ class TecnologiasController extends Controller
                 TicketU::whereBetween(
                     'ticket_u_s.created_at',
                     [
-                        $inicio->copy()->utc(),
-                        $fin->copy()->utc()
+                        $inicio
+                            ->copy()
+                            ->utc(),
+
+                        $fin
+                            ->copy()
+                            ->utc()
                     ]
                 )->get([
                     'ticket_u_s.created_at'
@@ -949,9 +1427,11 @@ class TecnologiasController extends Controller
         Carbon $inicio,
         Carbon $fin
     ) {
+
         $totales = [];
 
         foreach ($tickets as $ticket) {
+
             $fecha =
                 Carbon::parse(
                     $ticket->created_at
@@ -968,7 +1448,8 @@ class TecnologiasController extends Controller
                 ($totales[$clave] ?? 0) + 1;
         }
 
-        $datos = collect();
+        $datos =
+            collect();
 
         $cursor =
             $inicio
@@ -981,8 +1462,11 @@ class TecnologiasController extends Controller
                 ->startOfHour();
 
         while (
-            $cursor->lessThanOrEqualTo($limite)
+            $cursor->lessThanOrEqualTo(
+                $limite
+            )
         ) {
+
             $clave =
                 $cursor->format(
                     'Y-m-d H'
@@ -990,7 +1474,9 @@ class TecnologiasController extends Controller
 
             $datos->push([
                 'fecha' =>
-                    $cursor->format('H:00'),
+                    $cursor->format(
+                        'H:00'
+                    ),
 
                 'fecha_completa' =>
                     $cursor->format(
@@ -1012,9 +1498,11 @@ class TecnologiasController extends Controller
         Carbon $inicio,
         Carbon $fin
     ) {
+
         $totales = [];
 
         foreach ($tickets as $ticket) {
+
             $fecha =
                 Carbon::parse(
                     $ticket->created_at
@@ -1031,7 +1519,8 @@ class TecnologiasController extends Controller
                 ($totales[$clave] ?? 0) + 1;
         }
 
-        $datos = collect();
+        $datos =
+            collect();
 
         $cursor =
             $inicio
@@ -1044,8 +1533,11 @@ class TecnologiasController extends Controller
                 ->startOfDay();
 
         while (
-            $cursor->lessThanOrEqualTo($limite)
+            $cursor->lessThanOrEqualTo(
+                $limite
+            )
         ) {
+
             $clave =
                 $cursor->format(
                     'Y-m-d'
@@ -1077,9 +1569,11 @@ class TecnologiasController extends Controller
         Carbon $inicio,
         Carbon $fin
     ) {
+
         $totales = [];
 
         foreach ($tickets as $ticket) {
+
             $fecha =
                 Carbon::parse(
                     $ticket->created_at
@@ -1096,7 +1590,8 @@ class TecnologiasController extends Controller
                 ($totales[$clave] ?? 0) + 1;
         }
 
-        $datos = collect();
+        $datos =
+            collect();
 
         $cursor =
             $inicio
@@ -1109,8 +1604,11 @@ class TecnologiasController extends Controller
                 ->startOfMonth();
 
         while (
-            $cursor->lessThanOrEqualTo($limite)
+            $cursor->lessThanOrEqualTo(
+                $limite
+            )
         ) {
+
             $clave =
                 $cursor->format(
                     'Y-m'
@@ -1140,6 +1638,7 @@ class TecnologiasController extends Controller
     private function calcularMetricas(
         $datos
     ): array {
+
         $datos =
             $datos->map(
                 function ($dato) {
@@ -1156,6 +1655,7 @@ class TecnologiasController extends Controller
                 );
 
         return [
+
             'datos' =>
                 $datos->values(),
 

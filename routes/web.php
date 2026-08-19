@@ -16,6 +16,7 @@ use App\Http\Controllers\SolicitudCambioController;
 use App\Http\Controllers\SolucionController;
 use App\Http\Controllers\TecnologiasController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\NotificacionController;
 use App\Models\User;
 
 /*
@@ -170,6 +171,9 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
    Route::get('/dashboard', [ UsuarioController::class,'index'])
    ->name('dashboard');
 
+       Route::patch('/dashboard/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
+    ->name('notificacionesusuario.marcarLeidas');
+
     Route::get('/dashboard/tickets', [TicketController::class, 'create'])
         ->name('ticketusuario');
 
@@ -206,6 +210,8 @@ Route::middleware(['auth', 'role:tecnologias'])->group(function () {
 
  Route::get('/tecnologias', [TecnologiasController::class, 'index'])
     ->name('tecnologias');
+    Route::patch('/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
+    ->name('notificaciones.marcarLeidas');
 Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
     ->name('tecnologias.evolucion');
 
@@ -226,6 +232,9 @@ Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion']
 
     Route::delete('/tecnologias/avisos/{aviso}', [AvisosController::class, 'destroy'])
         ->name('avisos.destroy');
+
+    Route::get('/tecnologias/avisos/{aviso}', [AvisosController::class, 'show'])
+    ->name('avisos.show');
 
     Route::get(
         '/tecnologias/cambios',

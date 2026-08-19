@@ -7,23 +7,132 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SolicitudCambio;
 use App\Models\User;
+use App\Models\Notificacion;
 
 class PerfilController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | MOSTRAR PERFIL
+    |--------------------------------------------------------------------------
+    */
+
     public function create()
     {
         $user = auth()->user();
 
+        /*
+        |--------------------------------------------------------------------------
+        | NOTIFICACIONES
+        |--------------------------------------------------------------------------
+        |
+        | Tecnologías:
+        |   - NO recibe avisos
+        |   - SÍ recibe solicitudes de cambio
+        |
+        | Usuarios normales:
+        |   - Pueden recibir avisos y demás notificaciones
+        |
+        */
+
+        $queryNotificaciones = Notificacion::where(
+            'user_id',
+            $user->id
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | TECNOLOGÍAS NO DEBE VER NOTIFICACIONES DE AVISOS
+        |--------------------------------------------------------------------------
+        */
+
         if ($user->rol === 'tecnologias') {
-            return view('admin.perfil');
+
+            $queryNotificaciones->where(
+                'tipo',
+                '!=',
+                'aviso'
+            );
         }
 
-        return view('user.perfil');
+        $notificaciones =
+            $queryNotificaciones
+                ->orderByDesc('created_at')
+                ->limit(10)
+                ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONTADOR DE NOTIFICACIONES NO LEÍDAS
+        |--------------------------------------------------------------------------
+        */
+
+        $queryNoLeidas = Notificacion::where(
+            'user_id',
+            $user->id
+        )
+            ->where(
+                'leida',
+                false
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | TECNOLOGÍAS NO CUENTA AVISOS
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->rol === 'tecnologias') {
+
+            $queryNoLeidas->where(
+                'tipo',
+                '!=',
+                'aviso'
+            );
+        }
+
+        $notificacionesNoLeidas =
+            $queryNoLeidas->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VISTA
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->rol === 'tecnologias') {
+
+            return view(
+                'admin.perfil',
+                compact(
+                    'notificaciones',
+                    'notificacionesNoLeidas'
+                )
+            );
+        }
+
+        return view(
+            'user.perfil',
+            compact(
+                'notificaciones',
+                'notificacionesNoLeidas'
+            )
+        );
     }
 
 
-    public function update(Request $request)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | ACTUALIZAR FOTO DE PERFIL
+    |--------------------------------------------------------------------------
+    */
+
+    public function update(
+        Request $request
+    ) {
+
         $request->validate([
             'foto' => [
                 'required',
@@ -32,20 +141,46 @@ class PerfilController extends Controller
                 'max:2048',
             ],
         ]);
-/** @var \App\Models\User $user */
+
+
+        /** @var \App\Models\User $user */
         $user = auth()->user();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR FOTO ANTERIOR
+        |--------------------------------------------------------------------------
+        */
 
         if (
             $user->foto &&
             $user->foto !== 'profile-photos/user.png'
         ) {
-            Storage::disk('public')->delete($user->foto);
+
+            Storage::disk('public')->delete(
+                $user->foto
+            );
         }
 
-        $path = $request->file('foto')
-            ->store('profile-photos', 'public');
+
+        /*
+        |--------------------------------------------------------------------------
+        | GUARDAR NUEVA FOTO
+        |--------------------------------------------------------------------------
+        */
+
+        $path =
+            $request
+                ->file('foto')
+                ->store(
+                    'profile-photos',
+                    'public'
+                );
+
 
         $user->foto = $path;
+
         $user->save();
 
 
@@ -56,19 +191,43 @@ class PerfilController extends Controller
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | ELIMINAR FOTO DE PERFIL
+    |--------------------------------------------------------------------------
+    */
+
     public function delete()
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR FOTO PERSONAL
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $user->foto &&
             $user->foto !== 'profile-photos/user.png'
         ) {
-            Storage::disk('public')->delete($user->foto);
+
+            Storage::disk('public')->delete(
+                $user->foto
+            );
         }
 
-        $user->foto = 'profile-photos/user.png';
+
+        /*
+        |--------------------------------------------------------------------------
+        | COLOCAR FOTO POR DEFECTO
+        |--------------------------------------------------------------------------
+        */
+
+        $user->foto =
+            'profile-photos/user.png';
 
         $user->save();
 
@@ -80,16 +239,42 @@ class PerfilController extends Controller
     }
 
 
-    public function updateTecnologias(Request $request)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | ACTUALIZAR PERFIL DE TECNOLOGÍAS
+    |--------------------------------------------------------------------------
+    */
+
+    public function updateTecnologias(
+        Request $request
+    ) {
+
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if ($user->rol !== 'tecnologias') {
+
+        /*
+        |--------------------------------------------------------------------------
+        | SOLO TECNOLOGÍAS
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $user->rol !== 'tecnologias'
+        ) {
+
             abort(403);
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
+
             'name' => [
                 'required',
                 'string',
@@ -110,15 +295,37 @@ class PerfilController extends Controller
             ],
         ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR USUARIO
+        |--------------------------------------------------------------------------
+        */
+
+        $user->name =
+            $request->name;
+
+        $user->email =
+            $request->email;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR DEPARTAMENTO
+        |--------------------------------------------------------------------------
+        */
 
         if ($user->departamento) {
-            $user->departamento->nombre = $request->departamento;
+
+            $user->departamento->nombre =
+                $request->departamento;
+
             $user->departamento->save();
         }
 
+
         $user->save();
+
 
         return back()->with(
             'success',
@@ -126,60 +333,272 @@ class PerfilController extends Controller
         );
     }
 
-public function solicitarCambio(Request $request)
-{
-    $request->validate([
-        'campo' => 'required|string|in:nombre,correo,oficina,departamento,ubicacion',
-        'nuevo_valor' => 'required|string|max:255',
-        'motivo' => 'required|string|max:1000',
-    ]);
 
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
+    /*
+    |--------------------------------------------------------------------------
+    | SOLICITAR CAMBIO DE PERFIL
+    |--------------------------------------------------------------------------
+    */
 
-    switch ($request->campo) {
+    public function solicitarCambio(
+        Request $request
+    ) {
 
-        case 'nombre':
-            $valorActual = $user->name;
-            break;
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN
+        |--------------------------------------------------------------------------
+        */
 
-        case 'correo':
-            $valorActual = $user->email;
-            break;
+        $request->validate([
 
-        case 'departamento':
-            $valorActual = $user->departamento
-                ? $user->departamento->nombre
-                : null;
-            break;
+            'campo' => [
+                'required',
+                'string',
+                'in:nombre,correo,oficina,departamento,ubicacion',
+            ],
 
-        case 'oficina':
-            $valorActual = $user->departamento && $user->departamento->oficina
-                ? $user->departamento->oficina->nombre
-                : null;
-            break;
+            'nuevo_valor' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        case 'ubicacion':
-            $valorActual = $user->ubicacion;
-            break;
+            'motivo' => [
+                'required',
+                'string',
+                'max:1000',
+            ],
+        ]);
 
-        default:
-            $valorActual = null;
-            break;
+
+        /*
+        |--------------------------------------------------------------------------
+        | USUARIO ACTUAL
+        |--------------------------------------------------------------------------
+        */
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER VALOR ACTUAL
+        |--------------------------------------------------------------------------
+        */
+
+        switch ($request->campo) {
+
+            case 'nombre':
+
+                $valorActual =
+                    $user->name;
+
+                break;
+
+
+            case 'correo':
+
+                $valorActual =
+                    $user->email;
+
+                break;
+
+
+            case 'departamento':
+
+                $valorActual =
+                    $user->departamento
+                        ? $user->departamento->nombre
+                        : null;
+
+                break;
+
+
+            case 'oficina':
+
+                $valorActual =
+                    $user->departamento &&
+                    $user->departamento->oficina
+
+                        ? $user
+                            ->departamento
+                            ->oficina
+                            ->nombre
+
+                        : null;
+
+                break;
+
+
+            case 'ubicacion':
+
+                $valorActual =
+                    $user->ubicacion;
+
+                break;
+
+
+            default:
+
+                $valorActual = null;
+
+                break;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR SOLICITUD
+        |--------------------------------------------------------------------------
+        */
+
+        $solicitud =
+            SolicitudCambio::create([
+
+                'user_id' =>
+                    $user->id,
+
+                'campo' =>
+                    $request->campo,
+
+                'valor_actual' =>
+                    $valorActual,
+
+                'nuevo_valor' =>
+                    $request->nuevo_valor,
+
+                'motivo' =>
+                    $request->motivo,
+
+                'estado' =>
+                    'pendiente',
+            ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER USUARIOS DE TECNOLOGÍAS
+        |--------------------------------------------------------------------------
+        |
+        | Las solicitudes de cambio SÍ se notifican a Tecnologías.
+        |
+        | No se envían a:
+        | - El usuario que realizó la solicitud.
+        |
+        */
+
+        $tecnologias =
+            User::where(
+                'rol',
+                'tecnologias'
+            )
+            ->where(
+                'id',
+                '!=',
+                $user->id
+            )
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NOMBRE DEL CAMPO
+        |--------------------------------------------------------------------------
+        */
+
+        $nombresCampos = [
+
+            'nombre' =>
+                'nombre',
+
+            'correo' =>
+                'correo electrónico',
+
+            'oficina' =>
+                'oficina',
+
+            'departamento' =>
+                'departamento',
+
+            'ubicacion' =>
+                'ubicación',
+        ];
+
+
+        $nombreCampo =
+            $nombresCampos[
+                $request->campo
+            ] ?? $request->campo;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR NOTIFICACIÓN PARA TECNOLOGÍAS
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            $tecnologias
+            as $tecnico
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | ASEGURAR QUE SOLO SEA UNA NOTIFICACIÓN
+            | DE SOLICITUD DE CAMBIO
+            |--------------------------------------------------------------------------
+            */
+
+            Notificacion::create([
+
+                'user_id' =>
+                    $tecnico->id,
+
+                'tipo' =>
+                    'solicitud_cambio',
+
+                'titulo' =>
+                    'Nueva solicitud de cambio',
+
+                'mensaje' =>
+                    $user->name .
+                    ' solicitó cambiar su ' .
+                    $nombreCampo .
+                    '.',
+
+                'url' =>
+                    route(
+                        'cambiostecnologias',
+                        [
+                            'solicitud' =>
+                                $solicitud->id
+                        ]
+                    ),
+
+                'leida' =>
+                    false,
+
+                'icono' =>
+                    'user-cog',
+
+                'color' =>
+                    'blue',
+
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPUESTA
+        |--------------------------------------------------------------------------
+        */
+
+        return back()->with(
+            'success',
+            'Tu solicitud de cambio fue enviada correctamente.'
+        );
     }
-
-    SolicitudCambio::create([
-        'user_id' => $user->id,
-        'campo' => $request->campo,
-        'valor_actual' => $valorActual,
-        'nuevo_valor' => $request->nuevo_valor,
-        'motivo' => $request->motivo,
-        'estado' => 'pendiente',
-    ]);
-
-    return back()->with(
-        'success',
-        'Tu solicitud de cambio fue enviada correctamente.'
-    );
-}
 }

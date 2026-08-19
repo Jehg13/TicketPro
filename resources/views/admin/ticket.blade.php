@@ -198,164 +198,248 @@
                     <div class="flex items-center gap-6">
 
 
-                        {{-- ================================================= --}}
-                        {{-- NOTIFICACIONES --}}
-                        {{-- ================================================= --}}
+                        <!-- =========================================================
+             NOTIFICACIONES
+        ========================================================== -->
 
-                        <div class="relative inline-block text-left">
+                        <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-                            <button id="notif-button" type="button"
-                                class="relative p-2 text-gray-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 group shadow-lg"
-                                aria-label="Ver notificaciones">
+                            <!-- BOTÓN DE NOTIFICACIONES -->
+                            <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                                @click.outside="notificacionesAbiertas = false"
+                                class="relative flex items-center justify-center w-10 h-10 rounded-xl
+                       bg-slate-900/80 border border-slate-800
+                       text-slate-400 hover:text-white hover:bg-slate-800
+                       transition-all duration-200 focus:outline-none">
 
-                                <svg class="w-6 h-6 transition-transform group-hover:scale-110 duration-200"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-
-                                </svg>
+                                <i data-lucide="bell" class="w-5 h-5"></i>
 
 
-                                <span class="absolute top-1.5 right-1.5 flex h-3 w-3">
-
+                                <!-- INDICADOR DE NOTIFICACIONES NUEVAS -->
+                                @if ($notificacionesNoLeidas > 0)
                                     <span
-                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75">
-                                    </span>
+                                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
+                               px-1 flex items-center justify-center
+                               rounded-full bg-indigo-600
+                               border-2 border-[#050814]
+                               text-[9px] font-bold text-white">
 
-                                    <span
-                                        class="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-slate-900">
-                                    </span>
+                                        {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
 
-                                </span>
+                                    </span>
+                                @endif
 
                             </button>
 
 
-                            <div id="notif-dropdown"
-                                class="hidden absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-2xl z-50 overflow-hidden divide-y divide-slate-800">
+                            <!-- =====================================================
+                 DROPDOWN DE NOTIFICACIONES
+            ====================================================== -->
 
-                                <div class="p-4 flex items-center justify-between">
+                            <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                                @click.outside="notificacionesAbiertas = false"
+                                class="absolute right-0 top-full mt-3
+                       w-[360px] max-w-[calc(100vw-2rem)]
+                       bg-[#0f1535]
+                       border border-[#1e295d]
+                       rounded-2xl
+                       shadow-2xl shadow-black/40
+                       overflow-hidden z-[99999]"
+                                style="display: none;">
+
+                                <!-- =================================================
+                     CABECERA
+                ================================================== -->
+
+                                <div
+                                    class="flex items-center justify-between
+                           px-4 py-4
+                           border-b border-slate-800/80">
 
                                     <div class="flex items-center gap-2">
 
-                                        <h3 class="text-sm font-semibold text-white">
-                                            Notificaciones
-                                        </h3>
+                                        <div
+                                            class="w-8 h-8 rounded-lg
+                                   bg-indigo-500/10
+                                   border border-indigo-500/20
+                                   flex items-center justify-center">
 
-                                        <span
-                                            class="px-2 py-0.5 text-xs font-medium bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20">
-                                            3 nuevas
-                                        </span>
+                                            <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
+                                            </i>
+
+                                        </div>
+
+                                        <div>
+
+                                            <h3 class="text-sm font-semibold text-white">
+                                                Notificaciones
+                                            </h3>
+
+                                            <p class="text-[10px] text-slate-500">
+                                                Tienes {{ $notificacionesNoLeidas }} nuevas
+                                            </p>
+
+                                        </div>
 
                                     </div>
 
-                                    <button type="button"
-                                        class="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
 
-                                        Marcar leídas
+                                    <!-- MARCAR COMO LEÍDAS -->
+                                    @if ($notificacionesNoLeidas > 0)
+                                        <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
 
-                                    </button>
+                                            @csrf
 
-                                </div>
+                                            @method('PATCH')
 
+                                            <button type="submit"
+                                                class="text-[11px] font-medium
+                                       text-indigo-400
+                                       hover:text-indigo-300
+                                       transition-colors">
 
-                                <div class="max-h-80 overflow-y-auto divide-y divide-slate-800/50">
+                                                Marcar leídas
 
+                                            </button>
 
-                                    <a href="#"
-                                        class="flex gap-3 p-4 bg-slate-800/40 hover:bg-slate-800/80 transition-colors group">
-
-                                        <div class="relative shrink-0">
-
-                                            <img class="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/30"
-                                                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                                                alt="Avatar">
-
-                                            <span
-                                                class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full">
-                                            </span>
-
-                                        </div>
-
-
-                                        <div class="flex-1 min-w-0">
-
-                                            <p class="text-xs text-slate-300 leading-relaxed">
-
-                                                <strong
-                                                    class="font-semibold text-white group-hover:text-indigo-400 transition-colors">
-                                                    Elena Rostova
-                                                </strong>
-
-                                                comentó en tu proyecto
-
-                                                <span class="text-slate-400">
-                                                    Dashboard UI
-                                                </span>.
-
-                                            </p>
-
-                                            <span class="text-[10px] text-slate-500 mt-1 block">
-                                                Hace 2 minutos
-                                            </span>
-
-                                        </div>
-
-                                        <span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0 self-center">
-                                        </span>
-
-                                    </a>
-
-
-                                    <a href="#"
-                                        class="flex gap-3 p-4 hover:bg-slate-800/50 transition-colors group">
-
-                                        <div
-                                            class="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
-
-                                            </svg>
-
-                                        </div>
-
-
-                                        <div class="flex-1 min-w-0">
-
-                                            <p class="text-xs text-slate-300 leading-relaxed">
-
-                                                Tu despliegue en
-
-                                                <strong class="font-semibold text-white">
-                                                    Vite/Production
-                                                </strong>
-
-                                                se completó con éxito.
-
-                                            </p>
-
-                                            <span class="text-[10px] text-slate-500 mt-1 block">
-                                                Hace 1 hora
-                                            </span>
-
-                                        </div>
-
-                                    </a>
+                                        </form>
+                                    @endif
 
                                 </div>
 
 
-                                <a href="#"
-                                    class="block p-3 text-center text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+                                <!-- =================================================
+                     LISTA DE NOTIFICACIONES
+                ================================================== -->
 
-                                    Ver todas las notificaciones
+                                <div class="max-h-[400px] overflow-y-auto">
 
-                                </a>
+                                    @forelse ($notificaciones as $notificacion)
+                                        <a href="{{ $notificacion->url ?? '#' }}"
+                                            class="group flex gap-3 px-4 py-4
+                                   border-b border-slate-800/50
+                                   transition-colors
+                                   hover:bg-slate-800/40
+                                   {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
+
+                                            <!-- ICONO -->
+                                            <div
+                                                class="w-10 h-10 shrink-0
+                                       rounded-xl
+                                       border border-indigo-500/20
+                                       bg-indigo-500/10
+                                       flex items-center justify-center">
+
+                                                <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                    class="w-5 h-5 text-indigo-400">
+                                                </i>
+
+                                            </div>
+
+
+                                            <!-- CONTENIDO -->
+                                            <div class="flex-1 min-w-0">
+
+                                                <div class="flex items-start justify-between gap-2">
+
+                                                    <p
+                                                        class="text-xs font-semibold
+                                               text-white
+                                               group-hover:text-indigo-400
+                                               transition-colors">
+
+                                                        {{ $notificacion->titulo }}
+
+                                                    </p>
+
+
+                                                    <!-- PUNTO DE NO LEÍDA -->
+                                                    @if (!$notificacion->leida)
+                                                        <span
+                                                            class="w-2 h-2 shrink-0 mt-1.5
+                                                   rounded-full
+                                                   bg-indigo-500">
+                                                        </span>
+                                                    @endif
+
+                                                </div>
+
+
+                                                <p
+                                                    class="mt-1 text-[11px]
+                                           leading-relaxed
+                                           text-slate-400">
+
+                                                    {{ $notificacion->mensaje }}
+
+                                                </p>
+
+
+                                                <p
+                                                    class="mt-2 text-[10px]
+                                           text-slate-500">
+
+                                                    {{ $notificacion->created_at->diffForHumans() }}
+
+                                                </p>
+
+                                            </div>
+
+                                        </a>
+
+                                    @empty
+
+                                        <!-- SIN NOTIFICACIONES -->
+                                        <div class="px-6 py-10 text-center">
+
+                                            <div
+                                                class="mx-auto mb-3
+                                       w-12 h-12
+                                       rounded-full
+                                       bg-slate-800/50
+                                       border border-slate-800
+                                       flex items-center justify-center">
+
+                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
+                                                </i>
+
+                                            </div>
+
+                                            <p class="text-xs font-medium text-slate-400">
+                                                No tienes notificaciones
+                                            </p>
+
+                                            <p class="text-[10px] text-slate-600 mt-1">
+                                                Aquí aparecerán tus nuevas notificaciones.
+                                            </p>
+
+                                        </div>
+                                    @endforelse
+
+                                </div>
+
+
+                                <!-- =================================================
+                     PIE DEL DROPDOWN
+                ================================================== -->
+
+                                @if ($notificaciones->count() > 0)
+                                    <div
+                                        class="px-4 py-3
+                               border-t border-slate-800/80
+                               bg-[#0b1026]">
+
+                                        <p class="text-[10px] text-center text-slate-500">
+                                            Mostrando tus notificaciones recientes
+                                        </p>
+
+                                    </div>
+                                @endif
 
                             </div>
 
@@ -366,17 +450,15 @@
                         {{-- USUARIO --}}
                         {{-- ================================================= --}}
 
-                        <div class="relative z-[100]">
+                        <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
 
-                            <button id="profile-button" type="button"
+                            <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
                                 class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
                                 <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
                                     alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
-
                                 <div class="text-left leading-tight hidden sm:block">
-
                                     <p class="text-xs font-semibold text-white">
                                         {{ auth()->user()->name ?? 'Desconocido' }}
                                     </p>
@@ -384,13 +466,12 @@
                                     <p class="text-[10px] text-blue-400 font-medium">
                                         {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
                                     </p>
-
                                 </div>
-
 
                                 <svg id="profile-arrow"
                                     class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    :class="{ 'rotate-180': perfilAbierto }" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
 
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7">
@@ -401,36 +482,32 @@
                             </button>
 
 
-                            {{-- DROPDOWN PERFIL --}}
+                            <div id="profile-dropdown" x-show="perfilAbierto" @click.outside="perfilAbierto = false"
+                                x-transition
+                                class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
+                                style="display: none;">
 
-                            <div id="profile-dropdown"
-                                class="hidden absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
+                                <!-- PERFIL -->
+                            <a href="{{ route('perfiltecnologias') }}"
+                                class="flex items-center gap-3
+                           px-4 py-3
+                           text-sm text-slate-300
+                           hover:bg-[#151b3b]
+                           hover:text-white
+                           transition-colors">
 
+                                <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400">
+                                </i>
 
-                                <a href="{{ route('perfiltecnologias') }}"
-                                    class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
+                                <span>
+                                    Perfil
+                                </span>
 
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                        </path>
-
-                                    </svg>
-
-                                    <span>
-                                        Perfil
-                                    </span>
-
-                                </a>
-
+                            </a>
 
                                 <div class="border-t border-[#1e295d]"></div>
 
-
                                 <form method="POST" action="{{ route('logout') }}">
-
                                     @csrf
 
                                     <button type="submit"
@@ -445,9 +522,7 @@
 
                                         </svg>
 
-                                        <span>
-                                            Cerrar sesión
-                                        </span>
+                                        <span>Cerrar sesión</span>
 
                                     </button>
 
@@ -455,386 +530,367 @@
 
                             </div>
 
-                        </div>
-
                     </div>
 
                 </div>
 
-            </header>
+        </div>
+
+        </header>
 
 
-            {{-- ================================================= --}}
-            {{-- ESTADISTICAS --}}
-            {{-- ================================================= --}}
+        {{-- ================================================= --}}
+        {{-- ESTADISTICAS --}}
+        {{-- ================================================= --}}
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                @if (session('success'))
-                    <div id="successMessage"
-                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            @if (session('success'))
+                <div id="successMessage"
+                    class="fixed right-5 top-5 z-[9999] w-full max-w-sm
                 rounded-2xl border border-green-500/30
                 bg-[#0f1535] p-4
                 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
 
-                        <div class="flex items-start gap-3">
+                    <div class="flex items-start gap-3">
 
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center
                         rounded-full bg-green-500/15 text-green-400">
 
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-
-                            </div>
-
-                            <div class="flex-1">
-                                <p class="font-bold text-white">
-                                    ¡Éxito!
-                                </p>
-
-                                <p class="mt-1 text-sm text-slate-400">
-                                    {{ session('success') }}
-                                </p>
-                            </div>
-
-                            <button onclick="document.getElementById('successMessage').remove()"
-                                class="text-slate-500 hover:text-white">
-                                ✕
-                            </button>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
 
                         </div>
-                    </div>
-                @endif
 
-                @if (session('error'))
-                    <div id="errorMessage"
-                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm
+                        <div class="flex-1">
+                            <p class="font-bold text-white">
+                                ¡Éxito!
+                            </p>
+
+                            <p class="mt-1 text-sm text-slate-400">
+                                {{ session('success') }}
+                            </p>
+                        </div>
+
+                        <button onclick="document.getElementById('successMessage').remove()"
+                            class="text-slate-500 hover:text-white">
+                            ✕
+                        </button>
+
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div id="errorMessage"
+                    class="fixed right-5 top-5 z-[9999] w-full max-w-sm
                 rounded-2xl border border-red-500/30
                 bg-[#0f1535] p-4
                 shadow-[0_0_30px_rgba(239,68,68,0.20)]">
 
-                        <div class="flex items-start gap-3">
+                    <div class="flex items-start gap-3">
 
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center
                         rounded-full bg-red-500/15 text-red-400">
 
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 
-                                </svg>
-
-                            </div>
-
-                            <div class="flex-1">
-
-                                <p class="font-bold text-white">
-                                    ¡Error!
-                                </p>
-
-                                <p class="mt-1 text-sm text-slate-400">
-                                    {{ session('error') }}
-                                </p>
-
-                            </div>
-
-                            <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
-                                class="text-slate-500 hover:text-white transition">
-
-                                ✕
-
-                            </button>
+                            </svg>
 
                         </div>
 
-                    </div>
-                @endif
+                        <div class="flex-1">
 
-                {{-- TOTAL --}}
-
-                <div
-                    class="bg-[#0b1026]/80 border border-blue-900/40 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm">
-
-                    <div class="flex items-center gap-3 mb-2">
-
-                        <div class="p-2.5 rounded-xl bg-blue-600/20 text-blue-400">
-
-                            <i data-lucide="ticket-check" class="w-5 h-5"></i>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs text-slate-400 font-medium">
-                                Total de tickets
+                            <p class="font-bold text-white">
+                                ¡Error!
                             </p>
 
-                            <h3 class="text-2xl font-bold text-white">
-                                {{ $totalTickets }}
-                            </h3>
+                            <p class="mt-1 text-sm text-slate-400">
+                                {{ session('error') }}
+                            </p>
 
                         </div>
 
-                    </div>
+                        <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
+                            class="text-slate-500 hover:text-white transition">
 
-                    <p class="text-[11px] {{ $colorTotal }} font-medium mt-1">
-                        {{ $porcentajeTotalTexto }}
-                    </p>
-
-                </div>
-
-
-                {{-- PENDIENTES --}}
-
-                <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
-
-                    <div class="flex items-center gap-2 mb-1">
-
-                        <i data-lucide="clock-3" class="w-4 h-4 text-amber-400"></i>
-
-                        <p class="text-xs text-slate-400 font-medium">
-                            Pendientes
-                        </p>
-
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-white">
-                        {{ $pendientes }}
-                    </h3>
-
-                    <p class="text-[11px] {{ $colorPendientes }} font-medium mt-1">
-                        {{ $porcentajePendientesTexto }}
-                    </p>
-
-                </div>
-
-
-                {{-- EN PROCESO --}}
-
-                <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
-
-                    <div class="flex items-center gap-2 mb-1">
-
-                        <i data-lucide="loader-circle" class="w-4 h-4 text-blue-400"></i>
-
-                        <p class="text-xs text-slate-400 font-medium">
-                            En proceso
-                        </p>
-
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-white">
-                        {{ $enProceso }}
-                    </h3>
-
-                    <p class="text-[11px] {{ $colorEnProceso }} font-medium mt-1">
-                        {{ $porcentajeEnProcesoTexto }}
-                    </p>
-
-                </div>
-
-
-                {{-- SOLUCIONADOS --}}
-
-                <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
-
-                    <div class="flex items-center gap-2 mb-1">
-
-                        <i data-lucide="circle-check" class="w-4 h-4 text-emerald-400"></i>
-
-                        <p class="text-xs text-slate-400 font-medium">
-                            Solucionados
-                        </p>
-
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-white">
-                        {{ $solucionados }}
-                    </h3>
-
-                    <p class="text-[11px] {{ $colorSolucionados }} font-medium mt-1">
-                        {{ $porcentajeSolucionadosTexto }}
-                    </p>
-
-                </div>
-
-
-                {{-- CANCELADOS --}}
-
-                <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
-
-                    <div class="flex items-center gap-2 mb-1">
-
-                        <i data-lucide="circle-x" class="w-4 h-4 text-rose-400"></i>
-
-                        <p class="text-xs text-slate-400 font-medium">
-                            Cancelados
-                        </p>
-
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-white">
-                        {{ $cancelados }}
-                    </h3>
-
-                    <p class="text-[11px] {{ $colorCancelados }} font-medium mt-1">
-                        {{ $porcentajeCanceladosTexto }}
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            {{-- ================================================= --}}
-            {{-- FILTROS --}}
-            {{-- ================================================= --}}
-
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-
-
-                {{-- ESTADOS --}}
-
-                <div
-                    class="flex items-center gap-1 bg-[#0b1026] border border-slate-800 p-1.5 rounded-2xl overflow-x-auto">
-                    <button type="button" @click="filtro = 'mis tickets'"
-                        :class="filtro === 'mis tickets'
-                            ?
-                            'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
-                            'text-slate-400 hover:text-white'"
-                        class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-
-                        Mis tickets
-
-                    </button>
-                    <button type="button" @click="filtro = 'todos'"
-                        :class="filtro === 'todos'
-                            ?
-                            'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
-                            'text-slate-400 hover:text-white'"
-                        class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-
-                        Todos
-
-                    </button>
-
-
-                    <button type="button" @click="filtro = 'pendiente'"
-                        :class="filtro === 'pendiente'
-                            ?
-                            'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
-                            'text-slate-400 hover:text-white'"
-                        class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-
-                        Pendientes
-
-                    </button>
-
-
-                    <button type="button" @click="filtro = 'en proceso'"
-                        :class="filtro === 'en proceso'
-                            ?
-                            'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
-                            'text-slate-400 hover:text-white'"
-                        class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-
-                        En proceso
-
-                    </button>
-
-
-                    <button type="button" @click="filtro = 'solucionado'"
-                        :class="filtro === 'solucionado'
-                            ?
-                            'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
-                            'text-slate-400 hover:text-white'"
-                        class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-
-                        Solucionados
-
-                    </button>
-
-
-                    <button type="button" @click="filtro = 'cancelado'"
-                        :class="filtro === 'cancelado'
-                            ?
-                            'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
-                            'text-slate-400 hover:text-white'"
-                        class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-
-                        Cancelados
-
-                        <span class="inline-block w-2 h-2 bg-rose-500 rounded-full ml-1">
-                        </span>
-
-                    </button>
-
-                </div>
-
-
-                {{-- BUSQUEDA --}}
-
-                <div class="flex items-center gap-3">
-
-                    <div class="relative flex-1 sm:w-64">
-
-                        <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-500">
-                        </i>
-
-                        <input type="text" x-model="busqueda" placeholder="Buscar..." autocomplete="off"
-                            class="w-full bg-[#0b1026] border border-slate-800 text-xs rounded-xl pl-10 pr-10 py-2.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
-
-                        <button type="button" x-show="busqueda.length > 0" x-cloak @click="busqueda = ''"
-                            class="absolute right-3 top-2.5 text-slate-500 hover:text-white transition">
-
-                            <i data-lucide="x" class="w-4 h-4"></i>
+                            ✕
 
                         </button>
 
                     </div>
 
+                </div>
+            @endif
 
-                    {{-- FECHA --}}
+            {{-- TOTAL --}}
 
-                    <div class="relative" x-data="{ abierto: false }">
+            <div
+                class="bg-[#0b1026]/80 border border-blue-900/40 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm">
 
-                        <button type="button" @click="abierto = !abierto"
-                            class="flex items-center gap-2 bg-[#0b1026] border border-slate-800 text-xs font-medium text-slate-300 px-4 py-2.5 rounded-xl hover:bg-slate-800/50 transition">
+                <div class="flex items-center gap-3 mb-2">
 
-                            <i data-lucide="calendar-days" class="w-4 h-4 text-slate-400">
+                    <div class="p-2.5 rounded-xl bg-blue-600/20 text-blue-400">
+
+                        <i data-lucide="ticket-check" class="w-5 h-5"></i>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-xs text-slate-400 font-medium">
+                            Total de tickets
+                        </p>
+
+                        <h3 class="text-2xl font-bold text-white">
+                            {{ $totalTickets }}
+                        </h3>
+
+                    </div>
+
+                </div>
+
+                <p class="text-[11px] {{ $colorTotal }} font-medium mt-1">
+                    {{ $porcentajeTotalTexto }}
+                </p>
+
+            </div>
+
+
+            {{-- PENDIENTES --}}
+
+            <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+
+                <div class="flex items-center gap-2 mb-1">
+
+                    <i data-lucide="clock-3" class="w-4 h-4 text-amber-400"></i>
+
+                    <p class="text-xs text-slate-400 font-medium">
+                        Pendientes
+                    </p>
+
+                </div>
+
+                <h3 class="text-2xl font-bold text-white">
+                    {{ $pendientes }}
+                </h3>
+
+                <p class="text-[11px] {{ $colorPendientes }} font-medium mt-1">
+                    {{ $porcentajePendientesTexto }}
+                </p>
+
+            </div>
+
+
+            {{-- EN PROCESO --}}
+
+            <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+
+                <div class="flex items-center gap-2 mb-1">
+
+                    <i data-lucide="loader-circle" class="w-4 h-4 text-blue-400"></i>
+
+                    <p class="text-xs text-slate-400 font-medium">
+                        En proceso
+                    </p>
+
+                </div>
+
+                <h3 class="text-2xl font-bold text-white">
+                    {{ $enProceso }}
+                </h3>
+
+                <p class="text-[11px] {{ $colorEnProceso }} font-medium mt-1">
+                    {{ $porcentajeEnProcesoTexto }}
+                </p>
+
+            </div>
+
+
+            {{-- SOLUCIONADOS --}}
+
+            <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+
+                <div class="flex items-center gap-2 mb-1">
+
+                    <i data-lucide="circle-check" class="w-4 h-4 text-emerald-400"></i>
+
+                    <p class="text-xs text-slate-400 font-medium">
+                        Solucionados
+                    </p>
+
+                </div>
+
+                <h3 class="text-2xl font-bold text-white">
+                    {{ $solucionados }}
+                </h3>
+
+                <p class="text-[11px] {{ $colorSolucionados }} font-medium mt-1">
+                    {{ $porcentajeSolucionadosTexto }}
+                </p>
+
+            </div>
+
+
+            {{-- CANCELADOS --}}
+
+            <div class="bg-[#0b1026]/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+
+                <div class="flex items-center gap-2 mb-1">
+
+                    <i data-lucide="circle-x" class="w-4 h-4 text-rose-400"></i>
+
+                    <p class="text-xs text-slate-400 font-medium">
+                        Cancelados
+                    </p>
+
+                </div>
+
+                <h3 class="text-2xl font-bold text-white">
+                    {{ $cancelados }}
+                </h3>
+
+                <p class="text-[11px] {{ $colorCancelados }} font-medium mt-1">
+                    {{ $porcentajeCanceladosTexto }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {{-- ================================================= --}}
+        {{-- FILTROS --}}
+        {{-- ================================================= --}}
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+
+
+            {{-- ESTADOS --}}
+
+            <div
+                class="flex items-center gap-1 bg-[#0b1026] border border-slate-800 p-1.5 rounded-2xl overflow-x-auto">
+
+                <button type="button" @click="cambiarFiltro('todos')"
+                    :class="filtro === 'todos'
+                        ?
+                        'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
+                        'text-slate-400 hover:text-white'"
+                    class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                    Todos
+                </button>
+
+                <button type="button" @click="cambiarFiltro('mis tickets')"
+                    :class="filtro === 'mis tickets'
+                        ?
+                        'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
+                        'text-slate-400 hover:text-white'"
+                    class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                    Mis tickets
+                </button>
+
+                <button type="button" @click="cambiarFiltro('pendiente')"
+                    :class="filtro === 'pendiente'
+                        ?
+                        'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
+                        'text-slate-400 hover:text-white'"
+                    class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                    Pendientes
+                </button>
+
+                <button type="button" @click="cambiarFiltro('en proceso')"
+                    :class="filtro === 'en proceso'
+                        ?
+                        'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
+                        'text-slate-400 hover:text-white'"
+                    class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                    En proceso
+                </button>
+
+                <button type="button" @click="cambiarFiltro('solucionado')"
+                    :class="filtro === 'solucionado'
+                        ?
+                        'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
+                        'text-slate-400 hover:text-white'"
+                    class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                    Solucionados
+                </button>
+
+                <button type="button" @click="cambiarFiltro('cancelado')"
+                    :class="filtro === 'cancelado'
+                        ?
+                        'bg-blue-600 text-white shadow-md shadow-blue-600/30' :
+                        'text-slate-400 hover:text-white'"
+                    class="px-5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                    Cancelados
+                </button>
+
+            </div>
+
+
+            {{-- BUSQUEDA --}}
+
+            <div class="flex items-center gap-3">
+
+                <div class="relative flex-1 sm:w-64">
+
+                    <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-500">
+                    </i>
+                    <input type="text" x-model="busqueda" @keydown.enter.prevent="buscarTickets()"
+                        placeholder="Buscar..." autocomplete="off"
+                        class="w-full bg-[#0b1026] border border-slate-800 text-xs rounded-xl pl-10 pr-10 py-2.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    <button type="button" x-show="busqueda.trim() !== ''" x-cloak @click="limpiarBusqueda()"
+                        class="absolute right-3 top-2.5 text-slate-500 hover:text-white transition"
+                        title="Limpiar búsqueda">
+
+                        <i data-lucide="x" class="w-4 h-4"></i>
+
+                    </button>
+
+                </div>
+
+
+                {{-- FECHA --}}
+
+                <div class="relative" x-data="{ abierto: false }">
+
+                    <button type="button" @click="abierto = !abierto"
+                        class="flex items-center gap-2 bg-[#0b1026] border border-slate-800 text-xs font-medium text-slate-300 px-4 py-2.5 rounded-xl hover:bg-slate-800/50 transition">
+
+                        <i data-lucide="calendar-days" class="w-4 h-4 text-slate-400">
+                        </i>
+
+                        <span>
+                            Este mes
+                        </span>
+
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform"
+                            :class="abierto ? 'rotate-180' : ''">
+                        </i>
+
+                    </button>
+
+
+                    <div x-show="abierto" x-cloak @click.outside="abierto = false" x-transition
+                        class="absolute right-0 mt-2 w-48 bg-[#0b1026] border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+
+                        <button type="button" @click="abierto = false"
+                            class="w-full flex items-center gap-2 px-4 py-3 text-xs text-white bg-blue-600/20 hover:bg-blue-600/30 transition">
+
+                            <i data-lucide="calendar-days" class="w-4 h-4 text-blue-400">
                             </i>
 
                             <span>
                                 Este mes
                             </span>
 
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform"
-                                :class="abierto ? 'rotate-180' : ''">
-                            </i>
-
                         </button>
-
-
-                        <div x-show="abierto" x-cloak @click.outside="abierto = false" x-transition
-                            class="absolute right-0 mt-2 w-48 bg-[#0b1026] border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
-
-                            <button type="button" @click="abierto = false"
-                                class="w-full flex items-center gap-2 px-4 py-3 text-xs text-white bg-blue-600/20 hover:bg-blue-600/30 transition">
-
-                                <i data-lucide="calendar-days" class="w-4 h-4 text-blue-400">
-                                </i>
-
-                                <span>
-                                    Este mes
-                                </span>
-
-                            </button>
-
-                        </div>
 
                     </div>
 
@@ -842,437 +898,435 @@
 
             </div>
 
-
-            {{-- ================================================= --}}
-            {{-- TABLA --}}
-            {{-- ================================================= --}}
-
-            <div
-                class="bg-[#0b1026]/90 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-
-                <div class="overflow-x-auto">
-
-                    <table class="w-full text-left border-collapse">
+        </div>
 
 
-                        {{-- HEADER --}}
+        {{-- ================================================= --}}
+        {{-- TABLA --}}
+        {{-- ================================================= --}}
 
-                        <thead>
+        <div
+            class="bg-[#0b1026]/90 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
 
-                            <tr
-                                class="border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold bg-slate-900/30">
+            <div class="overflow-x-auto">
 
-                                <th class="py-4 px-6">
-                                    Folio
-                                </th>
-
-                                <th class="py-4 px-6">
-                                    Título
-                                </th>
-
-                                <th class="py-4 px-6">
-                                    Tipo de falla
-                                </th>
-
-                                <th class="py-4 px-6">
-                                    Prioridad
-                                </th>
-
-                                <th class="py-4 px-6">
-                                    Estado
-                                </th>
-
-                                <th class="py-4 px-6">
-                                    Tomado por
-                                </th>
-
-                                <th class="py-4 px-6">
-                                    Fecha
-                                </th>
-
-                                <th class="py-4 px-6 text-right">
-                                    Acción
-                                </th>
-
-                            </tr>
-
-                        </thead>
+                <table class="w-full text-left border-collapse">
 
 
-                        {{-- BODY --}}
+                    {{-- HEADER --}}
 
-                        <tbody class="divide-y divide-slate-800/60 text-xs">
+                    <thead>
+
+                        <tr
+                            class="border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold bg-slate-900/30">
+
+                            <th class="py-4 px-6">
+                                Folio
+                            </th>
+
+                            <th class="py-4 px-6">
+                                Título
+                            </th>
+
+                            <th class="py-4 px-6">
+                                Tipo de falla
+                            </th>
+
+                            <th class="py-4 px-6">
+                                Prioridad
+                            </th>
+
+                            <th class="py-4 px-6">
+                                Estado
+                            </th>
+
+                            <th class="py-4 px-6">
+                                Tomado por
+                            </th>
+
+                            <th class="py-4 px-6">
+                                Fecha
+                            </th>
+
+                            <th class="py-4 px-6 text-right">
+                                Acción
+                            </th>
+
+                        </tr>
+
+                    </thead>
 
 
-                            @forelse ($tickets as $ticket)
-                                @php
+                    {{-- BODY --}}
 
-                                    $ticket->load([
-                                        'user',
-                                        'user.departamento',
-                                        'user.departamento.oficina',
-                                        'user.departamento.oficina.empresa',
-                                        'historialComentarios.usuario',
-                                        'tomadoPor',
-                                    ]);
+                    <tbody class="divide-y divide-slate-800/60 text-xs">
 
-                                    $ticketData = $ticket->toArray();
-                                    $comentariosData = $ticket->historialComentarios
-                                        ->map(function ($comentario) {
-                                            return [
-                                                'id' => $comentario->id,
 
-                                                'mensaje' => $comentario->mensaje,
+                        @forelse ($tickets as $ticket)
+                            @php
 
-                                                'archivo' => $comentario->archivo,
+                                $ticket->load([
+                                    'user',
+                                    'user.departamento',
+                                    'user.departamento.oficina',
+                                    'user.departamento.oficina.empresa',
+                                    'historialComentarios.usuario',
+                                    'tomadoPor',
+                                ]);
 
-                                                'url_archivo' => $comentario->archivo
-                                                    ? Storage::url($comentario->archivo)
+                                $ticketData = $ticket->toArray();
+                                $comentariosData = $ticket->historialComentarios
+                                    ->map(function ($comentario) {
+                                        return [
+                                            'id' => $comentario->id,
+
+                                            'mensaje' => $comentario->mensaje,
+
+                                            'archivo' => $comentario->archivo,
+
+                                            'url_archivo' => $comentario->archivo
+                                                ? Storage::url($comentario->archivo)
+                                                : null,
+
+                                            'nombre_archivo' => $comentario->archivo
+                                                ? basename($comentario->archivo)
+                                                : null,
+
+                                            'extension' => $comentario->archivo
+                                                ? strtoupper(pathinfo($comentario->archivo, PATHINFO_EXTENSION))
+                                                : null,
+
+                                            'usuario' => [
+                                                'id' => $comentario->usuario?->id,
+                                                'name' => $comentario->usuario?->name ?? 'Usuario',
+                                                'rol' => $comentario->usuario?->rol ?? 'Usuario',
+
+                                                'foto' => $comentario->usuario?->foto
+                                                    ? Storage::url($comentario->usuario->foto)
                                                     : null,
+                                            ],
 
-                                                'nombre_archivo' => $comentario->archivo
-                                                    ? basename($comentario->archivo)
-                                                    : null,
-
-                                                'extension' => $comentario->archivo
-                                                    ? strtoupper(pathinfo($comentario->archivo, PATHINFO_EXTENSION))
-                                                    : null,
-
-                                                'usuario' => [
-                                                    'id' => $comentario->usuario?->id,
-                                                    'name' => $comentario->usuario?->name ?? 'Usuario',
-                                                    'rol' => $comentario->usuario?->rol ?? 'Usuario',
-
-                                                    'foto' => $comentario->usuario?->foto
-                                                        ? Storage::url($comentario->usuario->foto)
-                                                        : null,
-                                                ],
-
-                                                'fecha' => $comentario->created_at
-                                                    ? $comentario->created_at->format('d M Y h:i A')
-                                                    : '',
-                                            ];
-                                        })
-                                        ->values();
-                                @endphp
+                                            'fecha' => $comentario->created_at
+                                                ? $comentario->created_at->format('d M Y h:i A')
+                                                : '',
+                                        ];
+                                    })
+                                    ->values();
+                            @endphp
 
 
-                                @php
+                            @php
 
-                                    $iconoFalla = match (strtolower($ticket->tipo_falla ?? '')) {
-                                        'hardware' => 'cpu',
+                                $iconoFalla = match (strtolower($ticket->tipo_falla ?? '')) {
+                                    'hardware' => 'cpu',
 
-                                        'software' => 'code-2',
+                                    'software' => 'code-2',
 
-                                        'redes' => 'network',
+                                    'redes' => 'network',
 
-                                        'impresora', 'impresión' => 'printer',
+                                    'impresora', 'impresión' => 'printer',
 
-                                        'correo' => 'mail',
+                                    'correo' => 'mail',
 
-                                        'internet' => 'globe',
+                                    'internet' => 'globe',
 
-                                        'telefonía', 'telefonia' => 'phone',
+                                    'telefonía', 'telefonia' => 'phone',
 
-                                        'sistema' => 'monitor-cog',
+                                    'sistema' => 'monitor-cog',
 
-                                        default => 'ticket',
-                                    };
+                                    default => 'ticket',
+                                };
 
-                                    $prioridad = strtolower($ticket->prioridad ?? 'normal');
+                                $prioridad = strtolower($ticket->prioridad ?? 'normal');
 
-                                    $configPrioridad = match ($prioridad) {
-                                        'critica', 'crítica' => [
-                                            'icono' => 'alert-octagon',
+                                $configPrioridad = match ($prioridad) {
+                                    'critica', 'crítica' => [
+                                        'icono' => 'alert-octagon',
 
-                                            'texto' => 'text-red-400',
+                                        'texto' => 'text-red-400',
 
-                                            'fondo' => 'bg-red-500/10',
+                                        'fondo' => 'bg-red-500/10',
 
-                                            'borde' => 'border-red-500/30',
-                                        ],
+                                        'borde' => 'border-red-500/30',
+                                    ],
 
-                                        'alta' => [
-                                            'icono' => 'chevrons-up',
+                                    'alta' => [
+                                        'icono' => 'chevrons-up',
 
-                                            'texto' => 'text-orange-400',
+                                        'texto' => 'text-orange-400',
 
-                                            'fondo' => 'bg-orange-500/10',
+                                        'fondo' => 'bg-orange-500/10',
 
-                                            'borde' => 'border-orange-500/30',
-                                        ],
+                                        'borde' => 'border-orange-500/30',
+                                    ],
 
-                                        'media' => [
-                                            'icono' => 'chevron-up',
+                                    'media' => [
+                                        'icono' => 'chevron-up',
 
-                                            'texto' => 'text-yellow-400',
+                                        'texto' => 'text-yellow-400',
 
-                                            'fondo' => 'bg-yellow-500/10',
+                                        'fondo' => 'bg-yellow-500/10',
 
-                                            'borde' => 'border-yellow-500/30',
-                                        ],
+                                        'borde' => 'border-yellow-500/30',
+                                    ],
 
-                                        'normal' => [
-                                            'icono' => 'minus',
+                                    'normal' => [
+                                        'icono' => 'minus',
 
-                                            'texto' => 'text-green-400',
+                                        'texto' => 'text-green-400',
 
-                                            'fondo' => 'bg-green-500/10',
+                                        'fondo' => 'bg-green-500/10',
 
-                                            'borde' => 'border-green-500/30',
-                                        ],
+                                        'borde' => 'border-green-500/30',
+                                    ],
 
-                                        default => [
-                                            'icono' => 'circle-help',
+                                    default => [
+                                        'icono' => 'circle-help',
 
-                                            'texto' => 'text-slate-400',
+                                        'texto' => 'text-slate-400',
 
-                                            'fondo' => 'bg-slate-500/10',
+                                        'fondo' => 'bg-slate-500/10',
 
-                                            'borde' => 'border-slate-500/30',
-                                        ],
-                                    };
+                                        'borde' => 'border-slate-500/30',
+                                    ],
+                                };
 
-                                @endphp
+                            @endphp
 
 
-                                {{-- FILA --}}
-                                {{-- @php
+                            {{-- FILA --}}
+                            {{-- @php
                                     dd($ticket->solucion->toArray());
                                 @endphp --}}
-                                <tr x-data="{
-                                    ticket: {{ Js::from([
-                                        'id' => $ticket->id,
-                                        'folio' => $ticket->folio,
-                                        'titulo' => $ticket->titulo,
-                                        'tipo_falla' => $ticket->tipo_falla,
-                                        'equipo' => $ticket->equipo,
-                                        'prioridad' => $ticket->prioridad,
-                                        'descripcion' => $ticket->descripcion,
-                                        'estado' => strtolower($ticket->estado ?? ''),
-                                    
-                                        'tomado_por' => $ticket->tomadoPor
-                                            ? [
-                                                'id' => $ticket->tomadoPor->id,
-                                                'name' => $ticket->tomadoPor->name,
-                                                'foto' => $ticket->tomadoPor->foto,
-                                            ]
-                                            : null,
-                                    
-                                        'user' => $ticket->user
-                                            ? [
-                                                'id' => $ticket->user->id,
-                                                'name' => $ticket->user->name,
-                                                'foto' => $ticket->user->foto ? Storage::url($ticket->user->foto) : null,
-                                            ]
-                                            : null,
-                                        'comentarios' => $comentariosData,
-                                    
-                                        'solucion' => $ticket->solucion
-                                            ? [
-                                                'id' => $ticket->solucion->id,
-                                                'ticket_id' => $ticket->solucion->ticket_id,
-                                                'solucionado_por' => $ticket->solucion->solucionado_por,
-                                                'solucion' => $ticket->solucion->solucion,
-                                                'problema_solucionado' => (bool) $ticket->solucion->problema_solucionado,
-                                                'firma' => $ticket->solucion->firma,
-                                                'url_firma' => $ticket->solucion->firma ? Storage::url($ticket->solucion->firma) : null,
-                                                'nombre_firmante' => $ticket->solucion->nombre_firmante,
-                                                'fecha_solucion' => $ticket->solucion->fecha_solucion,
-                                                'fecha_firma' => $ticket->solucion->fecha_firma,
-                                    
-                                                'evidencia' => $ticket->solucion->evidencia,
-                                            ]
-                                            : null,
-                                    ]) }}
-                                }" x-show="mostrarTicket(ticket.estado, ticket)" x-transition
-                                    class="hover:bg-slate-800/20 transition">
+                            <tr x-data="{
+                                ticket: {{ Js::from([
+                                    'id' => $ticket->id,
+                                    'folio' => $ticket->folio,
+                                    'titulo' => $ticket->titulo,
+                                    'tipo_falla' => $ticket->tipo_falla,
+                                    'equipo' => $ticket->equipo,
+                                    'prioridad' => $ticket->prioridad,
+                                    'descripcion' => $ticket->descripcion,
+                                    'estado' => strtolower($ticket->estado ?? ''),
+                                
+                                    'tomado_por' => $ticket->tomadoPor
+                                        ? [
+                                            'id' => $ticket->tomadoPor->id,
+                                            'name' => $ticket->tomadoPor->name,
+                                            'foto' => $ticket->tomadoPor->foto,
+                                        ]
+                                        : null,
+                                
+                                    'user' => $ticket->user
+                                        ? [
+                                            'id' => $ticket->user->id,
+                                            'name' => $ticket->user->name,
+                                            'foto' => $ticket->user->foto ? Storage::url($ticket->user->foto) : null,
+                                        ]
+                                        : null,
+                                    'comentarios' => $comentariosData,
+                                
+                                    'solucion' => $ticket->solucion
+                                        ? [
+                                            'id' => $ticket->solucion->id,
+                                            'ticket_id' => $ticket->solucion->ticket_id,
+                                            'solucionado_por' => $ticket->solucion->solucionado_por,
+                                            'solucion' => $ticket->solucion->solucion,
+                                            'problema_solucionado' => (bool) $ticket->solucion->problema_solucionado,
+                                            'firma' => $ticket->solucion->firma,
+                                            'url_firma' => $ticket->solucion->firma ? Storage::url($ticket->solucion->firma) : null,
+                                            'nombre_firmante' => $ticket->solucion->nombre_firmante,
+                                            'fecha_solucion' => $ticket->solucion->fecha_solucion,
+                                            'fecha_firma' => $ticket->solucion->fecha_firma,
+                                
+                                            'evidencia' => $ticket->solucion->evidencia,
+                                        ]
+                                        : null,
+                                ]) }}
+                            }" x-show="mostrarTicket(ticket.estado, ticket)" x-transition
+                                class="hover:bg-slate-800/20 transition">
 
-                                    {{-- FOLIO --}}
+                                {{-- FOLIO --}}
 
-                                    <td class="py-4 px-6 font-bold text-white whitespace-nowrap">
+                                <td class="py-4 px-6 font-bold text-white whitespace-nowrap">
 
-                                        {{ $ticket->folio }}
+                                    {{ $ticket->folio }}
 
-                                    </td>
-
-
-                                    {{-- TITULO --}}
-
-                                    <td class="py-4 px-6 font-medium text-slate-200 min-w-[200px]">
-
-                                        {{ $ticket->titulo }}
-
-                                    </td>
+                                </td>
 
 
-                                    {{-- TIPO --}}
+                                {{-- TITULO --}}
 
-                                    <td class="py-4 px-6 text-slate-300 whitespace-nowrap">
+                                <td class="py-4 px-6 font-medium text-slate-200 min-w-[200px]">
 
-                                        <div class="flex items-center gap-2">
+                                    {{ $ticket->titulo }}
 
-                                            <i data-lucide="{{ $iconoFalla }}" class="w-4 h-4 text-slate-400">
-                                            </i>
-
-                                            <span>
-                                                {{ $ticket->tipo_falla ?? 'Sin especificar' }}
-                                            </span>
-
-                                        </div>
-
-                                    </td>
+                                </td>
 
 
-                                    {{-- PRIORIDAD --}}
+                                {{-- TIPO --}}
 
-                                    <td class="py-4 px-6 whitespace-nowrap">
+                                <td class="py-4 px-6 text-slate-300 whitespace-nowrap">
 
-                                        <span
-                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold border
+                                    <div class="flex items-center gap-2">
+
+                                        <i data-lucide="{{ $iconoFalla }}" class="w-4 h-4 text-slate-400">
+                                        </i>
+
+                                        <span>
+                                            {{ $ticket->tipo_falla ?? 'Sin especificar' }}
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                {{-- PRIORIDAD --}}
+
+                                <td class="py-4 px-6 whitespace-nowrap">
+
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold border
                                             {{ $configPrioridad['texto'] }}
                                             {{ $configPrioridad['fondo'] }}
                                             {{ $configPrioridad['borde'] }}">
 
-                                            <i data-lucide="{{ $configPrioridad['icono'] }}" class="w-3 h-3">
-                                            </i>
+                                        <i data-lucide="{{ $configPrioridad['icono'] }}" class="w-3 h-3">
+                                        </i>
 
-                                            {{ ucfirst($ticket->prioridad ?? 'Normal') }}
+                                        {{ ucfirst($ticket->prioridad ?? 'Normal') }}
 
-                                        </span>
+                                    </span>
 
-                                    </td>
-
-
-                                    {{-- ESTADO --}}
-
-                                    <td class="py-4 px-6 whitespace-nowrap">
+                                </td>
 
 
-                                        {{-- SOLUCIONADO --}}
+                                {{-- ESTADO --}}
 
-                                        <template
-                                            x-if="(
+                                <td class="py-4 px-6 whitespace-nowrap">
+
+
+                                    {{-- SOLUCIONADO --}}
+
+                                    <template
+                                        x-if="(
                                                 ticketsActualizados[{{ $ticket->id }}]?.estado
                                                 ?? '{{ strtolower($ticket->estado ?? '') }}'
                                             ) === 'solucionado'">
 
-                                            <span
-                                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#133d28] text-green-300 border border-green-500/40">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#133d28] text-green-300 border border-green-500/40">
 
-                                                ✓ Solucionado
+                                            ✓ Solucionado
 
-                                            </span>
+                                        </span>
 
-                                        </template>
+                                    </template>
 
 
-                                        {{-- PENDIENTE --}}
+                                    {{-- PENDIENTE --}}
 
-                                        <template
-                                            x-if="(
+                                    <template
+                                        x-if="(
                                                 ticketsActualizados[{{ $ticket->id }}]?.estado
                                                 ?? '{{ strtolower($ticket->estado ?? '') }}'
                                             ) === 'pendiente'">
 
-                                            <span
-                                                class="inline-flex items-center justify-center min-w-[100px] px-3 py-1 rounded-full text-xs font-semibold bg-[#4a4213] text-yellow-300 border border-yellow-500/40">
+                                        <span
+                                            class="inline-flex items-center justify-center min-w-[100px] px-3 py-1 rounded-full text-xs font-semibold bg-[#4a4213] text-yellow-300 border border-yellow-500/40">
 
-                                                <span class="w-2 h-2 rounded-full bg-orange-400 mr-2">
-                                                </span>
-
-                                                Pendiente
-
+                                            <span class="w-2 h-2 rounded-full bg-orange-400 mr-2">
                                             </span>
 
-                                        </template>
+                                            Pendiente
+
+                                        </span>
+
+                                    </template>
 
 
-                                        {{-- EN PROCESO --}}
+                                    {{-- EN PROCESO --}}
 
-                                        <template
-                                            x-if="(
+                                    <template
+                                        x-if="(
                                                 ticketsActualizados[{{ $ticket->id }}]?.estado
                                                 ?? '{{ strtolower($ticket->estado ?? '') }}'
                                             ) === 'en proceso'">
 
-                                            <span
-                                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#1d2757] text-blue-300 border border-blue-500/40">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#1d2757] text-blue-300 border border-blue-500/40">
 
-                                                <span class="w-2 h-2 rounded-full bg-blue-400">
-                                                </span>
-
-                                                En proceso
-
+                                            <span class="w-2 h-2 rounded-full bg-blue-400">
                                             </span>
 
-                                        </template>
+                                            En proceso
+
+                                        </span>
+
+                                    </template>
 
 
-                                        {{-- CANCELADO --}}
+                                    {{-- CANCELADO --}}
 
-                                        <template
-                                            x-if="(
+                                    <template
+                                        x-if="(
                                                 ticketsActualizados[{{ $ticket->id }}]?.estado
                                                 ?? '{{ strtolower($ticket->estado ?? '') }}'
                                             ) === 'cancelado'">
 
-                                            <span
-                                                class="inline-flex items-center justify-center min-w-[100px] px-3 py-1 rounded-full text-xs font-semibold bg-[#4d1616] text-red-300 border border-red-500/40">
+                                        <span
+                                            class="inline-flex items-center justify-center min-w-[100px] px-3 py-1 rounded-full text-xs font-semibold bg-[#4d1616] text-red-300 border border-red-500/40">
 
-                                                Cancelado
+                                            Cancelado
 
-                                            </span>
+                                        </span>
 
-                                        </template>
+                                    </template>
 
-                                    </td>
-
-
-                                    {{-- TOMADO POR --}}
-
-                                    <td class="py-4 px-6 text-slate-400 whitespace-nowrap">
-
-                                        <div class="flex items-center gap-3">
-
-                                            <!-- FOTO DEL TÉCNICO -->
-                                            <div
-                                                class="w-8 h-8 rounded-full border border-blue-500/20 overflow-hidden shrink-0">
-
-                                   <img
-    :src="
-        (() => {
-            const datos = obtenerDatosTicket({
-                id: {{ $ticket->id }},
-                tomado_por: @js(
-                    $ticket->tomadoPor
-                        ? [
-                            'id' => $ticket->tomadoPor->id,
-                            'name' => $ticket->tomadoPor->name,
-                            'foto' => $ticket->tomadoPor->foto,
-                            'departamento' => $ticket->tomadoPor->departamento?->nombre,
-                        ]
-                        : null
-                )
-            });
-
-            return datos.tomado_por?.foto
-                ? '{{ asset('storage') }}/' + datos.tomado_por.foto
-                : '{{ asset('storage/profile-photos/user.png') }}';
-        })()
-    "
-    class="w-full h-full object-cover"
-    alt="Usuario"
->
-                                            </div>
+                                </td>
 
 
-                                            <!-- INFORMACIÓN DEL TÉCNICO -->
-                                            <div class="flex flex-col min-w-0">
+                                {{-- TOMADO POR --}}
 
-                                                <!-- NOMBRE -->
-                                                <span class="text-slate-300 font-medium truncate"
-                                                    x-text="
+                                <td class="py-4 px-6 text-slate-400 whitespace-nowrap">
+
+                                    <div class="flex items-center gap-3">
+
+                                        <!-- FOTO DEL TÉCNICO -->
+                                        <div
+                                            class="w-8 h-8 rounded-full border border-blue-500/20 overflow-hidden shrink-0">
+
+                                            <img :src="(() => {
+                                                const datos = obtenerDatosTicket({
+                                                    id: {{ $ticket->id }},
+                                                    tomado_por: @js(
+    $ticket->tomadoPor
+        ? [
+            'id' => $ticket->tomadoPor->id,
+            'name' => $ticket->tomadoPor->name,
+            'foto' => $ticket->tomadoPor->foto,
+            'departamento' => $ticket->tomadoPor->departamento?->nombre,
+        ]
+        : null,
+)
+                                                });
+                                            
+                                                return datos.tomado_por?.foto ?
+                                                    '{{ asset('storage') }}/' + datos.tomado_por.foto :
+                                                    '{{ asset('storage/profile-photos/user.png') }}';
+                                            })
+                                            ()"
+                                                class="w-full h-full object-cover" alt="Usuario">
+                                        </div>
+
+
+                                        <!-- INFORMACIÓN DEL TÉCNICO -->
+                                        <div class="flex flex-col min-w-0">
+
+                                            <!-- NOMBRE -->
+                                            <span class="text-slate-300 font-medium truncate"
+                                                x-text="
                                                     (() => {
                                                     const datos = obtenerDatosTicket({
                                                     id: {{ $ticket->id }},
@@ -1291,13 +1345,13 @@
                                                         })
 ()
                                                         ">
-                                                    {{ $ticket->tomadoPor?->name ?? '—————' }}
-                                                </span>
+                                                {{ $ticket->tomadoPor?->name ?? '—————' }}
+                                            </span>
 
 
-                                                <!-- DEPARTAMENTO -->
-                                                <span class="text-[10px] text-slate-500"
-                                                    x-text="
+                                            <!-- DEPARTAMENTO -->
+                                            <span class="text-[10px] text-slate-500"
+                                                x-text="
                     (() => {
 
                         const datos = obtenerDatosTicket({
@@ -1326,343 +1380,323 @@
 
                     })()
                 ">
-                                                    @if ($ticket->tomadoPor)
-                                                        {{ $ticket->tomadoPor->departamento?->nombre ?? 'Tecnologías' }}
-                                                    @endif
-                                                </span>
-
-                                            </div>
+                                                @if ($ticket->tomadoPor)
+                                                    {{ $ticket->tomadoPor->departamento?->nombre ?? 'Tecnologías' }}
+                                                @endif
+                                            </span>
 
                                         </div>
-
-                                    </td>
-
-
-
-                                    {{-- FECHA --}}
-
-                                    <td class="py-4 px-6 text-slate-400 whitespace-nowrap">
-
-                                        <div class="font-medium text-slate-300">
-                                            {{ $ticket->created_at->format('d M Y') }}
-                                        </div>
-
-                                        <div class="text-[10px] text-slate-500">
-                                            {{ $ticket->created_at->format('h:i A') }}
-                                        </div>
-
-                                    </td>
-
-
-                                    {{-- ACCION --}}
-
-                                    <td class="py-4 px-6 text-right whitespace-nowrap">
-
-                                        <button type="button"
-                                            @click="abrirTicket(
-                                                {{ Js::from($ticketData) }}
-                                                    )"
-                                            class="text-slate-400 hover:text-blue-400 p-2 rounded-lg hover:bg-blue-500/10 transition"
-                                            title="Ver ticket">
-
-                                            <i data-lucide="eye" class="w-4 h-4">
-                                            </i>
-                                        </button>
-                                        <template x-if="esMiTicket(ticket)">
-                                            <button type="button"
-                                                @click="
-                                                    abrirModalSolucion(
-                                                        obtenerDatosTicket(ticket),
-                                                        ['solucionado', 'cancelado'].includes(filtro)
-                                                    )
-                                                "
-                                                :disabled="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro)"
-                                                :class="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro) ?
-                                                    'opacity-40 cursor-not-allowed' :
-                                                    'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'"
-                                                class="p-2 rounded-lg transition"
-                                                :title="filtro === 'mis tickets'
-                                                    ?
-                                                    'Resolver ticket' :
-                                                    'Ver solución'">
-                                                <i data-lucide="hand" class="w-4 h-4"></i>
-                                            </button>
-                                        </template>
-                                    </td>
-
-                                </tr>
-
-
-                            @empty
-
-                                <tr>
-
-                                    <td colspan="8" class="py-12 text-center text-gray-400">
-
-                                        No tienes tickets registrados.
-
-                                    </td>
-
-                                </tr>
-                            @endforelse
-
-
-                            {{-- SIN RESULTADOS --}}
-
-                            <tr x-show="hayBusquedaYNoHayResultados()" x-cloak>
-
-                                <td colspan="8" class="py-16 text-center">
-
-                                    <div class="flex flex-col items-center justify-center">
-
-                                        <div
-                                            class="w-14 h-14 rounded-full bg-slate-800/60 flex items-center justify-center mb-4">
-
-                                            <i data-lucide="search-x" class="w-6 h-6 text-slate-500">
-                                            </i>
-
-                                        </div>
-
-                                        <p class="text-sm font-semibold text-slate-300">
-
-                                            No se encontraron tickets
-
-                                        </p>
-
-                                        <p class="text-xs text-slate-500 mt-1">
-
-                                            Intenta cambiar el filtro o realizar otra búsqueda.
-
-                                        </p>
-
-                                        <button type="button" @click="limpiarFiltros()"
-                                            class="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition">
-
-                                            Limpiar filtros
-
-                                        </button>
 
                                     </div>
 
                                 </td>
 
+
+
+                                {{-- FECHA --}}
+
+                                <td class="py-4 px-6 text-slate-400 whitespace-nowrap">
+
+                                    <div class="font-medium text-slate-300">
+                                        {{ $ticket->created_at->format('d M Y') }}
+                                    </div>
+
+                                    <div class="text-[10px] text-slate-500">
+                                        {{ $ticket->created_at->format('h:i A') }}
+                                    </div>
+
+                                </td>
+
+
+                                {{-- ACCION --}}
+
+                                <td class="py-4 px-6 text-right whitespace-nowrap">
+
+                                    <button type="button"
+                                        @click="abrirTicket(
+                                                {{ Js::from($ticketData) }}
+                                                    )"
+                                        class="text-slate-400 hover:text-blue-400 p-2 rounded-lg hover:bg-blue-500/10 transition"
+                                        title="Ver ticket">
+
+                                        <i data-lucide="eye" class="w-4 h-4">
+                                        </i>
+                                    </button>
+                                    <template x-if="esMiTicket(ticket)">
+                                        <button type="button"
+                                            @click="
+                                                    abrirModalSolucion(
+                                                        obtenerDatosTicket(ticket),
+                                                        ['solucionado', 'cancelado'].includes(filtro)
+                                                    )
+                                                "
+                                            :disabled="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro)"
+                                            :class="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro) ?
+                                                'opacity-40 cursor-not-allowed' :
+                                                'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'"
+                                            class="p-2 rounded-lg transition"
+                                            :title="filtro === 'mis tickets'
+                                                ?
+                                                'Resolver ticket' :
+                                                'Ver solución'">
+                                            <i data-lucide="hand" class="w-4 h-4"></i>
+                                        </button>
+                                    </template>
+                                </td>
+
                             </tr>
 
-                        </tbody>
 
-                    </table>
-                    
-                </div>
-   {{-- PAGINACIÓN --}}
-                    <div
-                        class="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        @empty
 
-                        {{-- INFORMACIÓN --}}
-                        <span class="text-xs text-slate-400">
+                            <tr>
 
-                            Mostrando
-                            {{ $tickets->firstItem() ?? 0 }}
-                            a
-                            {{ $tickets->lastItem() ?? 0 }}
-                            de
-                            {{ $tickets->total() }}
-                            tickets
+                                <td colspan="8" class="py-12 text-center text-gray-400">
+
+                                    No tienes tickets registrados.
+
+                                </td>
+
+                            </tr>
+                        @endforelse
+
+
+                        {{-- SIN RESULTADOS --}}
+
+                        <tr x-show="hayBusquedaYNoHayResultados()" x-cloak>
+
+                            <td colspan="8" class="py-16 text-center">
+
+                                <div class="flex flex-col items-center justify-center">
+
+                                    <div
+                                        class="w-14 h-14 rounded-full bg-slate-800/60 flex items-center justify-center mb-4">
+
+                                        <i data-lucide="search-x" class="w-6 h-6 text-slate-500">
+                                        </i>
+
+                                    </div>
+
+                                    <p class="text-sm font-semibold text-slate-300">
+
+                                        No se encontraron tickets
+
+                                    </p>
+
+                                    <p class="text-xs text-slate-500 mt-1">
+
+                                        Intenta cambiar el filtro o realizar otra búsqueda.
+
+                                    </p>
+
+                                    <button type="button" @click="limpiarFiltros()"
+                                        class="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition">
+
+                                        Limpiar filtros
+
+                                    </button>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+            {{-- PAGINACIÓN --}}
+            <div
+                class="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
+
+                {{-- INFORMACIÓN --}}
+                <span class="text-xs text-slate-400">
+                    Mostrando
+                    {{ $tickets->firstItem() ?? 0 }}
+                    a
+                    {{ $tickets->lastItem() ?? 0 }}
+                    de
+                    {{ $tickets->total() }}
+                    tickets
+                </span>
+
+                {{-- CONTROLES --}}
+                <div class="flex items-center gap-1">
+
+                    {{-- ANTERIOR --}}
+                    @if ($tickets->onFirstPage())
+                        <span class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
 
                         </span>
+                    @else
+                        <a href="{{ $tickets->previousPageUrl() }}"
+                            class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
+
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+
+                        </a>
+                    @endif
 
 
-                        {{-- CONTROLES --}}
-                        <div class="flex items-center gap-1">
+                    {{-- NÚMEROS --}}
+                    @foreach ($tickets->getUrlRange(max(1, $tickets->currentPage() - 2), min($tickets->lastPage(), $tickets->currentPage() + 2)) as $page => $url)
+                        <a href="{{ $url }}"
+                            class="w-8 h-8 rounded-lg flex items-center justify-center text-xs transition
+                    {{ $page == $tickets->currentPage()
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}">
 
-                            {{-- ANTERIOR --}}
-                            @if ($tickets->onFirstPage())
+                            {{ $page }}
 
-                                <span
-                                    class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
-
-                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
-
-                                </span>
-
-                            @else
-
-                                <a href="{{ $tickets->previousPageUrl() }}"
-                                    class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
-
-                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
-
-                                </a>
-
-                            @endif
+                        </a>
+                    @endforeach
 
 
-                            {{-- NÚMEROS --}}
-                            @foreach (
-                                $tickets->getUrlRange(
-                                    max(1, $tickets->currentPage() - 2),
-                                    min($tickets->lastPage(), $tickets->currentPage() + 2)
-                                ) as $page => $url
-                            )
+                    {{-- SIGUIENTE --}}
+                    @if ($tickets->hasMorePages())
+                        <a href="{{ $tickets->nextPageUrl() }}"
+                            class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
 
-                                <a href="{{ $url }}"
-                                    class="w-8 h-8 rounded-lg flex items-center justify-center text-xs transition
-                                    {{ $page == $tickets->currentPage()
-                                        ? 'bg-blue-600 text-white font-bold'
-                                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
 
-                                    {{ $page }}
+                        </a>
+                    @else
+                        <span class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
 
-                                </a>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
 
-                            @endforeach
+                        </span>
+                    @endif
 
+                </div>
 
-                            {{-- SIGUIENTE --}}
-                            @if ($tickets->hasMorePages())
+            </div>
 
-                                <a href="{{ $tickets->nextPageUrl() }}"
-                                    class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
+            <template x-teleport="body">
 
-                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                <div x-show="openModalSolucion" x-cloak x-transition.opacity
+                    class="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
+                    @keydown.escape.window="cerrarModalSolucion()" @click.self="cerrarModalSolucion()">
 
-                                </a>
+                    <div x-show="openModalSolucion" x-transition @click.stop
+                        class="relative w-full max-w-3xl bg-[#030712] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden">
 
-                            @else
+                        {{-- HEADER --}}
 
-                                <span
-                                    class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+                        <div class="px-6 py-5 border-b border-slate-800">
 
-                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            <div class="flex items-start justify-between gap-4">
 
-                                </span>
+                                <div class="min-w-0">
 
-                            @endif
+                                    <div class="flex items-center gap-3 mb-2">
 
-                        </div>
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
 
-                    </div>
+                                            <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
 
-                <template x-teleport="body">
+                                            Ticket
 
-                    <div x-show="openModalSolucion" x-cloak x-transition.opacity
-                        class="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
-                        @keydown.escape.window="cerrarModalSolucion()" @click.self="cerrarModalSolucion()">
+                                        </span>
 
-                        <div x-show="openModalSolucion" x-transition @click.stop
-                            class="relative w-full max-w-3xl bg-[#030712] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden">
+                                        <span class="text-sm font-bold text-white"
+                                            x-text="'#' + (ticketSolucion?.folio ?? '—')"></span>
 
-                            {{-- HEADER --}}
+                                    </div>
 
-                            <div class="px-6 py-5 border-b border-slate-800">
+                                    <h2 class="text-xl font-bold text-white truncate"
+                                        x-text="ticketSolucion?.titulo ?? 'Ticket'"></h2>
 
-                                <div class="flex items-start justify-between gap-4">
-
-                                    <div class="min-w-0">
-
-                                        <div class="flex items-center gap-3 mb-2">
-
-                                            <span
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
-
-                                                <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
-
-                                                Ticket
-
-                                            </span>
-
-                                            <span class="text-sm font-bold text-white"
-                                                x-text="'#' + (ticketSolucion?.folio ?? '—')"></span>
-
-                                        </div>
-
-                                        <h2 class="text-xl font-bold text-white truncate"
-                                            x-text="ticketSolucion?.titulo ?? 'Ticket'"></h2>
-
-                                        <p class="text-xs text-slate-400 mt-1"
-                                            x-text="
+                                    <p class="text-xs text-slate-400 mt-1"
+                                        x-text="
                                 modalSolucionSoloLectura
                                     ? 'Consulta la información registrada de este ticket.'
                                     : 'Registra la solución y solicita la firma de conformidad.'
                             ">
-                                        </p>
+                                    </p>
 
-                                    </div>
+                                </div>
 
-                                    <button type="button" @click="cerrarModalSolucion()"
-                                        class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition shrink-0">
+                                <button type="button" @click="cerrarModalSolucion()"
+                                    class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition shrink-0">
 
-                                        <i data-lucide="x" class="w-5 h-5"></i>
+                                    <i data-lucide="x" class="w-5 h-5"></i>
 
-                                    </button>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- CONTENIDO --}}
+
+                        <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+
+
+                            {{-- INFORMACIÓN DEL TICKET --}}
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                                <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+
+                                    <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                        Folio
+                                    </span>
+
+                                    <p class="text-sm font-bold text-white mt-1"
+                                        x-text="ticketSolucion?.folio ?? '—'"></p>
+
+                                </div>
+
+
+                                <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+
+                                    <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                        Título
+                                    </span>
+
+                                    <p class="text-sm font-bold text-white mt-1 truncate"
+                                        x-text="ticketSolucion?.titulo ?? '—'"></p>
+
+                                </div>
+
+
+                                <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+
+                                    <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                        Tomado por
+                                    </span>
+
+                                    <p class="text-sm font-bold text-white mt-1"
+                                        x-text="ticketSolucion?.tomado_por?.name ?? '—'"></p>
 
                                 </div>
 
                             </div>
 
 
-                            {{-- CONTENIDO --}}
+                            {{-- ESTADO --}}
 
-                            <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                            <div>
 
-
-                                {{-- INFORMACIÓN DEL TICKET --}}
-
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-                                    <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-
-                                        <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                                            Folio
-                                        </span>
-
-                                        <p class="text-sm font-bold text-white mt-1"
-                                            x-text="ticketSolucion?.folio ?? '—'"></p>
-
-                                    </div>
-
-
-                                    <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-
-                                        <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                                            Título
-                                        </span>
-
-                                        <p class="text-sm font-bold text-white mt-1 truncate"
-                                            x-text="ticketSolucion?.titulo ?? '—'"></p>
-
-                                    </div>
-
-
-                                    <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-
-                                        <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                                            Tomado por
-                                        </span>
-
-                                        <p class="text-sm font-bold text-white mt-1"
-                                            x-text="ticketSolucion?.tomado_por?.name ?? '—'"></p>
-
-                                    </div>
-
-                                </div>
-
-
-                                {{-- ESTADO --}}
-
-                                <div>
-
-                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                        Estado
-                                    </label>
-                                    <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs"
-                                        :class="ticketSolucion?.estado === 'solucionado' ?
-                                            'text-emerald-400' :
-                                            ticketSolucion?.estado === 'cancelado' ?
-                                            'text-red-400' :
-                                            ticketSolucion?.estado === 'en proceso' ?
-                                            'text-amber-400' :
-                                            'text-slate-400'"
-                                        x-text="
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Estado
+                                </label>
+                                <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs"
+                                    :class="ticketSolucion?.estado === 'solucionado' ?
+                                        'text-emerald-400' :
+                                        ticketSolucion?.estado === 'cancelado' ?
+                                        'text-red-400' :
+                                        ticketSolucion?.estado === 'en proceso' ?
+                                        'text-amber-400' :
+                                        'text-slate-400'"
+                                    x-text="
         ticketSolucion?.estado === 'solucionado'
             ? 'Solucionado'
             : ticketSolucion?.estado === 'cancelado'
@@ -1671,781 +1705,1076 @@
                     ? 'En proceso'
                     : 'Pendiente'
     ">
-                                    </div>
-
                                 </div>
 
+                            </div>
 
-                                {{-- SOLUCIÓN --}}
 
-                                <div>
+                            {{-- SOLUCIÓN --}}
 
-                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                        Solución aplicada
-                                    </label>
+                            <div>
 
-                                    <textarea x-model="solucionForm.solucion" rows="5" :readonly="modalSolucionSoloLectura"
-                                        placeholder="Describe la solución aplicada al problema..."
-                                        class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none"
-                                        :class="modalSolucionSoloLectura ? 'opacity-70 cursor-default' : ''"></textarea>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Solución aplicada
+                                </label>
 
-                                </div>
-                                {{-- EVIDENCIA DE LA SOLUCIÓN --}}
+                                <textarea x-model="solucionForm.solucion" rows="5" :readonly="modalSolucionSoloLectura"
+                                    placeholder="Describe la solución aplicada al problema..."
+                                    class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none"
+                                    :class="modalSolucionSoloLectura ? 'opacity-70 cursor-default' : ''"></textarea>
 
-                                {{-- EVIDENCIAS REGISTRADAS --}}
+                            </div>
+                            {{-- EVIDENCIA DE LA SOLUCIÓN --}}
 
-                                <div x-show="modalSolucionSoloLectura">
+                            {{-- EVIDENCIAS REGISTRADAS --}}
 
-                                    <div x-show="Array.isArray(evidenciasSolucion) &&
+                            <div x-show="modalSolucionSoloLectura">
+
+                                <div x-show="Array.isArray(evidenciasSolucion) &&
                 evidenciasSolucion.length > 0"
-                                        class="space-y-2">
+                                    class="space-y-2">
 
-                                        <template x-for="(archivo, index) in evidenciasSolucion"
-                                            :key="index">
+                                    <template x-for="(archivo, index) in evidenciasSolucion" :key="index">
 
-                                            <a :href="archivo.url" target="_blank"
-                                                class="flex items-center justify-between gap-3
+                                        <a :href="archivo.url" target="_blank"
+                                            class="flex items-center justify-between gap-3
                        px-3 py-3 rounded-xl
                        bg-[#060c21] border border-slate-800
                        hover:border-emerald-500/40 transition">
 
-                                                <div class="flex items-center gap-3 min-w-0">
+                                            <div class="flex items-center gap-3 min-w-0">
 
-                                                    <div
-                                                        class="w-9 h-9 rounded-lg bg-blue-500/10
+                                                <div
+                                                    class="w-9 h-9 rounded-lg bg-blue-500/10
                                border border-blue-500/20
                                flex items-center justify-center shrink-0">
 
-                                                        <i data-lucide="file-text" class="w-4 h-4 text-blue-400">
-                                                        </i>
-
-                                                    </div>
-
-                                                    <div class="min-w-0">
-
-                                                        <p class="text-xs text-white truncate"
-                                                            x-text="archivo.nombre || nombreArchivo(archivo)">
-                                                        </p>
-
-                                                        <p class="text-[10px] text-slate-500">
-                                                            Evidencia registrada
-                                                        </p>
-
-                                                    </div>
+                                                    <i data-lucide="file-text" class="w-4 h-4 text-blue-400">
+                                                    </i>
 
                                                 </div>
 
-                                                <i data-lucide="external-link"
-                                                    class="w-4 h-4 text-slate-500 shrink-0">
-                                                </i>
+                                                <div class="min-w-0">
 
-                                            </a>
+                                                    <p class="text-xs text-white truncate"
+                                                        x-text="archivo.nombre || nombreArchivo(archivo)">
+                                                    </p>
 
-                                        </template>
+                                                    <p class="text-[10px] text-slate-500">
+                                                        Evidencia registrada
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+
+                                            <i data-lucide="external-link" class="w-4 h-4 text-slate-500 shrink-0">
+                                            </i>
+
+                                        </a>
+
+                                    </template>
+
+                                </div>
+
+
+                                <div x-show="!Array.isArray(evidenciasSolucion) ||
+                evidenciasSolucion.length === 0"
+                                    class="p-4 rounded-xl bg-[#060c21] border border-slate-800
+               text-center">
+
+                                    <i data-lucide="image-off" class="w-6 h-6 mx-auto mb-2 text-slate-600">
+                                    </i>
+
+                                    <p class="text-xs text-slate-500">
+                                        No hay evidencia registrada.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- ¿SE SOLUCIONÓ? --}}
+
+                            <div>
+
+                                <label class="block text-xs font-semibold text-slate-300 mb-3">
+                                    ¿El problema fue solucionado?
+                                </label>
+
+                                <div class="grid grid-cols-2 gap-3">
+
+                                    <button type="button"
+                                        @click="!modalSolucionSoloLectura && (solucionForm.solucionado = true)"
+                                        :disabled="modalSolucionSoloLectura"
+                                        :class="solucionForm.solucionado === true ?
+                                            'bg-emerald-500/15 border-emerald-500/50 text-emerald-300' :
+                                            'bg-[#060c21] border-slate-800 text-slate-400'"
+                                        class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
+
+                                        <i data-lucide="circle-check" class="w-4 h-4"></i>
+
+                                        Sí, fue solucionado
+
+                                    </button>
+
+
+                                    <button type="button"
+                                        @click="!modalSolucionSoloLectura && (solucionForm.solucionado = false)"
+                                        :disabled="modalSolucionSoloLectura"
+                                        :class="solucionForm.solucionado === false ?
+                                            'bg-red-500/15 border-red-500/50 text-red-300' :
+                                            'bg-[#060c21] border-slate-800 text-slate-400'"
+                                        class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
+
+                                        <i data-lucide="circle-x" class="w-4 h-4"></i>
+
+                                        No fue solucionado
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- FECHA DE SOLUCIÓN --}}
+
+                            <div>
+
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Fecha de solución
+                                </label>
+
+                                <input type="datetime-local" x-model="solucionForm.fecha_solucion"
+                                    :disabled="modalSolucionSoloLectura"
+                                    class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
+
+                            </div>
+
+
+                            {{-- CONFORMIDAD --}}
+
+                            <div class="border-t border-slate-800 pt-6">
+
+                                <h3 class="text-sm font-bold text-white mb-1">
+                                    Conformidad del usuario
+                                </h3>
+
+                                <p class="text-[11px] text-slate-500 mb-5"
+                                    x-text="
+                            modalSolucionSoloLectura
+                                ? 'Información registrada al momento de cerrar el ticket.'
+                                : 'La persona que levantó el ticket deberá confirmar que recibió atención.'
+                        ">
+                                </p>
+
+
+                                {{-- NOMBRE --}}
+
+                                <div class="mb-5">
+
+                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                        Persona que levantó el ticket
+                                    </label>
+
+                                    <div
+                                        class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+
+                                        <span
+                                            x-text="ticketSolucion?.user?.name ?? solucionForm.nombre_firmante ?? 'Sin nombre'"
+                                            class="font-medium"></span>
 
                                     </div>
 
+                                </div>
 
-                                    <div x-show="!Array.isArray(evidenciasSolucion) ||
-                evidenciasSolucion.length === 0"
-                                        class="p-4 rounded-xl bg-[#060c21] border border-slate-800
-               text-center">
 
-                                        <i data-lucide="image-off" class="w-6 h-6 mx-auto mb-2 text-slate-600">
-                                        </i>
+                                {{-- FIRMA --}}
 
-                                        <p class="text-xs text-slate-500">
-                                            No hay evidencia registrada.
+                                <div>
+
+                                    {{-- FIRMA PARA REGISTRAR --}}
+
+                                    <div x-show="!modalSolucionSoloLectura">
+
+                                        <div class="flex items-center justify-between mb-2">
+
+                                            <label class="block text-xs font-semibold text-slate-300">
+                                                Firma
+                                            </label>
+
+                                            <button type="button" @click="limpiarFirma()"
+                                                class="text-[10px] text-slate-500 hover:text-red-400 transition">
+                                                Limpiar firma
+                                            </button>
+
+                                        </div>
+
+
+                                        <div class="bg-white rounded-xl overflow-hidden border border-slate-700">
+
+                                            <canvas x-ref="canvasFirma" width="900" height="220"
+                                                class="w-full h-40 sm:h-48 cursor-crosshair touch-none"></canvas>
+
+                                        </div>
+
+
+                                        <p class="text-[10px] text-slate-500 mt-2">
+                                            Firma dentro del recuadro utilizando el mouse o pantalla táctil.
                                         </p>
 
                                     </div>
 
-                                </div>
 
+                                    {{-- FIRMA REGISTRADA --}}
 
-                                {{-- ¿SE SOLUCIONÓ? --}}
+                                    <div x-show="modalSolucionSoloLectura">
 
-                                <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                            Firma
+                                        </label>
 
-                                    <label class="block text-xs font-semibold text-slate-300 mb-3">
-                                        ¿El problema fue solucionado?
-                                    </label>
+                                        <div
+                                            class="bg-white rounded-xl overflow-hidden border border-slate-700 p-3 min-h-[160px] flex items-center justify-center">
 
-                                    <div class="grid grid-cols-2 gap-3">
+                                            <img x-show="ticketSolucion?.solucion?.firma"
+                                                :src="ticketSolucion?.solucion?.url_firma ??
+                                                    archivoUrl(ticketSolucion?.solucion?.firma)"
+                                                alt="Firma registrada" class="max-w-full max-h-40 object-contain"
+                                                x-on:error="console.error(
+                                                    'No se pudo cargar la firma:',
+                                                    $event.target.src
+                                                    )">
 
-                                        <button type="button"
-                                            @click="!modalSolucionSoloLectura && (solucionForm.solucionado = true)"
-                                            :disabled="modalSolucionSoloLectura"
-                                            :class="solucionForm.solucionado === true ?
-                                                'bg-emerald-500/15 border-emerald-500/50 text-emerald-300' :
-                                                'bg-[#060c21] border-slate-800 text-slate-400'"
-                                            class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
+                                            <span x-show="!ticketSolucion?.solucion?.firma"
+                                                class="text-slate-500 text-xs">
+                                                No hay una firma registrada.
+                                            </span>
 
-                                            <i data-lucide="circle-check" class="w-4 h-4"></i>
-
-                                            Sí, fue solucionado
-
-                                        </button>
-
-
-                                        <button type="button"
-                                            @click="!modalSolucionSoloLectura && (solucionForm.solucionado = false)"
-                                            :disabled="modalSolucionSoloLectura"
-                                            :class="solucionForm.solucionado === false ?
-                                                'bg-red-500/15 border-red-500/50 text-red-300' :
-                                                'bg-[#060c21] border-slate-800 text-slate-400'"
-                                            class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
-
-                                            <i data-lucide="circle-x" class="w-4 h-4"></i>
-
-                                            No fue solucionado
-
-                                        </button>
+                                        </div>
 
                                     </div>
 
                                 </div>
 
 
-                                {{-- FECHA DE SOLUCIÓN --}}
+                                {{-- FECHA FIRMA --}}
 
-                                <div>
+                                <div class="mt-5">
 
                                     <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                        Fecha de solución
+                                        Fecha de firma
                                     </label>
 
-                                    <input type="datetime-local" x-model="solucionForm.fecha_solucion"
+                                    <input type="datetime-local" x-model="solucionForm.fecha_firma"
                                         :disabled="modalSolucionSoloLectura"
                                         class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
 
                                 </div>
 
-
-                                {{-- CONFORMIDAD --}}
-
-                                <div class="border-t border-slate-800 pt-6">
-
-                                    <h3 class="text-sm font-bold text-white mb-1">
-                                        Conformidad del usuario
-                                    </h3>
-
-                                    <p class="text-[11px] text-slate-500 mb-5"
-                                        x-text="
-                            modalSolucionSoloLectura
-                                ? 'Información registrada al momento de cerrar el ticket.'
-                                : 'La persona que levantó el ticket deberá confirmar que recibió atención.'
-                        ">
-                                    </p>
-
-
-                                    {{-- NOMBRE --}}
-
-                                    <div class="mb-5">
-
-                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                            Persona que levantó el ticket
-                                        </label>
-
-                                        <div
-                                            class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-
-                                            <span
-                                                x-text="ticketSolucion?.user?.name ?? solucionForm.nombre_firmante ?? 'Sin nombre'"
-                                                class="font-medium"></span>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    {{-- FIRMA --}}
-
-                                    <div>
-
-                                        {{-- FIRMA PARA REGISTRAR --}}
-
-                                        <div x-show="!modalSolucionSoloLectura">
-
-                                            <div class="flex items-center justify-between mb-2">
-
-                                                <label class="block text-xs font-semibold text-slate-300">
-                                                    Firma
-                                                </label>
-
-                                                <button type="button" @click="limpiarFirma()"
-                                                    class="text-[10px] text-slate-500 hover:text-red-400 transition">
-                                                    Limpiar firma
-                                                </button>
-
-                                            </div>
-
-
-                                            <div class="bg-white rounded-xl overflow-hidden border border-slate-700">
-
-                                                <canvas x-ref="canvasFirma" width="900" height="220"
-                                                    class="w-full h-40 sm:h-48 cursor-crosshair touch-none"></canvas>
-
-                                            </div>
-
-
-                                            <p class="text-[10px] text-slate-500 mt-2">
-                                                Firma dentro del recuadro utilizando el mouse o pantalla táctil.
-                                            </p>
-
-                                        </div>
-
-
-                                        {{-- FIRMA REGISTRADA --}}
-
-                                        <div x-show="modalSolucionSoloLectura">
-
-                                            <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                                Firma
-                                            </label>
-
-                                            <div
-                                                class="bg-white rounded-xl overflow-hidden border border-slate-700 p-3 min-h-[160px] flex items-center justify-center">
-
-                                                <img x-show="ticketSolucion?.solucion?.firma"
-                                                    :src="ticketSolucion?.solucion?.url_firma ??
-                                                        archivoUrl(ticketSolucion?.solucion?.firma)"
-                                                    alt="Firma registrada" class="max-w-full max-h-40 object-contain"
-                                                    x-on:error="console.error(
-                                                    'No se pudo cargar la firma:',
-                                                    $event.target.src
-                                                    )">
-
-                                                <span x-show="!ticketSolucion?.solucion?.firma"
-                                                    class="text-slate-500 text-xs">
-                                                    No hay una firma registrada.
-                                                </span>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    {{-- FECHA FIRMA --}}
-
-                                    <div class="mt-5">
-
-                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                            Fecha de firma
-                                        </label>
-
-                                        <input type="datetime-local" x-model="solucionForm.fecha_firma"
-                                            :disabled="modalSolucionSoloLectura"
-                                            class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
-
-                                    </div>
-
-                                </div>
-
                             </div>
 
-
-                            {{-- FOOTER --}}
-
-                            <div
-                                class="flex items-center justify-between px-6 py-5 border-t border-slate-800 bg-[#030712]">
-
-                                <button type="button" @click="cerrarModalSolucion()"
-                                    class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
-                                    Cerrar
-                                </button>
+                        </div>
 
 
-                                <button x-show="!modalSolucionSoloLectura" type="button" @click="guardarSolucion()"
-                                    :disabled="guardandoSolucion"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        {{-- FOOTER --}}
 
-                                    <i data-lucide="save" class="w-4 h-4"></i>
+                        <div
+                            class="flex items-center justify-between px-6 py-5 border-t border-slate-800 bg-[#030712]">
 
-                                    <span x-text="guardandoSolucion ? 'Guardando...' : 'Guardar solución'"></span>
+                            <button type="button" @click="cerrarModalSolucion()"
+                                class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                                Cerrar
+                            </button>
 
-                                </button>
 
-                            </div>
+                            <button x-show="!modalSolucionSoloLectura" type="button" @click="guardarSolucion()"
+                                :disabled="guardandoSolucion"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+
+                                <i data-lucide="save" class="w-4 h-4"></i>
+
+                                <span x-text="guardandoSolucion ? 'Guardando...' : 'Guardar solución'"></span>
+
+                            </button>
 
                         </div>
 
                     </div>
 
-                </template>
-                <template x-teleport="body">
+                </div>
 
-                    <div x-show="openModal" x-cloak x-transition.opacity
-                        class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto"
-                        @keydown.escape.window="cerrarModal()" @click.self="cerrarModal()">
+            </template>
+            <template x-teleport="body">
 
-
-                        {{-- CORREGIDO: class en lugar de calass --}}
-
-                        <div x-show="openModal" x-transition @click.stop
-                            class="relative w-full max-w-7xl bg-[#030712] border border-blue-600/40 rounded-3xl shadow-2xl flex flex-col max-h-[92vh] text-slate-200 overflow-hidden">
+                <div x-show="openModal" x-cloak x-transition.opacity
+                    class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto"
+                    @keydown.escape.window="cerrarModal()" @click.self="cerrarModal()">
 
 
-                            {{-- HEADER MODAL --}}
+                    {{-- CORREGIDO: class en lugar de calass --}}
 
-                            <div
-                                class="flex items-center justify-between p-6 pb-4 border-b border-slate-800/80 shrink-0">
-
-                                <div>
-
-                                    <h2 class="text-2xl font-bold text-white tracking-wide">
-
-                                        Detalle del ticket
-
-                                    </h2>
-
-                                    <p class="text-xs text-slate-400 mt-0.5">
-
-                                        Consulta toda la información y el seguimiento de este ticket.
-
-                                    </p>
-
-                                </div>
+                    <div x-show="openModal" x-transition @click.stop
+                        class="relative w-full max-w-7xl bg-[#030712] border border-blue-600/40 rounded-3xl shadow-2xl flex flex-col max-h-[92vh] text-slate-200 overflow-hidden">
 
 
-                                <button type="button" @click="cerrarModal()"
-                                    class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800/60 transition">
+                        {{-- HEADER MODAL --}}
 
-                                    <i data-lucide="x" class="w-6 h-6">
-                                    </i>
+                        <div class="flex items-center justify-between p-6 pb-4 border-b border-slate-800/80 shrink-0">
 
-                                </button>
+                            <div>
+
+                                <h2 class="text-2xl font-bold text-white tracking-wide">
+
+                                    Detalle del ticket
+
+                                </h2>
+
+                                <p class="text-xs text-slate-400 mt-0.5">
+
+                                    Consulta toda la información y el seguimiento de este ticket.
+
+                                </p>
 
                             </div>
 
 
-                            {{-- CONTENIDO --}}
+                            <button type="button" @click="cerrarModal()"
+                                class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800/60 transition">
 
-                            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+                                <i data-lucide="x" class="w-6 h-6">
+                                </i>
+
+                            </button>
+
+                        </div>
 
 
-                                {{-- RESUMEN SUPERIOR --}}
+                        {{-- CONTENIDO --}}
 
-                                <div
-                                    class="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 rounded-2xl bg-[#060c21] border border-blue-500/40">
+                        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
 
 
-                                    <div class="border-r border-slate-800/60 pr-2">
+                            {{-- RESUMEN SUPERIOR --}}
 
-                                        <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+                            <div
+                                class="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 rounded-2xl bg-[#060c21] border border-blue-500/40">
 
-                                            Folio
 
-                                        </span>
+                                <div class="border-r border-slate-800/60 pr-2">
 
-                                        <span class="text-sm font-bold text-white"
-                                            x-text="selectedTicket?.folio ?? '—'">
-                                        </span>
+                                    <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+
+                                        Folio
+
+                                    </span>
+
+                                    <span class="text-sm font-bold text-white" x-text="selectedTicket?.folio ?? '—'">
+                                    </span>
+
+                                </div>
+
+
+                                <div class="border-r border-slate-800/60 pr-2">
+
+                                    <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+
+                                        Prioridad
+
+                                    </span>
+
+                                    <span class="text-sm font-bold text-white"
+                                        x-text="capitalizar(selectedTicket?.prioridad)">
+                                    </span>
+
+                                </div>
+
+
+                                <div class="border-r border-slate-800/60 pr-2">
+
+                                    <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+
+                                        Estado
+
+                                    </span>
+
+                                    <span class="text-sm font-bold text-white"
+                                        x-text="capitalizar(selectedTicket?.estado)">
+                                    </span>
+
+                                </div>
+
+
+                                <div class="border-r border-slate-800/60 pr-2">
+
+                                    <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+
+                                        Tomado por
+
+                                    </span>
+
+                                    <span class="text-sm font-bold text-white"
+                                        x-text="nombreTomadoPor(selectedTicket)">
+                                    </span>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+
+                                        Fecha
+
+                                    </span>
+
+                                    <span class="text-xs font-bold text-slate-200"
+                                        x-text="formatearFecha(selectedTicket?.created_at)">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- COLUMNAS --}}
+
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+
+                                {{-- ================================================= --}}
+                                {{-- IZQUIERDA --}}
+                                {{-- ================================================= --}}
+
+                                <div class="lg:col-span-6 space-y-5">
+
+
+                                    {{-- RESUMEN --}}
+
+                                    <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30 space-y-4">
+
+                                        <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+
+                                            <i data-lucide="receipt" class="w-4 h-4 text-slate-300">
+                                            </i>
+
+                                            <h3 class="text-sm font-bold text-white">
+
+                                                Resumen del ticket
+
+                                            </h3>
+
+                                        </div>
+
+
+                                        <div class="space-y-3 text-xs">
+
+
+                                            {{-- TITULO --}}
+
+                                            <div class="flex justify-between items-start">
+
+                                                <span class="text-slate-400 font-semibold">
+
+                                                    Título
+
+                                                </span>
+
+                                                <span class="text-white font-medium text-right max-w-[220px]"
+                                                    x-text="selectedTicket?.titulo ?? '—'">
+                                                </span>
+
+                                            </div>
+
+
+                                            {{-- TIPO --}}
+
+                                            {{-- TIPO DE FALLA --}}
+
+                                            <div class="flex justify-between items-center">
+
+                                                <span class="text-slate-400 font-semibold">
+                                                    Tipo de falla:
+                                                </span>
+
+                                                <div class="flex items-center gap-1.5 text-slate-200 font-medium">
+
+                                                    <i data-lucide="ticket" class="w-3.5 h-3.5 text-slate-400"></i>
+
+                                                    <span
+                                                        x-text="selectedTicket?.tipo_falla ?? 'Sin especificar'"></span>
+
+                                                </div>
+
+                                            </div>
+
+                                            {{-- EQUIPO --}}
+
+                                            <div x-show="selectedTicket?.tipo_falla === 'Equipo'" x-cloak
+                                                class="flex justify-between items-center">
+
+                                                <span class="text-slate-400 font-semibold">
+                                                    Equipo:
+                                                </span>
+
+                                                <div class="flex items-center gap-1.5 text-slate-200 font-medium">
+
+                                                    <i data-lucide="laptop" class="w-3.5 h-3.5 text-slate-400"></i>
+
+                                                    <span x-text="selectedTicket?.equipo ?? 'No especificado'"></span>
+
+                                                </div>
+
+                                            </div>
+
+                                            {{-- LEVANTADO POR --}}
+
+                                            <div class="flex justify-between items-start pt-1">
+
+                                                <span class="text-slate-400 font-semibold">
+                                                    Levantado por:
+                                                </span>
+
+                                                <div class="flex items-center gap-2 text-right">
+
+                                                    <div>
+
+                                                        <div class="text-white font-medium"
+                                                            x-text="selectedTicket?.user?.name ?? selectedTicket?.usuario?.name ?? 'Usuario'">
+                                                        </div>
+
+                                                        <div class="text-[10px] text-slate-400"
+                                                            x-text="selectedTicket?.user?.email ?? selectedTicket?.usuario?.email ?? ''">
+                                                        </div>
+
+                                                    </div>
+
+                                                    <img :src="avatarUsuario(
+                                                        selectedTicket?.user?.name ??
+                                                        selectedTicket?.usuario?.name ??
+                                                        'Usuario'
+                                                    )"
+                                                        class="w-8 h-8 rounded-full object-cover border border-blue-400/40">
+
+                                                </div>
+
+                                            </div>
+
+                                            {{-- DEPARTAMENTO --}}
+
+                                            <div class="flex justify-between items-center">
+
+                                                <span class="text-slate-400 font-semibold">
+
+                                                    Departamento:
+
+                                                </span>
+
+                                                <span class="text-slate-300"
+                                                    x-text="selectedTicket?.user?.departamento?.nombre ?? 'Sin especificar'">
+                                                </span>
+
+                                            </div>
+
+
+                                            {{-- EMPRESA --}}
+
+                                            <div class="flex justify-between items-center">
+
+                                                <span class="text-slate-400 font-semibold">
+
+                                                    Empresa:
+
+                                                </span>
+
+                                                <span class="text-slate-300"
+                                                    x-text="selectedTicket?.user?.departamento?.oficina?.empresa?.empresa ?? 'Sin especificar'">
+                                                </span>
+
+                                            </div>
+
+
+                                            {{-- OFICINA --}}
+
+                                            <div class="flex justify-between items-center">
+
+                                                <span class="text-slate-400 font-semibold">
+
+                                                    Oficina:
+
+                                                </span>
+
+                                                <span class="text-slate-300"
+                                                    x-text="selectedTicket?.user?.departamento?.oficina?.nombre ?? 'Sin especificar'">
+                                                </span>
+
+                                            </div>
+
+
+                                            {{-- UBICACION --}}
+
+                                            <div class="flex justify-between items-center">
+
+                                                <span class="text-slate-400 font-semibold">
+
+                                                    Ubicación:
+
+                                                </span>
+
+                                                <span class="text-slate-300"
+                                                    x-text="selectedTicket?.ubicacion ?? 'Sin especificar'">
+                                                </span>
+
+                                            </div>
+
+
+                                            {{-- FECHAS --}}
+
+                                            <div class="pt-2 space-y-2">
+
+                                                <div class="p-2.5 rounded-xl bg-[#030712] border border-slate-800/80">
+
+                                                    <div class="text-[10px] text-slate-400 font-semibold mb-0.5">
+
+                                                        Fecha en que fue levantado
+
+                                                    </div>
+
+                                                    <div class="text-xs text-slate-200 font-medium"
+                                                        x-text="formatearFecha(selectedTicket?.created_at)">
+                                                    </div>
+
+                                                </div>
+
+
+                                                <div class="p-2.5 rounded-xl bg-[#030712] border border-slate-800/80">
+
+                                                    <div
+                                                        class="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mb-0.5">
+
+                                                        <i data-lucide="alarm-clock" class="w-3 h-3 text-slate-400">
+                                                        </i>
+
+                                                        <span>
+                                                            Fecha en que fue tomado
+                                                        </span>
+
+                                                    </div>
+
+                                                    <div class="text-xs text-slate-400"
+                                                        x-text="selectedTicket?.fecha_tomado
+                                                                ? formatearFecha(selectedTicket.fecha_tomado)
+                                                                : 'Aún sin tomar'">
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
 
                                     </div>
 
 
-                                    <div class="border-r border-slate-800/60 pr-2">
+                                    {{-- DESCRIPCION --}}
 
-                                        <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+                                    <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30">
 
-                                            Prioridad
+                                        <h3 class="text-xs font-bold text-white mb-2">
 
-                                        </span>
+                                            Descripción del problema
 
-                                        <span class="text-sm font-bold text-white"
-                                            x-text="capitalizar(selectedTicket?.prioridad)">
-                                        </span>
+                                        </h3>
 
-                                    </div>
-
-
-                                    <div class="border-r border-slate-800/60 pr-2">
-
-                                        <span class="text-[11px] font-semibold text-blue-400 block mb-1">
-
-                                            Estado
-
-                                        </span>
-
-                                        <span class="text-sm font-bold text-white"
-                                            x-text="capitalizar(selectedTicket?.estado)">
-                                        </span>
+                                        <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"
+                                            x-text="selectedTicket?.descripcion ?? 'Sin descripción'">
+                                        </p>
 
                                     </div>
 
 
-                                    <div class="border-r border-slate-800/60 pr-2">
+                                    {{-- INFORMACION ADICIONAL --}}
 
-                                        <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+                                    <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30">
 
-                                            Tomado por
+                                        <h3 class="text-xs font-bold text-white mb-2">
 
-                                        </span>
+                                            Información adicional
 
-                                        <span class="text-sm font-bold text-white"
-                                            x-text="nombreTomadoPor(selectedTicket)">
-                                        </span>
+                                        </h3>
+
+                                        <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"
+                                            x-text="selectedTicket?.informacion_adicional ?? selectedTicket?.comentarios ?? 'Sin información adicional'">
+                                        </p>
 
                                     </div>
 
 
-                                    <div>
+                                    {{-- EVIDENCIA --}}
 
-                                        <span class="text-[11px] font-semibold text-blue-400 block mb-1">
+                                    <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30">
 
-                                            Fecha
+                                        <h3 class="text-xs font-bold text-white mb-3">
 
-                                        </span>
+                                            Evidencia proporcionada
 
-                                        <span class="text-xs font-bold text-slate-200"
-                                            x-text="formatearFecha(selectedTicket?.created_at)">
-                                        </span>
+                                        </h3>
+
+
+                                        <template x-if="evidencias.length > 0">
+
+                                            <div class="flex items-center gap-3 overflow-x-auto pb-1">
+
+                                                <template x-for="(archivo, index) in evidencias"
+                                                    :key="index">
+
+                                                    <a :href="archivoUrl(archivo)" target="_blank"
+                                                        class="relative w-28 h-20 rounded-xl bg-slate-900 border border-slate-700/80 overflow-hidden flex flex-col justify-between p-2 shrink-0 hover:border-blue-500/60 hover:bg-slate-800 transition">
+
+
+                                                        <div class="space-y-1">
+
+                                                            <template x-if="esImagen(archivo)">
+
+                                                                <img :src="archivoUrl(archivo)"
+                                                                    :alt="nombreArchivo(archivo)"
+                                                                    class="w-full h-10 object-cover rounded">
+
+                                                            </template>
+
+
+                                                            <template x-if="!esImagen(archivo)">
+
+                                                                <div class="flex items-center justify-center h-10">
+
+                                                                    <i data-lucide="file-text"
+                                                                        class="w-7 h-7 text-slate-500">
+                                                                    </i>
+
+                                                                </div>
+
+                                                            </template>
+
+                                                        </div>
+
+
+                                                        <div
+                                                            class="flex items-center justify-between gap-1 text-[9px] text-slate-300 pt-2 border-t border-slate-800">
+
+                                                            <span class="truncate" x-text="nombreArchivo(archivo)">
+                                                            </span>
+
+                                                            <span
+                                                                class="px-1 py-0.5 rounded bg-blue-600 text-white font-bold text-[8px] shrink-0"
+                                                                x-text="extensionArchivo(archivo)">
+                                                            </span>
+
+                                                        </div>
+
+                                                    </a>
+
+                                                </template>
+
+                                            </div>
+
+                                        </template>
+
+
+                                        <template x-if="evidencias.length === 0">
+
+                                            <div class="flex items-center justify-center py-6 text-slate-500 text-xs">
+
+                                                <div class="flex items-center gap-2">
+
+                                                    <i data-lucide="file-x" class="w-4 h-4">
+                                                    </i>
+
+                                                    <span>
+                                                        No se proporcionó evidencia.
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </template>
 
                                     </div>
 
                                 </div>
 
 
-                                {{-- COLUMNAS --}}
+                                {{-- ================================================= --}}
+                                {{-- DERECHA --}}
+                                {{-- ================================================= --}}
 
-                                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-
-                                    {{-- ================================================= --}}
-                                    {{-- IZQUIERDA --}}
-                                    {{-- ================================================= --}}
-
-                                    <div class="lg:col-span-6 space-y-5">
+                                <div
+                                    class="lg:col-span-6 p-5 rounded-2xl bg-[#060c21] border border-blue-500/30 flex flex-col min-h-[600px]">
 
 
-                                        {{-- RESUMEN --}}
+                                    <div class="flex items-center gap-2 pb-4 border-b border-slate-800/80">
 
-                                        <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30 space-y-4">
+                                        <i data-lucide="message-square" class="w-4 h-4 text-slate-300">
+                                        </i>
 
-                                            <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                                        <h3 class="text-sm font-bold text-white">
 
-                                                <i data-lucide="receipt" class="w-4 h-4 text-slate-300">
+                                            Comentarios y seguimiento
+
+                                        </h3>
+
+                                    </div>
+
+
+                                    <form id="formComentario" method="POST" enctype="multipart/form-data"
+                                        class="flex items-end gap-3">
+
+                                        @csrf
+
+                                        {{-- FOTO DEL USUARIO --}}
+                                        <div class="shrink-0">
+
+                                            <img src="{{ auth()->user()->foto
+                                                ? Storage::url(auth()->user()->foto)
+                                                : 'https://ui-avatars.com/api/?name=' .
+                                                    urlencode(auth()->user()->name ?? 'Usuario') .
+                                                    '&background=0D8ABC&color=fff' }}"
+                                                class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
+                                                alt="{{ auth()->user()->name ?? 'Usuario' }}">
+
+                                        </div>
+
+                                        {{-- CONTENEDOR DEL COMENTARIO --}}
+                                        <div class="relative flex-1">
+
+                                            {{-- ARCHIVO --}}
+                                            <input type="file" name="archivo" x-ref="fileInputModal"
+                                                @change="seleccionarArchivo($event)" class="hidden">
+
+                                            {{-- CAMPO --}}
+                                            <input type="text" name="mensaje"
+                                                placeholder="Escribe un comentario..." autocomplete="off"
+                                                class="w-full h-11 pl-4 pr-24 text-xs
+            bg-[#030712]
+            border border-slate-800
+            rounded-xl
+            text-white
+            placeholder-slate-500
+            focus:outline-none
+            focus:border-blue-500
+            focus:ring-1
+            focus:ring-blue-500/30
+            transition">
+
+                                            {{-- BOTONES --}}
+                                            <div
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+
+                                                {{-- ADJUNTAR --}}
+                                                <button type="button" @click="$refs.fileInputModal.click()"
+                                                    class="w-8 h-8 flex items-center justify-center
+                rounded-lg
+                text-slate-400
+                hover:text-blue-400
+                hover:bg-blue-500/10
+                transition"
+                                                    title="Adjuntar archivo">
+                                                    <i data-lucide="paperclip" class="w-4 h-4"></i>
+                                                </button>
+
+                                                {{-- ENVIAR --}}
+                                                <button type="submit" id="btnEnviarComentario"
+                                                    class="h-8 px-3
+                flex items-center justify-center
+                rounded-lg
+                bg-blue-600
+                hover:bg-blue-500
+                text-white
+                text-[11px]
+                font-semibold
+                transition
+                shadow-lg shadow-blue-900/20">
+                                                    <i data-lucide="send" class="w-3.5 h-3.5 mr-1.5"></i>
+                                                    Enviar
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+
+                                    </form>
+                                    {{-- ARCHIVO SELECCIONADO --}}
+
+                                    <template x-if="archivoAdjunto">
+
+                                        <div
+                                            class="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
+
+                                            <i data-lucide="paperclip" class="w-4 h-4 text-blue-400">
+                                            </i>
+
+                                            <span class="text-[10px] text-slate-300 truncate"
+                                                x-text="archivoAdjunto?.name">
+                                            </span>
+
+                                            <button type="button" @click="quitarArchivo()"
+                                                class="ml-auto text-slate-500 hover:text-red-400">
+
+                                                <i data-lucide="x" class="w-3.5 h-3.5">
                                                 </i>
 
-                                                <h3 class="text-sm font-bold text-white">
+                                            </button>
 
-                                                    Resumen del ticket
+                                        </div>
 
-                                                </h3>
+                                    </template>
+
+
+                                    {{-- COMENTARIOS --}}
+
+                                    <div id="listaComentarios"
+                                        class="flex-1 space-y-5 mt-4 overflow-y-auto max-h-[460px] pr-2 custom-scrollbar">
+
+
+                                        <template x-if="comentarios.length === 0">
+
+                                            <div
+                                                class="flex flex-col items-center justify-center py-16 text-slate-500">
+
+                                                <div
+                                                    class="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center mb-3">
+
+                                                    <i data-lucide="message-square-off" class="w-5 h-5">
+                                                    </i>
+
+                                                </div>
+
+                                                <p class="text-xs">
+                                                    Aún no hay comentarios.
+                                                </p>
+
+                                                <span class="text-[10px] text-slate-600 mt-1">
+
+                                                    Sé el primero en agregar un comentario.
+
+                                                </span>
 
                                             </div>
 
-
-                                            <div class="space-y-3 text-xs">
-
-
-                                                {{-- TITULO --}}
-
-                                                <div class="flex justify-between items-start">
-
-                                                    <span class="text-slate-400 font-semibold">
-
-                                                        Título
-
-                                                    </span>
-
-                                                    <span class="text-white font-medium text-right max-w-[220px]"
-                                                        x-text="selectedTicket?.titulo ?? '—'">
-                                                    </span>
-
-                                                </div>
+                                        </template>
 
 
-                                                {{-- TIPO --}}
+                                        <template x-for="comentario in comentarios" :key="comentario.id">
 
-                                                {{-- TIPO DE FALLA --}}
 
-                                                <div class="flex justify-between items-center">
+                                            <div class="flex items-start gap-3">
 
-                                                    <span class="text-slate-400 font-semibold">
-                                                        Tipo de falla:
-                                                    </span>
+                                                <img :src="comentario.usuario?.foto ?
+                                                    comentario.usuario.foto :
+                                                    avatarUsuario(comentario.usuario?.name || 'Usuario')"
+                                                    class="w-8 h-8 rounded-full object-cover shrink-0 border border-blue-400/30"
+                                                    :alt="comentario.usuario?.name || 'Usuario'">
 
-                                                    <div class="flex items-center gap-1.5 text-slate-200 font-medium">
 
-                                                        <i data-lucide="ticket"
-                                                            class="w-3.5 h-3.5 text-slate-400"></i>
+                                                <div class="flex-1 min-w-0">
+
+
+                                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+
+                                                        <span class="text-xs font-bold text-white"
+                                                            x-text="comentario.usuario?.name ?? 'Usuario'">
+                                                        </span>
+
 
                                                         <span
-                                                            x-text="selectedTicket?.tipo_falla ?? 'Sin especificar'"></span>
+                                                            class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-indigo-600/30 text-indigo-300 border border-indigo-500/40"
+                                                            x-text="comentario.usuario?.rol ?? 'Usuario'">
+                                                        </span>
+
+
+                                                        <span class="text-[10px] text-slate-500 ml-auto"
+                                                            x-text="comentario.fecha ?? ''">
+                                                        </span>
 
                                                     </div>
 
-                                                </div>
 
-                                                {{-- EQUIPO --}}
+                                                    <template x-if="comentario.mensaje">
 
-                                                <div x-show="selectedTicket?.tipo_falla === 'Equipo'" x-cloak
-                                                    class="flex justify-between items-center">
+                                                        <p class="text-xs text-slate-300 mb-2 whitespace-pre-line"
+                                                            x-text="comentario.mensaje">
+                                                        </p>
 
-                                                    <span class="text-slate-400 font-semibold">
-                                                        Equipo:
-                                                    </span>
+                                                    </template>
 
-                                                    <div class="flex items-center gap-1.5 text-slate-200 font-medium">
 
-                                                        <i data-lucide="laptop"
-                                                            class="w-3.5 h-3.5 text-slate-400"></i>
+                                                    {{-- IMAGEN --}}
 
-                                                        <span
-                                                            x-text="selectedTicket?.equipo ?? 'No especificado'"></span>
+                                                    <template
+                                                        x-if="comentario.archivo && esImagen(comentario.archivo)">
 
-                                                    </div>
+                                                        <a :href="comentario.url_archivo" target="_blank"
+                                                            class="block w-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-700/80 hover:border-blue-500/60 transition">
 
-                                                </div>
+                                                            <img :src="comentario.url_archivo"
+                                                                :alt="comentario.nombre_archivo"
+                                                                class="w-36 h-20 object-cover">
 
-                                                {{-- LEVANTADO POR --}}
 
-                                                <div class="flex justify-between items-start pt-1">
+                                                            <div
+                                                                class="px-2 py-1.5 flex items-center justify-between gap-2 border-t border-slate-800">
 
-                                                    <span class="text-slate-400 font-semibold">
-                                                        Levantado por:
-                                                    </span>
+                                                                <span class="text-[9px] text-slate-300 truncate"
+                                                                    x-text="comentario.nombre_archivo">
+                                                                </span>
 
-                                                    <div class="flex items-center gap-2 text-right">
+                                                                <span
+                                                                    class="px-1 py-0.5 rounded bg-blue-600 text-white font-bold text-[8px] shrink-0"
+                                                                    x-text="comentario.extension">
+                                                                </span>
 
-                                                        <div>
-
-                                                            <div class="text-white font-medium"
-                                                                x-text="selectedTicket?.user?.name ?? selectedTicket?.usuario?.name ?? 'Usuario'">
                                                             </div>
 
-                                                            <div class="text-[10px] text-slate-400"
-                                                                x-text="selectedTicket?.user?.email ?? selectedTicket?.usuario?.email ?? ''">
-                                                            </div>
+                                                        </a>
 
-                                                        </div>
+                                                    </template>
 
-                                                        <img :src="avatarUsuario(
-                                                            selectedTicket?.user?.name ??
-                                                            selectedTicket?.usuario?.name ??
-                                                            'Usuario'
-                                                        )"
-                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40">
 
-                                                    </div>
+                                                    {{-- ARCHIVO NORMAL --}}
 
-                                                </div>
+                                                    <template
+                                                        x-if="comentario.archivo && !esImagen(comentario.archivo)">
 
-                                                {{-- DEPARTAMENTO --}}
+                                                        <a :href="comentario.url_archivo" target="_blank"
+                                                            class="group block w-40 h-20 rounded-xl bg-slate-900 border border-slate-700/80 p-2 hover:border-blue-500/60 hover:bg-slate-800 transition">
 
-                                                <div class="flex justify-between items-center">
 
-                                                    <span class="text-slate-400 font-semibold">
+                                                            <div class="flex items-center gap-2 mb-2">
 
-                                                        Departamento:
+                                                                <div
+                                                                    class="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
 
-                                                    </span>
+                                                                    <i data-lucide="file"
+                                                                        class="w-4 h-4 text-blue-400">
+                                                                    </i>
 
-                                                    <span class="text-slate-300"
-                                                        x-text="selectedTicket?.user?.departamento?.nombre ?? 'Sin especificar'">
-                                                    </span>
-
-                                                </div>
-
-
-                                                {{-- EMPRESA --}}
-
-                                                <div class="flex justify-between items-center">
-
-                                                    <span class="text-slate-400 font-semibold">
-
-                                                        Empresa:
-
-                                                    </span>
-
-                                                    <span class="text-slate-300"
-                                                        x-text="selectedTicket?.user?.departamento?.oficina?.empresa?.empresa ?? 'Sin especificar'">
-                                                    </span>
-
-                                                </div>
-
-
-                                                {{-- OFICINA --}}
-
-                                                <div class="flex justify-between items-center">
-
-                                                    <span class="text-slate-400 font-semibold">
-
-                                                        Oficina:
-
-                                                    </span>
-
-                                                    <span class="text-slate-300"
-                                                        x-text="selectedTicket?.user?.departamento?.oficina?.nombre ?? 'Sin especificar'">
-                                                    </span>
-
-                                                </div>
-
-
-                                                {{-- UBICACION --}}
-
-                                                <div class="flex justify-between items-center">
-
-                                                    <span class="text-slate-400 font-semibold">
-
-                                                        Ubicación:
-
-                                                    </span>
-
-                                                    <span class="text-slate-300"
-                                                        x-text="selectedTicket?.ubicacion ?? 'Sin especificar'">
-                                                    </span>
-
-                                                </div>
-
-
-                                                {{-- FECHAS --}}
-
-                                                <div class="pt-2 space-y-2">
-
-                                                    <div
-                                                        class="p-2.5 rounded-xl bg-[#030712] border border-slate-800/80">
-
-                                                        <div class="text-[10px] text-slate-400 font-semibold mb-0.5">
-
-                                                            Fecha en que fue levantado
-
-                                                        </div>
-
-                                                        <div class="text-xs text-slate-200 font-medium"
-                                                            x-text="formatearFecha(selectedTicket?.created_at)">
-                                                        </div>
-
-                                                    </div>
-
-
-                                                    <div
-                                                        class="p-2.5 rounded-xl bg-[#030712] border border-slate-800/80">
-
-                                                        <div
-                                                            class="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mb-0.5">
-
-                                                            <i data-lucide="alarm-clock"
-                                                                class="w-3 h-3 text-slate-400">
-                                                            </i>
-
-                                                            <span>
-                                                                Fecha en que fue tomado
-                                                            </span>
-
-                                                        </div>
-
-                                                        <div class="text-xs text-slate-400"
-                                                            x-text="selectedTicket?.fecha_tomado
-                                                                ? formatearFecha(selectedTicket.fecha_tomado)
-                                                                : 'Aún sin tomar'">
-                                                        </div>
-
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        {{-- DESCRIPCION --}}
-
-                                        <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30">
-
-                                            <h3 class="text-xs font-bold text-white mb-2">
-
-                                                Descripción del problema
-
-                                            </h3>
-
-                                            <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"
-                                                x-text="selectedTicket?.descripcion ?? 'Sin descripción'">
-                                            </p>
-
-                                        </div>
-
-
-                                        {{-- INFORMACION ADICIONAL --}}
-
-                                        <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30">
-
-                                            <h3 class="text-xs font-bold text-white mb-2">
-
-                                                Información adicional
-
-                                            </h3>
-
-                                            <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"
-                                                x-text="selectedTicket?.informacion_adicional ?? selectedTicket?.comentarios ?? 'Sin información adicional'">
-                                            </p>
-
-                                        </div>
-
-
-                                        {{-- EVIDENCIA --}}
-
-                                        <div class="p-5 rounded-2xl bg-[#060c21] border border-blue-500/30">
-
-                                            <h3 class="text-xs font-bold text-white mb-3">
-
-                                                Evidencia proporcionada
-
-                                            </h3>
-
-
-                                            <template x-if="evidencias.length > 0">
-
-                                                <div class="flex items-center gap-3 overflow-x-auto pb-1">
-
-                                                    <template x-for="(archivo, index) in evidencias"
-                                                        :key="index">
-
-                                                        <a :href="archivoUrl(archivo)" target="_blank"
-                                                            class="relative w-28 h-20 rounded-xl bg-slate-900 border border-slate-700/80 overflow-hidden flex flex-col justify-between p-2 shrink-0 hover:border-blue-500/60 hover:bg-slate-800 transition">
-
-
-                                                            <div class="space-y-1">
-
-                                                                <template x-if="esImagen(archivo)">
-
-                                                                    <img :src="archivoUrl(archivo)"
-                                                                        :alt="nombreArchivo(archivo)"
-                                                                        class="w-full h-10 object-cover rounded">
-
-                                                                </template>
-
-
-                                                                <template x-if="!esImagen(archivo)">
-
-                                                                    <div class="flex items-center justify-center h-10">
-
-                                                                        <i data-lucide="file-text"
-                                                                            class="w-7 h-7 text-slate-500">
-                                                                        </i>
-
-                                                                    </div>
-
-                                                                </template>
+                                                                </div>
 
                                                             </div>
 
 
                                                             <div
-                                                                class="flex items-center justify-between gap-1 text-[9px] text-slate-300 pt-2 border-t border-slate-800">
+                                                                class="flex items-center justify-between gap-2 text-[9px] text-slate-300 pt-1 border-t border-slate-800">
 
                                                                 <span class="truncate"
-                                                                    x-text="nombreArchivo(archivo)">
+                                                                    x-text="comentario.nombre_archivo">
                                                                 </span>
 
                                                                 <span
                                                                     class="px-1 py-0.5 rounded bg-blue-600 text-white font-bold text-[8px] shrink-0"
-                                                                    x-text="extensionArchivo(archivo)">
+                                                                    x-text="comentario.extension">
                                                                 </span>
 
                                                             </div>
@@ -2456,325 +2785,9 @@
 
                                                 </div>
 
-                                            </template>
-
-
-                                            <template x-if="evidencias.length === 0">
-
-                                                <div
-                                                    class="flex items-center justify-center py-6 text-slate-500 text-xs">
-
-                                                    <div class="flex items-center gap-2">
-
-                                                        <i data-lucide="file-x" class="w-4 h-4">
-                                                        </i>
-
-                                                        <span>
-                                                            No se proporcionó evidencia.
-                                                        </span>
-
-                                                    </div>
-
-                                                </div>
-
-                                            </template>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    {{-- ================================================= --}}
-                                    {{-- DERECHA --}}
-                                    {{-- ================================================= --}}
-
-                                    <div
-                                        class="lg:col-span-6 p-5 rounded-2xl bg-[#060c21] border border-blue-500/30 flex flex-col min-h-[600px]">
-
-
-                                        <div class="flex items-center gap-2 pb-4 border-b border-slate-800/80">
-
-                                            <i data-lucide="message-square" class="w-4 h-4 text-slate-300">
-                                            </i>
-
-                                            <h3 class="text-sm font-bold text-white">
-
-                                                Comentarios y seguimiento
-
-                                            </h3>
-
-                                        </div>
-
-
-                                        {{-- FORMULARIO --}}
-
-                                        <form id="formComentario"
-                                            action="{{ route('tickets.comentarios.store', $ticket->id) }}"
-                                            method="POST" enctype="multipart/form-data"
-                                            class="flex items-end gap-3">
-
-                                            @csrf
-
-                                            {{-- FOTO DEL USUARIO --}}
-                                            <div class="shrink-0">
-
-                                                <img src="{{ auth()->user()->foto
-                                                    ? Storage::url(auth()->user()->foto)
-                                                    : 'https://ui-avatars.com/api/?name=' .
-                                                        urlencode(auth()->user()->name ?? 'Usuario') .
-                                                        '&background=0D8ABC&color=fff' }}"
-                                                    class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
-                                                    alt="{{ auth()->user()->name ?? 'Usuario' }}">
-
-                                            </div>
-
-
-                                            {{-- CONTENEDOR DEL COMENTARIO --}}
-                                            <div class="relative flex-1">
-
-                                                {{-- ARCHIVO --}}
-                                                <input type="file" name="archivo" x-ref="fileInputModal"
-                                                    @change="seleccionarArchivo($event)" class="hidden">
-
-
-                                                {{-- CAMPO --}}
-                                                <input type="text" name="mensaje"
-                                                    placeholder="Escribe un comentario..." autocomplete="off"
-                                                    class="w-full h-11 pl-4 pr-24 text-xs
-                                                    bg-[#030712]
-                                                    border border-slate-800
-                                                    rounded-xl
-                                                    text-white
-                                                    placeholder-slate-500
-                                                    focus:outline-none
-                                                    focus:border-blue-500
-                                                    focus:ring-1
-                                                    focus:ring-blue-500/30
-                                                    transition">
-
-
-                                                {{-- BOTONES --}}
-                                                <div
-                                                    class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-
-                                                    {{-- ADJUNTAR --}}
-                                                    <button type="button" @click="$refs.fileInputModal.click()"
-                                                        class="w-8 h-8 flex items-center justify-center
-                                                        rounded-lg
-                                                        text-slate-400
-                                                        hover:text-blue-400
-                                                        hover:bg-blue-500/10
-                                                        transition"
-                                                        title="Adjuntar archivo">
-                                                        <i data-lucide="paperclip" class="w-4 h-4"></i>
-                                                    </button>
-                                                    <button type="submit" id="btnEnviarComentario"
-                                                        class="h-8 px-3
-                                                        flex items-center justify-center
-                                                        rounded-lg
-                                                        bg-blue-600
-                                                        hover:bg-blue-500
-                                                        text-white
-                                                        text-[11px]
-                                                        font-semibold
-                                                        transition
-                                                        shadow-lg shadow-blue-900/20">
-                                                        <i data-lucide="send" class="w-3.5 h-3.5 mr-1.5"></i>
-
-                                                        Enviar
-
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        </form>
-                                        {{-- ARCHIVO SELECCIONADO --}}
-
-                                        <template x-if="archivoAdjunto">
-
-                                            <div
-                                                class="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
-
-                                                <i data-lucide="paperclip" class="w-4 h-4 text-blue-400">
-                                                </i>
-
-                                                <span class="text-[10px] text-slate-300 truncate"
-                                                    x-text="archivoAdjunto?.name">
-                                                </span>
-
-                                                <button type="button" @click="quitarArchivo()"
-                                                    class="ml-auto text-slate-500 hover:text-red-400">
-
-                                                    <i data-lucide="x" class="w-3.5 h-3.5">
-                                                    </i>
-
-                                                </button>
-
                                             </div>
 
                                         </template>
-
-
-                                        {{-- COMENTARIOS --}}
-
-                                        <div id="listaComentarios"
-                                            class="flex-1 space-y-5 mt-4 overflow-y-auto max-h-[460px] pr-2 custom-scrollbar">
-
-
-                                            <template x-if="comentarios.length === 0">
-
-                                                <div
-                                                    class="flex flex-col items-center justify-center py-16 text-slate-500">
-
-                                                    <div
-                                                        class="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center mb-3">
-
-                                                        <i data-lucide="message-square-off" class="w-5 h-5">
-                                                        </i>
-
-                                                    </div>
-
-                                                    <p class="text-xs">
-                                                        Aún no hay comentarios.
-                                                    </p>
-
-                                                    <span class="text-[10px] text-slate-600 mt-1">
-
-                                                        Sé el primero en agregar un comentario.
-
-                                                    </span>
-
-                                                </div>
-
-                                            </template>
-
-
-                                            <template x-for="comentario in comentarios" :key="comentario.id">
-
-
-                                                <div class="flex items-start gap-3">
-
-                                                    <img :src="comentario.usuario?.foto ?
-                                                        comentario.usuario.foto :
-                                                        avatarUsuario(comentario.usuario?.name || 'Usuario')"
-                                                        class="w-8 h-8 rounded-full object-cover shrink-0 border border-blue-400/30"
-                                                        :alt="comentario.usuario?.name || 'Usuario'">
-
-
-                                                    <div class="flex-1 min-w-0">
-
-
-                                                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-
-                                                            <span class="text-xs font-bold text-white"
-                                                                x-text="comentario.usuario?.name ?? 'Usuario'">
-                                                            </span>
-
-
-                                                            <span
-                                                                class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-indigo-600/30 text-indigo-300 border border-indigo-500/40"
-                                                                x-text="comentario.usuario?.rol ?? 'Usuario'">
-                                                            </span>
-
-
-                                                            <span class="text-[10px] text-slate-500 ml-auto"
-                                                                x-text="comentario.fecha ?? ''">
-                                                            </span>
-
-                                                        </div>
-
-
-                                                        <template x-if="comentario.mensaje">
-
-                                                            <p class="text-xs text-slate-300 mb-2 whitespace-pre-line"
-                                                                x-text="comentario.mensaje">
-                                                            </p>
-
-                                                        </template>
-
-
-                                                        {{-- IMAGEN --}}
-
-                                                        <template
-                                                            x-if="comentario.archivo && esImagen(comentario.archivo)">
-
-                                                            <a :href="comentario.url_archivo" target="_blank"
-                                                                class="block w-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-700/80 hover:border-blue-500/60 transition">
-
-                                                                <img :src="comentario.url_archivo"
-                                                                    :alt="comentario.nombre_archivo"
-                                                                    class="w-36 h-20 object-cover">
-
-
-                                                                <div
-                                                                    class="px-2 py-1.5 flex items-center justify-between gap-2 border-t border-slate-800">
-
-                                                                    <span class="text-[9px] text-slate-300 truncate"
-                                                                        x-text="comentario.nombre_archivo">
-                                                                    </span>
-
-                                                                    <span
-                                                                        class="px-1 py-0.5 rounded bg-blue-600 text-white font-bold text-[8px] shrink-0"
-                                                                        x-text="comentario.extension">
-                                                                    </span>
-
-                                                                </div>
-
-                                                            </a>
-
-                                                        </template>
-
-
-                                                        {{-- ARCHIVO NORMAL --}}
-
-                                                        <template
-                                                            x-if="comentario.archivo && !esImagen(comentario.archivo)">
-
-                                                            <a :href="comentario.url_archivo" target="_blank"
-                                                                class="group block w-40 h-20 rounded-xl bg-slate-900 border border-slate-700/80 p-2 hover:border-blue-500/60 hover:bg-slate-800 transition">
-
-
-                                                                <div class="flex items-center gap-2 mb-2">
-
-                                                                    <div
-                                                                        class="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
-
-                                                                        <i data-lucide="file"
-                                                                            class="w-4 h-4 text-blue-400">
-                                                                        </i>
-
-                                                                    </div>
-
-                                                                </div>
-
-
-                                                                <div
-                                                                    class="flex items-center justify-between gap-2 text-[9px] text-slate-300 pt-1 border-t border-slate-800">
-
-                                                                    <span class="truncate"
-                                                                        x-text="comentario.nombre_archivo">
-                                                                    </span>
-
-                                                                    <span
-                                                                        class="px-1 py-0.5 rounded bg-blue-600 text-white font-bold text-[8px] shrink-0"
-                                                                        x-text="comentario.extension">
-                                                                    </span>
-
-                                                                </div>
-
-                                                            </a>
-
-                                                        </template>
-
-                                                    </div>
-
-                                                </div>
-
-                                            </template>
-
-                                        </div>
 
                                     </div>
 
@@ -2782,42 +2795,44 @@
 
                             </div>
 
-
-                            {{-- FOOTER --}}
-
-                            <div
-                                class="p-5 border-t border-slate-800/80 bg-[#030712] flex items-center justify-between shrink-0">
+                        </div>
 
 
-                                <button type="button" @click="cerrarModal()"
-                                    class="px-5 py-2.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all duration-200">
+                        {{-- FOOTER --}}
 
-                                    Cerrar
-
-                                </button>
+                        <div
+                            class="p-5 border-t border-slate-800/80 bg-[#030712] flex items-center justify-between shrink-0">
 
 
-                                <button type="button" x-show="!tieneTomado(selectedTicket)" @click="tomarTicket()"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold border border-blue-500/40 shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                            <button type="button" @click="cerrarModal()"
+                                class="px-5 py-2.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all duration-200">
 
-                                    <i data-lucide="hand" class="w-4 h-4">
-                                    </i>
+                                Cerrar
 
-                                    <span>
-                                        Tomar ticket
-                                    </span>
+                            </button>
 
-                                </button>
 
-                            </div>
+                            <button type="button" x-show="!tieneTomado(selectedTicket)" @click="tomarTicket()"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold border border-blue-500/40 shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+
+                                <i data-lucide="hand" class="w-4 h-4">
+                                </i>
+
+                                <span>
+                                    Tomar ticket
+                                </span>
+
+                            </button>
 
                         </div>
 
                     </div>
 
-                </template>
+                </div>
 
-            </div>
+            </template>
+
+        </div>
 
         </div>
 

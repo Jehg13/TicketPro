@@ -7,6 +7,8 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
+        <script src="https://unpkg.com/lucide@latest"></script>
+
     <title>TicketPro | Dashboard</title>
 </head>
 
@@ -173,146 +175,252 @@
 
                     <div class="relative inline-block text-left">
 
-                        <button id="notif-button" type="button"
-                            class="group relative rounded-xl border border-slate-700/50 bg-slate-800/80 p-2 text-gray-300 shadow-lg transition-all duration-200 hover:bg-slate-700/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                            aria-label="Ver notificaciones">
+<!-- =========================================================
+                        NOTIFICACIONES
+                     ========================================================== -->
 
-                            <svg class="h-6 w-6 transition-transform duration-200 group-hover:scale-110"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                                </path>
+                        <!-- BOTÓN DE NOTIFICACIONES -->
+                        <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                            @click.outside="notificacionesAbiertas = false"
+                            class="relative flex items-center justify-center w-10 h-10 rounded-xl
+                       bg-slate-900/80 border border-slate-800
+                       text-slate-400 hover:text-white hover:bg-slate-800
+                       transition-all duration-200 focus:outline-none">
 
-                            </svg>
+                            <i data-lucide="bell" class="w-5 h-5"></i>
 
-                            <span class="absolute right-1.5 top-1.5 flex h-3 w-3">
 
+                            <!-- INDICADOR DE NOTIFICACIONES NUEVAS -->
+                            @if ($notificacionesNoLeidas > 0)
                                 <span
-                                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75">
-                                </span>
+                                    class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
+                               px-1 flex items-center justify-center
+                               rounded-full bg-indigo-600
+                               border-2 border-[#050814]
+                               text-[9px] font-bold text-white">
 
-                                <span
-                                    class="relative inline-flex h-3 w-3 rounded-full border-2 border-slate-900 bg-rose-500">
-                                </span>
+                                    {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
 
-                            </span>
+                                </span>
+                            @endif
 
                         </button>
 
-                        <div id="notif-dropdown"
-                            class="absolute right-0 z-50 mt-3 hidden w-80 overflow-hidden divide-y divide-slate-800 rounded-2xl border border-slate-800 bg-slate-900/95 shadow-2xl backdrop-blur-md sm:w-96">
 
-                            <div class="flex items-center justify-between p-4">
+                        <!-- =====================================================
+                 DROPDOWN DE NOTIFICACIONES
+            ====================================================== -->
+
+                        <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                            @click.outside="notificacionesAbiertas = false"
+                            class="absolute right-0 top-full mt-3
+                       w-[360px] max-w-[calc(100vw-2rem)]
+                       bg-[#0f1535]
+                       border border-[#1e295d]
+                       rounded-2xl
+                       shadow-2xl shadow-black/40
+                       overflow-hidden z-[99999]"
+                            style="display: none;">
+
+                            <!-- =================================================
+                     CABECERA
+                ================================================== -->
+
+                            <div
+                                class="flex items-center justify-between
+                           px-4 py-4
+                           border-b border-slate-800/80">
 
                                 <div class="flex items-center gap-2">
 
-                                    <h3 class="text-sm font-semibold text-white">
-                                        Notificaciones
-                                    </h3>
+                                    <div
+                                        class="w-8 h-8 rounded-lg
+                                   bg-indigo-500/10
+                                   border border-indigo-500/20
+                                   flex items-center justify-center">
 
-                                    <span
-                                        class="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-400">
-                                        3 nuevas
-                                    </span>
+                                        <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
+                                        </i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h3 class="text-sm font-semibold text-white">
+                                            Notificaciones
+                                        </h3>
+
+                                        <p class="text-[10px] text-slate-500">
+                                            Tienes {{ $notificacionesNoLeidas }} nuevas
+                                        </p>
+
+                                    </div>
 
                                 </div>
 
-                                <button
-                                    class="text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300">
-                                    Marcar leídas
-                                </button>
+
+                                <!-- MARCAR COMO LEÍDAS -->
+                                @if ($notificacionesNoLeidas > 0)
+                                    <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
+
+                                        @csrf
+
+                                        @method('PATCH')
+
+                                        <button type="submit"
+                                            class="text-[11px] font-medium
+                                       text-indigo-400
+                                       hover:text-indigo-300
+                                       transition-colors">
+
+                                            Marcar leídas
+
+                                        </button>
+
+                                    </form>
+                                @endif
 
                             </div>
 
-                            <div class="max-h-80 divide-y divide-slate-800/50 overflow-y-auto">
 
-                                <a href="#"
-                                    class="group flex gap-3 bg-slate-800/40 p-4 transition-colors hover:bg-slate-800/80">
+                            <!-- =================================================
+                     LISTA DE NOTIFICACIONES
+                ================================================== -->
 
-                                    <div class="relative shrink-0">
+                            <div class="max-h-[400px] overflow-y-auto">
 
-                                        <img class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/30"
-                                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                                            alt="Avatar">
+                                @forelse ($notificaciones as $notificacion)
+                                    <a href="{{ $notificacion->url ?? '#' }}"
+                                        class="group flex gap-3 px-4 py-4
+                                   border-b border-slate-800/50
+                                   transition-colors
+                                   hover:bg-slate-800/40
+                                   {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
 
-                                        <span
-                                            class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-slate-900 bg-emerald-500">
-                                        </span>
+                                        <!-- ICONO -->
+                                        <div
+                                            class="w-10 h-10 shrink-0
+                                       rounded-xl
+                                       border border-indigo-500/20
+                                       bg-indigo-500/10
+                                       flex items-center justify-center">
 
-                                    </div>
+                                            <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                class="w-5 h-5 text-indigo-400">
+                                            </i>
 
-                                    <div class="min-w-0 flex-1">
+                                        </div>
 
-                                        <p class="text-xs leading-relaxed text-slate-300">
 
-                                            <strong
-                                                class="font-semibold text-white transition-colors group-hover:text-indigo-400">
-                                                Elena Rostova
-                                            </strong>
+                                        <!-- CONTENIDO -->
+                                        <div class="flex-1 min-w-0">
 
-                                            comentó en tu proyecto
+                                            <div class="flex items-start justify-between gap-2">
 
-                                            <span class="text-slate-400">
-                                                Dashboard UI
-                                            </span>.
+                                                <p
+                                                    class="text-xs font-semibold
+                                               text-white
+                                               group-hover:text-indigo-400
+                                               transition-colors">
 
+                                                    {{ $notificacion->titulo }}
+
+                                                </p>
+
+
+                                                <!-- PUNTO DE NO LEÍDA -->
+                                                @if (!$notificacion->leida)
+                                                    <span
+                                                        class="w-2 h-2 shrink-0 mt-1.5
+                                                   rounded-full
+                                                   bg-indigo-500">
+                                                    </span>
+                                                @endif
+
+                                            </div>
+
+
+                                            <p
+                                                class="mt-1 text-[11px]
+                                           leading-relaxed
+                                           text-slate-400">
+
+                                                {{ $notificacion->mensaje }}
+
+                                            </p>
+
+
+                                            <p
+                                                class="mt-2 text-[10px]
+                                           text-slate-500">
+
+                                                {{ $notificacion->created_at->diffForHumans() }}
+
+                                            </p>
+
+                                        </div>
+
+                                    </a>
+
+                                @empty
+
+                                    <!-- SIN NOTIFICACIONES -->
+                                    <div class="px-6 py-10 text-center">
+
+                                        <div
+                                            class="mx-auto mb-3
+                                       w-12 h-12
+                                       rounded-full
+                                       bg-slate-800/50
+                                       border border-slate-800
+                                       flex items-center justify-center">
+
+                                            <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
+                                            </i>
+
+                                        </div>
+
+                                        <p class="text-xs font-medium text-slate-400">
+                                            No tienes notificaciones
                                         </p>
 
-                                        <span class="mt-1 block text-[10px] text-slate-500">
-                                            Hace 2 minutos
-                                        </span>
-
-                                    </div>
-
-                                    <span class="h-2 w-2 shrink-0 self-center rounded-full bg-indigo-500">
-                                    </span>
-
-                                </a>
-
-                                <a href="#"
-                                    class="group flex gap-3 p-4 transition-colors hover:bg-slate-800/50">
-
-                                    <div
-                                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
-
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 10V3L4 14h7v7l9-11h-7z">
-                                            </path>
-
-                                        </svg>
-
-                                    </div>
-
-                                    <div class="min-w-0 flex-1">
-
-                                        <p class="text-xs leading-relaxed text-slate-300">
-                                            Tu despliegue en
-                                            <strong class="font-semibold text-white">
-                                                Vite/Production
-                                            </strong>
-                                            se completó con éxito.
+                                        <p class="text-[10px] text-slate-600 mt-1">
+                                            Aquí aparecerán tus nuevas notificaciones.
                                         </p>
 
-                                        <span class="mt-1 block text-[10px] text-slate-500">
-                                            Hace 1 hora
-                                        </span>
-
                                     </div>
-
-                                </a>
+                                @endforelse
 
                             </div>
 
-                            <a href="#"
-                                class="block p-3 text-center text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800/50 hover:text-white">
-                                Ver todas las notificaciones
-                            </a>
+
+                            <!-- =================================================
+                     PIE DEL DROPDOWN
+                ================================================== -->
+
+                            @if ($notificaciones->count() > 0)
+                                <div
+                                    class="px-4 py-3
+                               border-t border-slate-800/80
+                               bg-[#0b1026]">
+
+                                    <p class="text-[10px] text-center text-slate-500">
+                                        Mostrando tus notificaciones recientes
+                                    </p>
+
+                                </div>
+                            @endif
 
                         </div>
+
+                    </div>
 
                     </div>
 

@@ -12,13 +12,22 @@ document.addEventListener('alpine:init', () => {
         rutaComentario: '',
         tomandoTicket: false,
         enviandoComentario: false,
-        filtro: 'todos',
-        busqueda: '',
+
+        filtro:
+            new URLSearchParams(window.location.search).get('filtro') ||
+            'todos',
+
+        busqueda:
+            new URLSearchParams(window.location.search).get('buscar') ||
+            '',
+
         ticketsActualizados: {},
+
         _comentariosAbortController: null,
         _comentariosRequestId: 0,
         _comentariosTicketId: null,
         _ultimoComentarioEnviadoId: null,
+
         openModalSolucion: false,
         ticketSolucion: {},
         guardandoSolucion: false,
@@ -27,9 +36,10 @@ document.addEventListener('alpine:init', () => {
         _firmaAbortController: null,
         _firmaCanvas: null,
         _firmaContext: null,
+
         solucionForm: {
             solucion: '',
-            problema_solucionado: null,
+            solucionado: null,
             fecha_solucion: '',
             nombre_firmante: '',
             fecha_firma: ''
@@ -45,10 +55,17 @@ document.addEventListener('alpine:init', () => {
                     Number(window.usuarioActualId);
             }
 
+            this.filtro =
+                String(this.filtro || 'todos')
+                    .trim()
+                    .toLowerCase();
+
+            this.busqueda =
+                String(this.busqueda || '').trim();
+
             this.$nextTick(() => {
                 this.actualizarIconos();
             });
-
         },
 
         abrirTicket(ticket, comentariosIniciales = []) {
@@ -62,7 +79,18 @@ document.addEventListener('alpine:init', () => {
             this.selectedTicket =
                 this.obtenerDatosTicket(ticket);
 
-            this.comentarios = [];
+            this.comentarios =
+                Array.isArray(comentariosIniciales)
+                    ? this.ordenarComentarios(
+                        this.eliminarComentariosDuplicados(
+                            comentariosIniciales
+                                .map(comentario =>
+                                    this.normalizarComentario(comentario)
+                                )
+                                .filter(Boolean)
+                        )
+                    )
+                    : [];
 
             this._comentariosTicketId =
                 Number(this.selectedTicket.id);
@@ -97,11 +125,31 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 this.actualizarIconos();
-
+                this.scrollComentariosAlFinal();
             });
-
         },
 
+        mostrarTicket(estado, ticket) {
+
+            if (!ticket) {
+                return false;
+            }
+
+            const filtroActual =
+                String(this.filtro || 'todos')
+                    .trim()
+                    .toLowerCase();
+
+            if (filtroActual === 'mis tickets') {
+
+                const datos =
+                    this.obtenerDatosTicket(ticket);
+
+                return this.esMiTicket(datos);
+            }
+
+            return true;
+        },
         cerrarModal() {
 
             this.cancelarCargaComentarios();
@@ -125,9 +173,7 @@ document.addEventListener('alpine:init', () => {
                 if (fileInput) {
                     fileInput.value = '';
                 }
-
             });
-
         },
 
         cancelarCargaComentarios() {
@@ -136,18 +182,11 @@ document.addEventListener('alpine:init', () => {
 
                 try {
                     this._comentariosAbortController.abort();
-                } catch (error) {
-                    console.warn(
-                        'No se pudo cancelar la petición:',
-                        error
-                    );
-                }
-
+                } catch (error) { }
             }
 
             this._comentariosAbortController = null;
             this._comentariosRequestId++;
-
         },
 
         eliminarComentariosDuplicados(comentarios) {
@@ -172,24 +211,20 @@ document.addEventListener('alpine:init', () => {
                     comentario.id !== undefined
                 ) {
 
-                    const clave =
-                        `id-${comentario.id}`;
-
                     mapa.set(
-                        clave,
+                        `id-${comentario.id}`,
                         comentario
                     );
 
                     return;
                 }
 
-                const claveTemporal =
-                    [
-                        comentario.mensaje || '',
-                        comentario.archivo || '',
-                        comentario.fecha || '',
-                        comentario.created_at || ''
-                    ].join('|');
+                const claveTemporal = [
+                    comentario.mensaje || '',
+                    comentario.archivo || '',
+                    comentario.fecha || '',
+                    comentario.created_at || ''
+                ].join('|');
 
                 if (!mapa.has(claveTemporal)) {
 
@@ -197,15 +232,10 @@ document.addEventListener('alpine:init', () => {
                         claveTemporal,
                         comentario
                     );
-
                 }
-
             });
 
-            return Array.from(
-                mapa.values()
-            );
-
+            return Array.from(mapa.values());
         },
 
         obtenerFechaComentario(comentario) {
@@ -234,11 +264,9 @@ document.addEventListener('alpine:init', () => {
                 if (Number.isFinite(tiempo)) {
                     return tiempo;
                 }
-
             }
 
             return 0;
-
         },
 
         ordenarComentarios(comentarios) {
@@ -263,11 +291,8 @@ document.addEventListener('alpine:init', () => {
                     return fechaA - fechaB;
                 }
 
-                const idA =
-                    Number(a?.id);
-
-                const idB =
-                    Number(b?.id);
+                const idA = Number(a?.id);
+                const idB = Number(b?.id);
 
                 if (
                     Number.isFinite(idA) &&
@@ -277,9 +302,7 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 return 0;
-
             });
-
         },
 
         normalizarComentario(comentario) {
@@ -296,7 +319,7 @@ document.addEventListener('alpine:init', () => {
 
                 id:
                     comentario.id !== undefined &&
-                    comentario.id !== null
+                        comentario.id !== null
                         ? Number(comentario.id)
                         : comentario.id,
 
@@ -315,15 +338,12 @@ document.addEventListener('alpine:init', () => {
                     comentario.fecha ??
                     null
             };
-
         },
 
         agregarComentarioNuevo(comentario) {
 
             const normalizado =
-                this.normalizarComentario(
-                    comentario
-                );
+                this.normalizarComentario(comentario);
 
             if (!normalizado) {
                 return;
@@ -333,30 +353,25 @@ document.addEventListener('alpine:init', () => {
                 normalizado.id !== null &&
                 normalizado.id !== undefined
             ) {
+
                 this._ultimoComentarioEnviadoId =
                     Number(normalizado.id);
             }
 
-            const combinados = [
-                ...this.comentarios,
-                normalizado
-            ];
-
-            const sinDuplicados =
-                this.eliminarComentariosDuplicados(
-                    combinados
-                );
-
             this.comentarios =
                 this.ordenarComentarios(
-                    sinDuplicados
+                    this.eliminarComentariosDuplicados([
+                        ...this.comentarios,
+                        normalizado
+                    ])
                 );
 
             this.$nextTick(() => {
+
                 this.scrollComentariosAlFinal();
                 this.actualizarIconos();
-            });
 
+            });
         },
 
         scrollComentariosAlFinal() {
@@ -374,14 +389,13 @@ document.addEventListener('alpine:init', () => {
 
                 lista.scrollTop =
                     lista.scrollHeight;
-
             });
-
         },
 
         tomarTicket(ticket = null) {
 
             if (ticket) {
+
                 this.selectedTicket =
                     this.obtenerDatosTicket(ticket);
             }
@@ -446,9 +460,7 @@ document.addEventListener('alpine:init', () => {
             }
 
             const ticketId =
-                Number(
-                    this.selectedTicket.id
-                );
+                Number(this.selectedTicket.id);
 
             fetch(
                 `/tickets/${ticketId}/tomar`,
@@ -469,8 +481,7 @@ document.addEventListener('alpine:init', () => {
                             'XMLHttpRequest'
                     },
 
-                    body:
-                        JSON.stringify({})
+                    body: JSON.stringify({})
                 }
             )
                 .then(async response => {
@@ -481,6 +492,7 @@ document.addEventListener('alpine:init', () => {
                         data =
                             await response.json();
                     } catch (error) {
+
                         console.error(
                             'Respuesta JSON inválida:',
                             error
@@ -488,6 +500,7 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     if (!response.ok) {
+
                         throw new Error(
                             data.message ||
                             `Error HTTP ${response.status}`
@@ -495,7 +508,6 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     return data;
-
                 })
                 .then(data => {
 
@@ -503,6 +515,7 @@ document.addEventListener('alpine:init', () => {
                         !data ||
                         !data.success
                     ) {
+
                         throw new Error(
                             data?.message ||
                             'No se pudo tomar el ticket.'
@@ -513,8 +526,6 @@ document.addEventListener('alpine:init', () => {
                         data.tomado_por ||
                         data.usuario ||
                         null;
-                        console.log('TÉCNICO RECIBIDO:', tecnico);
-console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                     const nuevoEstado =
                         data.estado ||
@@ -524,6 +535,11 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         data.fecha_tomado ||
                         null;
 
+                    const tecnicoNormalizado =
+                        this.normalizarTecnico(
+                            tecnico
+                        );
+
                     this.selectedTicket = {
                         ...this.selectedTicket,
 
@@ -531,7 +547,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             nuevoEstado,
 
                         tomado_por:
-                            tecnico,
+                            tecnicoNormalizado,
 
                         fecha_tomado:
                             fechaTomado
@@ -547,7 +563,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             nuevoEstado,
 
                         tomado_por:
-                            tecnico,
+                            tecnicoNormalizado,
 
                         fecha_tomado:
                             fechaTomado
@@ -571,10 +587,60 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         error.message ||
                         'No se pudo tomar el ticket.'
                     );
-
                 });
-
         },
+
+        normalizarTecnico(tecnico) {
+
+            if (!tecnico) {
+                return null;
+            }
+
+            if (
+                typeof tecnico !== 'object'
+            ) {
+
+                return {
+                    id: Number(tecnico),
+                    name: 'Técnico'
+                };
+            }
+
+            const resultado = {
+                ...tecnico
+            };
+
+            if (resultado.foto) {
+
+                resultado.foto =
+                    String(resultado.foto)
+                        .replace(
+                            `${window.location.origin}/storage/`,
+                            ''
+                        )
+                        .replace(
+                            '/storage/',
+                            ''
+                        )
+                        .replace(
+                            /^storage\//,
+                            ''
+                        );
+            }
+
+            return resultado;
+        },
+limpiarBusqueda() {
+
+    this.busqueda = '';
+
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete('buscar');
+    url.searchParams.delete('page');
+
+    window.location.href = url.toString();
+},
 
         enviarComentario(form = null) {
 
@@ -592,6 +658,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (!form) {
+
                 form =
                     document.getElementById(
                         'formComentario'
@@ -649,9 +716,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             const ticketId =
-                Number(
-                    this.selectedTicket.id
-                );
+                Number(this.selectedTicket.id);
 
             const url =
                 form.getAttribute('action') ||
@@ -691,7 +756,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 formData.delete(
                     'archivo'
                 );
-
             }
 
             this.cancelarCargaComentarios();
@@ -729,19 +793,19 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     if (texto) {
 
                         try {
+
                             data =
                                 JSON.parse(
                                     texto
                                 );
+
                         } catch (error) {
 
                             console.error(
                                 'Respuesta no JSON:',
                                 texto
                             );
-
                         }
-
                     }
 
                     if (!response.ok) {
@@ -763,18 +827,15 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                                 data.message ||
                                 `Error HTTP ${response.status}`
                             );
-
                         }
 
                         throw new Error(
                             data.message ||
                             `Error HTTP ${response.status}`
                         );
-
                     }
 
                     return data;
-
                 })
                 .then(data => {
 
@@ -787,7 +848,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             data?.message ||
                             'No se pudo guardar el comentario.'
                         );
-
                     }
 
                     let comentarioNuevo =
@@ -805,10 +865,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             data.archivo !== undefined
                         )
                     ) {
-
-                        comentarioNuevo =
-                            data;
-
+                        comentarioNuevo = data;
                     }
 
                     this.limpiarFormularioComentario(
@@ -835,7 +892,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     this.forzarRecargaComentarios(
                         ticketId
                     );
-
                 })
                 .catch(error => {
 
@@ -850,9 +906,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         error.message ||
                         'No se pudo enviar el comentario.'
                     );
-
                 });
-
         },
 
         sincronizarComentariosDespuesDeEnviar(
@@ -879,7 +933,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 );
 
             }, 300);
-
         },
 
         forzarRecargaComentarios(ticketId) {
@@ -894,7 +947,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 ticketId,
                 false
             );
-
         },
 
         limpiarFormularioComentario(
@@ -911,7 +963,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             this.archivoAdjunto = null;
-
         },
 
         cargarComentarios(
@@ -944,34 +995,17 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 idTicket;
 
             const cacheBuster =
-                Date.now() +
-                '-' +
-                Math.random()
+                `${Date.now()}-${Math.random()
                     .toString(36)
-                    .substring(2);
+                    .substring(2)}`;
 
             const url =
                 `/tickets/${idTicket}/comentarios?_=${cacheBuster}`;
-
-            console.log(
-                'Cargando comentarios:',
-                {
-                    ticketId:
-                        idTicket,
-
-                    requestId:
-                        requestId,
-
-                    url:
-                        url
-                }
-            );
 
             fetch(
                 url,
                 {
                     method: 'GET',
-
                     cache: 'no-store',
 
                     headers: {
@@ -1005,19 +1039,19 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     if (texto) {
 
                         try {
+
                             data =
                                 JSON.parse(
                                     texto
                                 );
+
                         } catch (error) {
 
                             console.error(
                                 'La respuesta de comentarios no es JSON:',
                                 texto
                             );
-
                         }
-
                     }
 
                     if (!response.ok) {
@@ -1026,54 +1060,16 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             data.message ||
                             `Error HTTP ${response.status}`
                         );
-
                     }
 
                     return data;
-
                 })
                 .then(data => {
-
-                    console.log(
-                        '========== GET COMENTARIOS =========='
-                    );
-
-                    console.log(
-                        'Ticket:',
-                        idTicket
-                    );
-
-                    console.log(
-                        'Request ID:',
-                        requestId
-                    );
-
-                    console.log(
-                        'Respuesta completa:',
-                        data
-                    );
-
-                    console.log(
-                        'Comentarios recibidos:',
-                        data.comentarios
-                    );
-
-                    console.log(
-                        '======================================'
-                    );
 
                     if (
                         requestId !==
                         this._comentariosRequestId
                     ) {
-
-                        console.log(
-                            'RESPUESTA VIEJA IGNORADA:',
-                            requestId,
-                            'actual:',
-                            this._comentariosRequestId
-                        );
-
                         return;
                     }
 
@@ -1081,11 +1077,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         this._comentariosTicketId !==
                         idTicket
                     ) {
-
-                        console.log(
-                            'RESPUESTA DE OTRO TICKET IGNORADA.'
-                        );
-
                         return;
                     }
 
@@ -1099,7 +1090,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             data.message ||
                             'No se pudieron cargar los comentarios.'
                         );
-
                     }
 
                     let comentarios =
@@ -1111,11 +1101,10 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                     comentarios =
                         comentarios
-                            .map(
-                                comentario =>
-                                    this.normalizarComentario(
-                                        comentario
-                                    )
+                            .map(comentario =>
+                                this.normalizarComentario(
+                                    comentario
+                                )
                             )
                             .filter(Boolean);
 
@@ -1137,9 +1126,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         const existe =
                             comentarios.some(
                                 comentario =>
-                                    Number(
-                                        comentario.id
-                                    ) ===
+                                    Number(comentario.id) ===
                                     Number(
                                         this._ultimoComentarioEnviadoId
                                     )
@@ -1150,9 +1137,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             const comentarioActual =
                                 this.comentarios.find(
                                     comentario =>
-                                        Number(
-                                            comentario.id
-                                        ) ===
+                                        Number(comentario.id) ===
                                         Number(
                                             this._ultimoComentarioEnviadoId
                                         )
@@ -1173,28 +1158,15 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                                     this.ordenarComentarios(
                                         comentarios
                                     );
-
-                                console.warn(
-                                    'El GET todavía no devolvió el comentario recién creado. Se conservó temporalmente en pantalla.'
-                                );
-
                             }
-
                         }
-
                     }
 
                     this.comentarios =
                         comentarios;
 
-                    console.log(
-                        'Comentarios actuales:',
-                        this.comentarios
-                    );
-
                     this.scrollComentariosAlFinal();
                     this.actualizarIconos();
-
                 })
                 .catch(error => {
 
@@ -1209,7 +1181,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         'Error al cargar comentarios:',
                         error
                     );
-
                 })
                 .finally(() => {
 
@@ -1220,11 +1191,8 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         this._comentariosAbortController =
                             null;
-
                     }
-
                 });
-
         },
 
         seleccionarArchivo(evento) {
@@ -1241,7 +1209,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
             this.archivoAdjunto =
                 archivo;
-
         },
 
         quitarArchivo() {
@@ -1254,7 +1221,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             if (input) {
                 input.value = '';
             }
-
         },
 
         nombreArchivoComentario() {
@@ -1267,7 +1233,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 this.archivoAdjunto.name ||
                 'Archivo seleccionado'
             );
-
         },
 
         tamañoArchivoComentario() {
@@ -1279,7 +1244,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             return this.formatearTamanoArchivo(
                 this.archivoAdjunto.size
             );
-
         },
 
         formatearTamanoArchivo(bytes) {
@@ -1326,7 +1290,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 ' ' +
                 unidades[indiceSeguro]
             );
-
         },
 
         fechaActual() {
@@ -1341,7 +1304,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     minute: '2-digit'
                 }
             );
-
         },
 
         esMiTicket(ticket) {
@@ -1372,25 +1334,12 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     Number(tomadoPor.id) ===
                     Number(this.usuarioActualId)
                 );
-
             }
 
-            if (
-                typeof tomadoPor === 'number' ||
-                /^\d+$/.test(
-                    String(tomadoPor)
-                )
-            ) {
-
-                return (
-                    Number(tomadoPor) ===
-                    Number(this.usuarioActualId)
-                );
-
-            }
-
-            return false;
-
+            return (
+                Number(tomadoPor) ===
+                Number(this.usuarioActualId)
+            );
         },
 
         ticketActualizado(id) {
@@ -1407,75 +1356,56 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 this.ticketsActualizados[String(id)] ||
                 null
             );
-
         },
 
         obtenerDatosTicket(ticket) {
 
-    if (!ticket) {
-        return {};
-    }
+            if (!ticket) {
+                return {};
+            }
 
-    const actualizado = this.ticketActualizado(ticket.id);
+            const actualizado =
+                this.ticketActualizado(
+                    ticket.id
+                );
 
-    if (!actualizado) {
-        return ticket;
-    }
+            if (!actualizado) {
+                return ticket;
+            }
 
-    let tomadoPor =
-        actualizado.tomado_por !== undefined
-            ? actualizado.tomado_por
-            : ticket.tomado_por;
+            let tomadoPor =
+                actualizado.tomado_por !== undefined
+                    ? actualizado.tomado_por
+                    : ticket.tomado_por;
 
-    /*
-     * Normalizar foto del técnico
-     *
-     * AJAX puede enviar:
-     * http://127.0.0.1:8000/storage/profile-photos/foto.jpg
-     *
-     * Blade normalmente tiene:
-     * profile-photos/foto.jpg
-     *
-     * Dejamos siempre:
-     * profile-photos/foto.jpg
-     */
-    if (tomadoPor?.foto) {
+            if (tomadoPor) {
 
-        tomadoPor = {
-            ...tomadoPor,
+                tomadoPor =
+                    this.normalizarTecnico(
+                        tomadoPor
+                    );
+            }
 
-            foto:
-                tomadoPor.foto
-                    .replace(
-                        window.location.origin + '/storage/',
-                        ''
-                    )
-                    .replace(
-                        '/storage/',
-                        ''
-                    )
-        };
-    }
+            return {
+                ...ticket,
 
-    return {
-        ...ticket,
+                estado:
+                    actualizado.estado ??
+                    ticket.estado,
 
-        estado:
-            actualizado.estado ??
-            ticket.estado,
+                tomado_por:
+                    tomadoPor,
 
-        tomado_por:
-            tomadoPor,
+                fecha_tomado:
+                    actualizado.fecha_tomado ??
+                    ticket.fecha_tomado,
 
-        fecha_tomado:
-            actualizado.fecha_tomado ??
-            ticket.fecha_tomado,
+                solucion:
+                    actualizado.solucion ??
+                    ticket.solucion
+            };
+        },
 
-        solucion:
-            actualizado.solucion ??
-            ticket.solucion
-    };
-},
         obtenerEstado(ticket) {
 
             const datos =
@@ -1496,7 +1426,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             return estado;
-
         },
 
         obtenerTecnico(ticket) {
@@ -1524,7 +1453,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 name:
                     'Técnico'
             };
-
         },
 
         nombreTecnico(ticket) {
@@ -1541,7 +1469,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 tecnico.nombre ||
                 'Técnico'
             );
-
         },
 
         mostrarTicket(estado, ticket) {
@@ -1550,90 +1477,22 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return false;
             }
 
-            const datos =
-                this.obtenerDatosTicket(ticket);
+            const filtroActual = String(
+                this.filtro || 'todos'
+            )
+                .trim()
+                .toLowerCase();
 
-            const estadoNormalizado =
-                String(
-                    datos.estado ??
-                    estado ??
-                    ''
-                )
-                    .trim()
-                    .toLowerCase();
+            // MIS TICKETS
+            if (filtroActual === 'mis tickets') {
 
-            if (
-                this.filtro === 'mis tickets'
-            ) {
+                const datos = this.obtenerDatosTicket(ticket);
 
-                return this.esMiTicket(
-                    datos
-                );
-
+                return this.esMiTicket(datos);
             }
 
-            if (
-                this.filtro !== 'todos'
-            ) {
-
-                return (
-                    estadoNormalizado ===
-                    String(this.filtro)
-                        .trim()
-                        .toLowerCase()
-                );
-
-            }
-
-            const texto =
-                String(
-                    this.busqueda || ''
-                )
-                    .toLowerCase()
-                    .trim();
-
-            if (!texto) {
-                return true;
-            }
-
-            return (
-                String(
-                    datos.folio ?? ''
-                )
-                    .toLowerCase()
-                    .includes(texto) ||
-
-                String(
-                    datos.titulo ?? ''
-                )
-                    .toLowerCase()
-                    .includes(texto) ||
-
-                String(
-                    datos.tipo_falla ?? ''
-                )
-                    .toLowerCase()
-                    .includes(texto) ||
-
-                String(
-                    datos.prioridad ?? ''
-                )
-                    .toLowerCase()
-                    .includes(texto) ||
-
-                String(
-                    datos.estado ?? ''
-                )
-                    .toLowerCase()
-                    .includes(texto) ||
-
-                this.nombreTecnico(
-                    datos
-                )
-                    .toLowerCase()
-                    .includes(texto)
-            );
-
+            // Los demás filtros ya los hace Laravel.
+            return true;
         },
 
         puedeTomarTicket(ticket) {
@@ -1643,7 +1502,10 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (
-                this.filtro !== 'mis tickets'
+                String(this.filtro)
+                    .trim()
+                    .toLowerCase() !==
+                'mis tickets'
             ) {
                 return false;
             }
@@ -1672,7 +1534,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             return true;
-
         },
 
         hayBusquedaYNoHayResultados() {
@@ -1705,7 +1566,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 if (display !== 'none') {
                     resultados++;
                 }
-
             });
 
             return (
@@ -1716,20 +1576,33 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     )
                         .trim()
                         .length > 0 ||
-                    this.filtro !== 'todos'
+                    String(
+                        this.filtro || 'todos'
+                    )
+                        .trim()
+                        .toLowerCase() !==
+                    'todos'
                 )
             );
-
         },
 
         limpiarFiltros() {
 
-            this.filtro =
-                'todos';
+            const url =
+                new URL(window.location.href);
 
-            this.busqueda =
-                '';
+            url.searchParams.delete('buscar');
+            url.searchParams.set(
+                'filtro',
+                'todos'
+            );
+            url.searchParams.delete('page');
 
+            this.filtro = 'todos';
+            this.busqueda = '';
+
+            window.location.href =
+                url.toString();
         },
 
         capitalizar(valor) {
@@ -1752,7 +1625,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     letra =>
                         letra.toUpperCase()
                 );
-
         },
 
         formatearFecha(fecha) {
@@ -1782,7 +1654,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     minute: '2-digit'
                 }
             );
-
         },
 
         avatarUsuario(nombre) {
@@ -1796,7 +1667,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 `https://ui-avatars.com/api/?name=${usuario}` +
                 `&background=0D8ABC&color=fff`
             );
-
         },
 
         normalizarEvidencia(evidencia) {
@@ -1837,14 +1707,12 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         ) {
 
                             return parsed
-                                .map(
-                                    item =>
-                                        this.normalizarEvidencia(
-                                            item
-                                        )
+                                .map(item =>
+                                    this.normalizarEvidencia(
+                                        item
+                                    )
                                 )
                                 .filter(Boolean);
-
                         }
 
                         if (
@@ -1855,18 +1723,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             return this.normalizarEvidencia(
                                 parsed
                             );
-
                         }
 
-                    } catch (error) {
-
-                        console.warn(
-                            'No se pudo interpretar evidencia JSON:',
-                            error
-                        );
-
-                    }
-
+                    } catch (error) { }
                 }
 
                 return {
@@ -1893,7 +1752,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             valor
                         )
                 };
-
             }
 
             if (
@@ -1923,9 +1781,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     ...evidencia,
 
                     url:
-                        this.archivoUrl(
-                            url
-                        ),
+                        this.archivoUrl(url),
 
                     ruta:
                         evidencia.ruta ||
@@ -1941,17 +1797,13 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         evidencia.nombre_archivo ||
                         evidencia.name ||
                         evidencia.original_name ||
-                        this.nombreArchivo(
-                            url
-                        ),
+                        this.nombreArchivo(url),
 
                     tipo:
                         evidencia.tipo ||
                         evidencia.mime_type ||
                         evidencia.type ||
-                        this.tipoArchivo(
-                            url
-                        ),
+                        this.tipoArchivo(url),
 
                     extension:
                         evidencia.extension ||
@@ -1963,11 +1815,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             url
                         )
                 };
-
             }
 
             return null;
-
         },
 
         normalizarListaEvidencias(evidencias) {
@@ -1983,9 +1833,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 try {
 
                     const parsed =
-                        JSON.parse(
-                            evidencias
-                        );
+                        JSON.parse(evidencias);
 
                     return this.normalizarListaEvidencias(
                         parsed
@@ -2001,9 +1849,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     return evidencia
                         ? [evidencia]
                         : [];
-
                 }
-
             }
 
             if (
@@ -2037,14 +1883,11 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             resultado.push(
                                 normalizada
                             );
-
                         }
-
                     }
                 );
 
                 return resultado;
-
             }
 
             if (
@@ -2052,15 +1895,11 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             ) {
 
                 return this.normalizarListaEvidencias(
-                    Object.values(
-                        evidencias
-                    )
+                    Object.values(evidencias)
                 );
-
             }
 
             return [];
-
         },
 
         obtenerEvidencias(ticket) {
@@ -2080,7 +1919,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return this.normalizarListaEvidencias(
                     ticket.evidencia
                 );
-
             }
 
             if (
@@ -2091,11 +1929,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return this.normalizarListaEvidencias(
                     ticket.evidencias
                 );
-
             }
 
             return [];
-
         },
 
         obtenerEvidenciasSolucion(solucion) {
@@ -2111,20 +1947,15 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 try {
 
                     const parsed =
-                        JSON.parse(
-                            solucion
-                        );
+                        JSON.parse(solucion);
 
                     return this.obtenerEvidenciasSolucion(
                         parsed
                     );
 
                 } catch (error) {
-
                     return [];
-
                 }
-
             }
 
             if (
@@ -2141,7 +1972,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return this.normalizarListaEvidencias(
                     solucion.evidencias
                 );
-
             }
 
             if (
@@ -2152,7 +1982,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return this.normalizarListaEvidencias(
                     solucion.evidencia
                 );
-
             }
 
             if (
@@ -2163,7 +1992,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return this.normalizarListaEvidencias(
                     solucion.archivos
                 );
-
             }
 
             if (
@@ -2174,11 +2002,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return this.normalizarListaEvidencias(
                     solucion.archivos_evidencia
                 );
-
             }
 
             return [];
-
         },
 
         archivoUrl(archivo) {
@@ -2195,7 +2021,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return URL.createObjectURL(
                     archivo
                 );
-
             }
 
             if (
@@ -2203,30 +2028,35 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             ) {
 
                 if (archivo.url_archivo) {
+
                     return this.archivoUrl(
                         archivo.url_archivo
                     );
                 }
 
                 if (archivo.url) {
+
                     return this.archivoUrl(
                         archivo.url
                     );
                 }
 
                 if (archivo.ruta_url) {
+
                     return this.archivoUrl(
                         archivo.ruta_url
                     );
                 }
 
                 if (archivo.ruta) {
+
                     return this.archivoUrl(
                         archivo.ruta
                     );
                 }
 
                 if (archivo.path) {
+
                     return this.archivoUrl(
                         archivo.path
                     );
@@ -2239,11 +2069,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     return this.archivoUrl(
                         archivo.archivo
                     );
-
                 }
 
                 return '#';
-
             }
 
             if (
@@ -2268,6 +2096,26 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (
+                valor.startsWith('/public/storage/')
+            ) {
+
+                return valor.replace(
+                    '/public',
+                    ''
+                );
+            }
+
+            if (
+                valor.startsWith('public/storage/')
+            ) {
+
+                return `/${valor.replace(
+                    'public/',
+                    ''
+                )}`;
+            }
+
+            if (
                 valor.startsWith('/storage/')
             ) {
                 return valor;
@@ -2280,35 +2128,12 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (
-                valor.startsWith('/public/storage/')
-            ) {
-
-                return valor.replace(
-                    '/public',
-                    ''
-                );
-
-            }
-
-            if (
-                valor.startsWith('public/storage/')
-            ) {
-
-                return `/${valor.replace(
-                    'public/',
-                    ''
-                )}`;
-
-            }
-
-            if (
                 valor.startsWith('/')
             ) {
                 return valor;
             }
 
             return `/storage/${valor}`;
-
         },
 
         nombreArchivo(archivo) {
@@ -2322,9 +2147,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 archivo instanceof File
             ) {
 
-                return archivo.name ||
-                    'Archivo';
-
+                return archivo.name || 'Archivo';
             }
 
             if (
@@ -2354,7 +2177,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     return this.nombreArchivo(
                         archivo.archivo
                     );
-
                 }
 
                 if (archivo.url) {
@@ -2362,9 +2184,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     return this.nombreArchivo(
                         archivo.url
                     );
-
                 }
-
             }
 
             const url =
@@ -2397,9 +2217,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         .split('?')[0] ||
                     'Archivo'
                 );
-
             }
-
         },
 
         extensionArchivo(archivo) {
@@ -2428,7 +2246,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             return partes
                 .pop()
                 .toUpperCase();
-
         },
 
         tipoArchivo(archivo) {
@@ -2449,46 +2266,25 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 if (archivo.type) {
                     return archivo.type;
                 }
-
             }
 
             const extension =
                 this.extensionArchivo(
                     archivo
-                )
-                    .toLowerCase();
+                ).toLowerCase();
 
             const tipos = {
 
-                jpg:
-                    'image/jpeg',
-
-                jpeg:
-                    'image/jpeg',
-
-                png:
-                    'image/png',
-
-                gif:
-                    'image/gif',
-
-                webp:
-                    'image/webp',
-
-                bmp:
-                    'image/bmp',
-
-                svg:
-                    'image/svg+xml',
-
-                pdf:
-                    'application/pdf',
-
-                mp4:
-                    'video/mp4',
-
-                webm:
-                    'video/webm'
+                jpg: 'image/jpeg',
+                jpeg: 'image/jpeg',
+                png: 'image/png',
+                gif: 'image/gif',
+                webp: 'image/webp',
+                bmp: 'image/bmp',
+                svg: 'image/svg+xml',
+                pdf: 'application/pdf',
+                mp4: 'video/mp4',
+                webm: 'video/webm'
 
             };
 
@@ -2496,7 +2292,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 tipos[extension] ||
                 'application/octet-stream'
             );
-
         },
 
         esImagen(archivo) {
@@ -2504,8 +2299,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             const tipo =
                 this.tipoArchivo(
                     archivo
-                )
-                    .toLowerCase();
+                ).toLowerCase();
 
             if (
                 tipo.startsWith('image/')
@@ -2516,8 +2310,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             const extension =
                 this.extensionArchivo(
                     archivo
-                )
-                    .toLowerCase();
+                ).toLowerCase();
 
             return [
                 'jpg',
@@ -2530,7 +2323,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             ].includes(
                 extension
             );
-
         },
 
         esPDF(archivo) {
@@ -2538,11 +2330,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             return (
                 this.tipoArchivo(
                     archivo
-                )
-                    .toLowerCase() ===
+                ).toLowerCase() ===
                 'application/pdf'
             );
-
         },
 
         esVideo(archivo) {
@@ -2552,7 +2342,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             )
                 .toLowerCase()
                 .startsWith('video/');
-
         },
 
         generarRutaComentario(ticketId) {
@@ -2565,7 +2354,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             return `/tickets/${ticketId}/comentarios`;
-
         },
 
         abrirModalSolucion(
@@ -2578,9 +2366,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             this.ticketSolucion =
-                this.obtenerDatosTicket(
-                    ticket
-                );
+                this.obtenerDatosTicket(ticket);
 
             const estado =
                 this.obtenerEstado(
@@ -2604,14 +2390,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     esCancelado
                 );
 
-            this.openModalSolucion =
-                true;
-
-            this.evidenciasSolucion =
-                [];
-
-            this.firmaExistente =
-                '';
+            this.openModalSolucion = true;
+            this.evidenciasSolucion = [];
+            this.firmaExistente = '';
 
             let solucion =
                 this.ticketSolucion?.solucion || {};
@@ -2633,42 +2414,43 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         solucion:
                             solucion
                     };
-
                 }
-
             }
 
             if (
                 this.modalSolucionSoloLectura
             ) {
 
-                this.solucionForm.solucion =
-                    solucion?.solucion ?? '';
+                this.solucionForm = {
 
-                this.solucionForm.solucionado =
-                    solucion?.problema_solucionado ??
-                    (
-                        esSolucionado
-                            ? true
-                            : esCancelado
-                                ? false
-                                : null
-                    );
+                    solucion:
+                        solucion?.solucion ?? '',
 
-                this.solucionForm.fecha_solucion =
-                    this.formatearFechaInput(
-                        solucion?.fecha_solucion
-                    );
+                    solucionado:
+                        solucion?.problema_solucionado ??
+                        (
+                            esSolucionado
+                                ? true
+                                : esCancelado
+                                    ? false
+                                    : null
+                        ),
 
-                this.solucionForm.nombre_firmante =
-                    solucion?.nombre_firmante ??
-                    this.ticketSolucion?.user?.name ??
-                    '';
+                    fecha_solucion:
+                        this.formatearFechaInput(
+                            solucion?.fecha_solucion
+                        ),
 
-                this.solucionForm.fecha_firma =
-                    this.formatearFechaInput(
-                        solucion?.fecha_firma
-                    );
+                    nombre_firmante:
+                        solucion?.nombre_firmante ??
+                        this.ticketSolucion?.user?.name ??
+                        '',
+
+                    fecha_firma:
+                        this.formatearFechaInput(
+                            solucion?.fecha_firma
+                        )
+                };
 
                 this.evidenciasSolucion =
                     this.obtenerEvidenciasSolucion(
@@ -2696,12 +2478,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         '',
 
                     fecha_firma: ''
-
                 };
 
-                this.firmaExistente =
-                    '';
-
+                this.firmaExistente = '';
             }
 
             this.$nextTick(() => {
@@ -2713,9 +2492,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 ) {
                     this.inicializarFirma();
                 }
-
             });
-
         },
 
         cerrarModalSolucion() {
@@ -2726,49 +2503,27 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                 try {
                     this._firmaAbortController.abort();
-                } catch (error) {}
+                } catch (error) { }
 
-                this._firmaAbortController =
-                    null;
-
+                this._firmaAbortController = null;
             }
 
-            this.openModalSolucion =
-                false;
-
-            this.ticketSolucion =
-                {};
-
-            this.modalSolucionSoloLectura =
-                false;
-
-            this.guardandoSolucion =
-                false;
-
-            this.evidenciasSolucion =
-                [];
-
-            this.firmaExistente =
-                '';
-
-            this._firmaCanvas =
-                null;
-
-            this._firmaContext =
-                null;
+            this.openModalSolucion = false;
+            this.ticketSolucion = {};
+            this.modalSolucionSoloLectura = false;
+            this.guardandoSolucion = false;
+            this.evidenciasSolucion = [];
+            this.firmaExistente = '';
+            this._firmaCanvas = null;
+            this._firmaContext = null;
 
             this.solucionForm = {
 
                 solucion: '',
-
                 solucionado: null,
-
                 fecha_solucion: '',
-
                 nombre_firmante: '',
-
                 fecha_firma: ''
-
             };
 
             this.$nextTick(() => {
@@ -2779,9 +2534,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 if (input) {
                     input.value = '';
                 }
-
             });
-
         },
 
         nombreTomadoPor(ticket) {
@@ -2798,7 +2551,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 tecnico.nombre ||
                 'Técnico'
             );
-
         },
 
         tieneTomado(ticket) {
@@ -2807,7 +2559,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 this.obtenerTecnico(ticket);
 
             return Boolean(tecnico);
-
         },
 
         inicializarFirma() {
@@ -2827,8 +2578,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                     try {
                         this._firmaAbortController.abort();
-                    } catch (error) {}
-
+                    } catch (error) { }
                 }
 
                 const controller =
@@ -2844,8 +2594,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     return;
                 }
 
-                ctx.fillStyle =
-                    '#ffffff';
+                ctx.fillStyle = '#ffffff';
 
                 ctx.fillRect(
                     0,
@@ -2854,20 +2603,12 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     canvas.height
                 );
 
-                ctx.strokeStyle =
-                    '#000000';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
 
-                ctx.lineWidth =
-                    3;
-
-                ctx.lineCap =
-                    'round';
-
-                ctx.lineJoin =
-                    'round';
-
-                let dibujando =
-                    false;
+                let dibujando = false;
 
                 const obtenerPosicion =
                     evento => {
@@ -2884,7 +2625,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                                 x: 0,
                                 y: 0
                             };
-
                         }
 
                         const escalaX =
@@ -2900,7 +2640,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         if (
                             evento.touches &&
-                            evento.touches.length > 0
+                            evento.touches.length
                         ) {
 
                             clientX =
@@ -2916,7 +2656,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                             clientY =
                                 evento.clientY;
-
                         }
 
                         return {
@@ -2928,9 +2667,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             y:
                                 (clientY - rect.top) *
                                 escalaY
-
                         };
-
                     };
 
                 const comenzar =
@@ -2951,7 +2688,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             posicion.x,
                             posicion.y
                         );
-
                     };
 
                 const dibujar =
@@ -2974,21 +2710,17 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         );
 
                         ctx.stroke();
-
                     };
 
-                const terminar =
-                    () => {
+                const terminar = () => {
 
-                        if (!dibujando) {
-                            return;
-                        }
+                    if (!dibujando) {
+                        return;
+                    }
 
-                        dibujando = false;
-
-                        ctx.closePath();
-
-                    };
+                    dibujando = false;
+                    ctx.closePath();
+                };
 
                 canvas.addEventListener(
                     'mousedown',
@@ -3055,14 +2787,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     }
                 );
 
-                this._firmaCanvas =
-                    canvas;
-
-                this._firmaContext =
-                    ctx;
-
+                this._firmaCanvas = canvas;
+                this._firmaContext = ctx;
             });
-
         },
 
         limpiarFirma() {
@@ -3088,8 +2815,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 canvas.height
             );
 
-            ctx.fillStyle =
-                '#ffffff';
+            ctx.fillStyle = '#ffffff';
 
             ctx.fillRect(
                 0,
@@ -3097,7 +2823,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 canvas.width,
                 canvas.height
             );
-
         },
 
         canvasTieneFirma(canvas) {
@@ -3143,11 +2868,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 ) {
                     return true;
                 }
-
             }
 
             return false;
-
         },
 
         obtenerFirma(solucion) {
@@ -3159,28 +2882,21 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return '';
             }
 
-            if (
-                solucion.url_firma
-            ) {
+            if (solucion.url_firma) {
 
                 return this.normalizarUrlFirma(
                     solucion.url_firma
                 );
-
             }
 
-            if (
-                solucion.firma
-            ) {
+            if (solucion.firma) {
 
                 return this.normalizarUrlFirma(
                     solucion.firma
                 );
-
             }
 
             return '';
-
         },
 
         normalizarUrlFirma(firma) {
@@ -3210,6 +2926,26 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (
+                valor.startsWith('/public/storage/')
+            ) {
+
+                return valor.replace(
+                    '/public',
+                    ''
+                );
+            }
+
+            if (
+                valor.startsWith('public/storage/')
+            ) {
+
+                return `/${valor.replace(
+                    'public/',
+                    ''
+                )}`;
+            }
+
+            if (
                 valor.startsWith('/storage/')
             ) {
                 return valor;
@@ -3222,35 +2958,12 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (
-                valor.startsWith('/public/storage/')
-            ) {
-
-                return valor.replace(
-                    '/public',
-                    ''
-                );
-
-            }
-
-            if (
-                valor.startsWith('public/storage/')
-            ) {
-
-                return `/${valor.replace(
-                    'public/',
-                    ''
-                )}`;
-
-            }
-
-            if (
                 valor.startsWith('/')
             ) {
                 return valor;
             }
 
             return `/storage/${valor}`;
-
         },
 
         cargarFirmaExistente(solucion) {
@@ -3260,18 +2973,14 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     solucion
                 );
 
-            this.firmaExistente =
-                url;
+            this.firmaExistente = url;
 
             return url;
-
         },
 
         limpiarFirmaExistente() {
 
-            this.firmaExistente =
-                '';
-
+            this.firmaExistente = '';
         },
 
         seleccionarEvidencias(evento) {
@@ -3308,7 +3017,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             tipo === 'video/mp4' ||
                             tipo === 'video/webm'
                         );
-
                     }
                 );
 
@@ -3320,7 +3028,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 alert(
                     'Algunos archivos no son válidos. Solo puedes seleccionar imágenes, PDF o videos.'
                 );
-
             }
 
             if (!archivosValidos.length) {
@@ -3330,7 +3037,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 }
 
                 return;
-
             }
 
             const existentes =
@@ -3357,7 +3063,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         return !existentes.has(
                             clave
                         );
-
                     }
                 );
 
@@ -3367,7 +3072,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             ];
 
             this.actualizarInputEvidencias();
-
         },
 
         actualizarInputEvidencias() {
@@ -3400,13 +3104,11 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         dataTransfer.items.add(
                             archivo
                         );
-
                     }
                 );
 
             input.files =
                 dataTransfer.files;
-
         },
 
         eliminarEvidencia(index) {
@@ -3425,7 +3127,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 );
 
             this.actualizarInputEvidencias();
-
         },
 
         guardarSolucion() {
@@ -3519,9 +3220,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             }
 
             if (
-                !this.canvasTieneFirma(
-                    canvas
-                )
+                !this.canvasTieneFirma(canvas)
             ) {
 
                 alert(
@@ -3547,8 +3246,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 return;
             }
 
-            this.guardandoSolucion =
-                true;
+            this.guardandoSolucion = true;
 
             let firma = '';
 
@@ -3566,15 +3264,13 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     error
                 );
 
-                this.guardandoSolucion =
-                    false;
+                this.guardandoSolucion = false;
 
                 alert(
                     'No se pudo generar la firma.'
                 );
 
                 return;
-
             }
 
             const formData =
@@ -3640,7 +3336,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             'evidencias[]',
                             archivo
                         );
-
                     }
                 );
 
@@ -3669,15 +3364,16 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     let data = {};
 
                     try {
+
                         data =
                             await response.json();
+
                     } catch (error) {
 
                         console.error(
                             'Respuesta JSON inválida:',
                             error
                         );
-
                     }
 
                     if (!response.ok) {
@@ -3686,11 +3382,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             data.message ||
                             `Error HTTP ${response.status}`
                         );
-
                     }
 
                     return data;
-
                 })
                 .then(data => {
 
@@ -3703,7 +3397,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                             data?.message ||
                             'No se pudo guardar la solución.'
                         );
-
                     }
 
                     let solucionGuardada =
@@ -3725,14 +3418,10 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         } catch (error) {
 
                             solucionGuardada = {
-
                                 solucion:
                                     this.solucionForm.solucion.trim()
-
                             };
-
                         }
-
                     }
 
                     if (
@@ -3749,7 +3438,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         solucionGuardada.evidencias =
                             data.evidencias;
-
                     }
 
                     if (
@@ -3760,7 +3448,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         solucionGuardada.firma =
                             data.firma;
-
                     }
 
                     solucionGuardada.solucion =
@@ -3814,7 +3501,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         solucion:
                             solucionGuardada
-
                     };
 
                     this.ticketsActualizados[ticketId] = {
@@ -3837,7 +3523,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         solucion:
                             solucionGuardada
-
                     };
 
                     if (
@@ -3856,9 +3541,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                             solucion:
                                 solucionGuardada
-
                         };
-
                     }
 
                     this.evidenciasSolucion =
@@ -3890,11 +3573,9 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
 
                         try {
                             this._firmaAbortController.abort();
-                        } catch (error) {}
+                        } catch (error) { }
 
-                        this._firmaAbortController =
-                            null;
-
+                        this._firmaAbortController = null;
                     }
 
                     alert(
@@ -3903,7 +3584,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                     );
 
                     this.actualizarIconos();
-
                 })
                 .catch(error => {
 
@@ -3919,9 +3599,7 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                         error.message ||
                         'Ocurrió un error al guardar la solución.'
                     );
-
                 });
-
         },
 
         formatearFechaInput(fecha) {
@@ -3953,7 +3631,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             return fechaLocal
                 .toISOString()
                 .slice(0, 16);
-
         },
 
         obtenerFechaActualInput() {
@@ -3973,7 +3650,6 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
             return fecha
                 .toISOString()
                 .slice(0, 16);
-
         },
 
         actualizarIconos() {
@@ -3986,13 +3662,87 @@ console.log('FOTO RECIBIDA:', tecnico?.foto);
                 ) {
 
                     lucide.createIcons();
-
                 }
-
             });
-
         },
-        
+        buscarTickets() {
+
+            const url =
+                new URL(window.location.href);
+
+            const texto =
+                String(this.busqueda || '').trim();
+
+            if (texto !== '') {
+
+                url.searchParams.set(
+                    'buscar',
+                    texto
+                );
+
+            } else {
+
+                url.searchParams.delete(
+                    'buscar'
+                );
+            }
+
+            // Cuando hacemos una búsqueda,
+            // siempre regresamos a la página 1
+            url.searchParams.delete('page');
+
+            // Mantener el filtro actual
+            url.searchParams.set(
+                'filtro',
+                this.filtro || 'todos'
+            );
+
+            window.location.href =
+                url.toString();
+        },
+
+        cambiarFiltro(nuevoFiltro) {
+
+            const filtroNormalizado =
+                String(nuevoFiltro || 'todos')
+                    .trim()
+                    .toLowerCase();
+
+            this.filtro =
+                filtroNormalizado;
+
+            const url =
+                new URL(window.location.href);
+
+            url.searchParams.set(
+                'filtro',
+                filtroNormalizado
+            );
+
+            url.searchParams.delete(
+                'page'
+            );
+
+            const texto =
+                String(this.busqueda || '').trim();
+
+            if (texto !== '') {
+
+                url.searchParams.set(
+                    'buscar',
+                    texto
+                );
+
+            } else {
+
+                url.searchParams.delete(
+                    'buscar'
+                );
+            }
+
+            window.location.href =
+                url.toString();
+        }
 
     }));
 

@@ -8,6 +8,7 @@
     <title>Crear nuevo ticket - TicketPro</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden">
@@ -155,150 +156,257 @@
 
                 <div class="relative inline-block text-left">
 
-                    <button id="notif-button" type="button"
-                        class="relative p-2 text-gray-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 group shadow-lg"
-                        aria-label="Ver notificaciones">
+                    <!-- =========================================================
+                        NOTIFICACIONES
+                     ========================================================== -->
 
-                        <svg class="w-6 h-6 transition-transform group-hover:scale-110 duration-200" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                            </path>
+                        <!-- BOTÓN DE NOTIFICACIONES -->
+                        <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                            @click.outside="notificacionesAbiertas = false"
+                            class="relative flex items-center justify-center w-10 h-10 rounded-xl
+                       bg-slate-900/80 border border-slate-800
+                       text-slate-400 hover:text-white hover:bg-slate-800
+                       transition-all duration-200 focus:outline-none">
 
-                        </svg>
+                            <i data-lucide="bell" class="w-5 h-5"></i>
 
-                        <span class="absolute top-1.5 right-1.5 flex h-3 w-3">
 
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-
-                            <span
-                                class="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-slate-900"></span>
-
-                        </span>
-
-                    </button>
-
-                    <div id="notif-dropdown"
-                        class="hidden absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-2xl z-50 overflow-hidden divide-y divide-slate-800">
-
-                        <div class="p-4 flex items-center justify-between">
-
-                            <div class="flex items-center gap-2">
-
-                                <h3 class="text-sm font-semibold text-white">
-                                    Notificaciones
-                                </h3>
-
+                            <!-- INDICADOR DE NOTIFICACIONES NUEVAS -->
+                            @if ($notificacionesNoLeidas > 0)
                                 <span
-                                    class="px-2 py-0.5 text-xs font-medium bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20">
-                                    3 nuevas
+                                    class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
+                               px-1 flex items-center justify-center
+                               rounded-full bg-indigo-600
+                               border-2 border-[#050814]
+                               text-[9px] font-bold text-white">
+
+                                    {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
+
                                 </span>
+                            @endif
+
+                        </button>
+
+
+                        <!-- =====================================================
+                 DROPDOWN DE NOTIFICACIONES
+            ====================================================== -->
+
+                        <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                            @click.outside="notificacionesAbiertas = false"
+                            class="absolute right-0 top-full mt-3
+                       w-[360px] max-w-[calc(100vw-2rem)]
+                       bg-[#0f1535]
+                       border border-[#1e295d]
+                       rounded-2xl
+                       shadow-2xl shadow-black/40
+                       overflow-hidden z-[99999]"
+                            style="display: none;">
+
+                            <!-- =================================================
+                     CABECERA
+                ================================================== -->
+
+                            <div
+                                class="flex items-center justify-between
+                           px-4 py-4
+                           border-b border-slate-800/80">
+
+                                <div class="flex items-center gap-2">
+
+                                    <div
+                                        class="w-8 h-8 rounded-lg
+                                   bg-indigo-500/10
+                                   border border-indigo-500/20
+                                   flex items-center justify-center">
+
+                                        <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
+                                        </i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h3 class="text-sm font-semibold text-white">
+                                            Notificaciones
+                                        </h3>
+
+                                        <p class="text-[10px] text-slate-500">
+                                            Tienes {{ $notificacionesNoLeidas }} nuevas
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- MARCAR COMO LEÍDAS -->
+                                @if ($notificacionesNoLeidas > 0)
+                                    <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
+
+                                        @csrf
+
+                                        @method('PATCH')
+
+                                        <button type="submit"
+                                            class="text-[11px] font-medium
+                                       text-indigo-400
+                                       hover:text-indigo-300
+                                       transition-colors">
+
+                                            Marcar leídas
+
+                                        </button>
+
+                                    </form>
+                                @endif
 
                             </div>
 
-                            <button
-                                class="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                                Marcar leídas
-                            </button>
 
-                        </div>
+                            <!-- =================================================
+                     LISTA DE NOTIFICACIONES
+                ================================================== -->
 
-                        <div class="max-h-80 overflow-y-auto divide-y divide-slate-800/50">
+                            <div class="max-h-[400px] overflow-y-auto">
 
-                            <a href="#"
-                                class="flex gap-3 p-4 bg-slate-800/40 hover:bg-slate-800/80 transition-colors group">
+                                @forelse ($notificaciones as $notificacion)
+                                    <a href="{{ $notificacion->url ?? '#' }}"
+                                        class="group flex gap-3 px-4 py-4
+                                   border-b border-slate-800/50
+                                   transition-colors
+                                   hover:bg-slate-800/40
+                                   {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
 
-                                <div class="relative shrink-0">
+                                        <!-- ICONO -->
+                                        <div
+                                            class="w-10 h-10 shrink-0
+                                       rounded-xl
+                                       border border-indigo-500/20
+                                       bg-indigo-500/10
+                                       flex items-center justify-center">
 
-                                    <img class="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/30"
-                                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                                        alt="Avatar">
+                                            <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                class="w-5 h-5 text-indigo-400">
+                                            </i>
 
-                                    <span
-                                        class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+                                        </div>
 
-                                </div>
 
-                                <div class="flex-1 min-w-0">
+                                        <!-- CONTENIDO -->
+                                        <div class="flex-1 min-w-0">
 
-                                    <p class="text-xs text-slate-300 leading-relaxed">
+                                            <div class="flex items-start justify-between gap-2">
 
-                                        <strong
-                                            class="font-semibold text-white group-hover:text-indigo-400 transition-colors">
-                                            Elena Rostova
-                                        </strong>
+                                                <p
+                                                    class="text-xs font-semibold
+                                               text-white
+                                               group-hover:text-indigo-400
+                                               transition-colors">
 
-                                        comentó en tu proyecto
+                                                    {{ $notificacion->titulo }}
 
-                                        <span class="text-slate-400">
-                                            Dashboard UI
-                                        </span>.
+                                                </p>
 
-                                    </p>
 
-                                    <span class="text-[10px] text-slate-500 mt-1 block">
-                                        Hace 2 minutos
-                                    </span>
+                                                <!-- PUNTO DE NO LEÍDA -->
+                                                @if (!$notificacion->leida)
+                                                    <span
+                                                        class="w-2 h-2 shrink-0 mt-1.5
+                                                   rounded-full
+                                                   bg-indigo-500">
+                                                    </span>
+                                                @endif
 
-                                </div>
+                                            </div>
 
-                                <span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0 self-center"></span>
 
-                            </a>
+                                            <p
+                                                class="mt-1 text-[11px]
+                                           leading-relaxed
+                                           text-slate-400">
 
-                            <a href="#" class="flex gap-3 p-4 hover:bg-slate-800/50 transition-colors group">
+                                                {{ $notificacion->mensaje }}
 
+                                            </p>
+
+
+                                            <p
+                                                class="mt-2 text-[10px]
+                                           text-slate-500">
+
+                                                {{ $notificacion->created_at->diffForHumans() }}
+
+                                            </p>
+
+                                        </div>
+
+                                    </a>
+
+                                @empty
+
+                                    <!-- SIN NOTIFICACIONES -->
+                                    <div class="px-6 py-10 text-center">
+
+                                        <div
+                                            class="mx-auto mb-3
+                                       w-12 h-12
+                                       rounded-full
+                                       bg-slate-800/50
+                                       border border-slate-800
+                                       flex items-center justify-center">
+
+                                            <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
+                                            </i>
+
+                                        </div>
+
+                                        <p class="text-xs font-medium text-slate-400">
+                                            No tienes notificaciones
+                                        </p>
+
+                                        <p class="text-[10px] text-slate-600 mt-1">
+                                            Aquí aparecerán tus nuevas notificaciones.
+                                        </p>
+
+                                    </div>
+                                @endforelse
+
+                            </div>
+
+
+                            <!-- =================================================
+                     PIE DEL DROPDOWN
+                ================================================== -->
+
+                            @if ($notificaciones->count() > 0)
                                 <div
-                                    class="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                                    class="px-4 py-3
+                               border-t border-slate-800/80
+                               bg-[#0b1026]">
 
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z">
-                                        </path>
-
-                                    </svg>
-
-                                </div>
-
-                                <div class="flex-1 min-w-0">
-
-                                    <p class="text-xs text-slate-300 leading-relaxed">
-
-                                        Tu despliegue en
-
-                                        <strong class="font-semibold text-white">
-                                            Vite/Production
-                                        </strong>
-
-                                        se completó con éxito.
-
+                                    <p class="text-[10px] text-center text-slate-500">
+                                        Mostrando tus notificaciones recientes
                                     </p>
 
-                                    <span class="text-[10px] text-slate-500 mt-1 block">
-                                        Hace 1 hora
-                                    </span>
-
                                 </div>
-
-                            </a>
+                            @endif
 
                         </div>
-
-                        <a href="#"
-                            class="block p-3 text-center text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors">
-                            Ver todas las notificaciones
-                        </a>
 
                     </div>
-
                 </div>
 
-                <div class="relative">
+                <div class="relative" x-data="{ perfilAbierto: false }">
 
-                    <button id="profile-button" type="button"
+                    <button type="button" @click="perfilAbierto = !perfilAbierto"
                         class="flex items-center gap-3 cursor-pointer rounded-xl px-2 py-1.5 hover:bg-[#151b3b] transition-all duration-200 focus:outline-none">
 
                         <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
@@ -316,30 +424,32 @@
 
                         </div>
 
-                        <svg id="profile-arrow" class="w-4 h-4 text-gray-400 transition-transform duration-200"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                            :class="{ 'rotate-180': perfilAbierto }" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
 
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
-                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
 
                         </svg>
 
                     </button>
 
-                    <div id="profile-dropdown"
-                        class="hidden absolute right-0 mt-3 w-56 bg-[#0f1535]/95 backdrop-blur-xl border border-[#1e295d] rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+
+                    <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
+                        class="absolute right-0 mt-3 w-56
+               bg-[#0f1535]/95 backdrop-blur-xl
+               border border-[#1e295d]
+               rounded-xl shadow-2xl shadow-black/40
+               overflow-hidden z-[99999]"
+                        style="display: none;">
 
                         <a href="{{ route('perfilusuario') }}"
                             class="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-[#151b3b] hover:text-white transition-colors">
 
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
+                            <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400">
+                            </i>
 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                </path>
-
-                            </svg>
 
                             <span>
                                 Ver perfil
@@ -347,9 +457,12 @@
 
                         </a>
 
+
                         <div class="border-t border-[#1e295d]"></div>
 
+
                         <form method="POST" action="{{ route('logout') }}">
+
                             @csrf
 
                             <button type="submit"
@@ -358,8 +471,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                    </path>
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
 
                                 </svg>
 
@@ -1043,26 +1155,26 @@
         </div>
 
     </main>
-<script>
-    function mostrarCampoEquipo() {
-        const tipoFalla = document.getElementById('tipo_falla');
-        const campoEquipo = document.getElementById('campoEquipo');
-        const equipo = document.getElementById('equipo');
+    <script>
+        function mostrarCampoEquipo() {
+            const tipoFalla = document.getElementById('tipo_falla');
+            const campoEquipo = document.getElementById('campoEquipo');
+            const equipo = document.getElementById('equipo');
 
-        if (tipoFalla.value === 'Equipo') {
-            campoEquipo.classList.remove('hidden');
-            equipo.required = true;
-        } else {
-            campoEquipo.classList.add('hidden');
-            equipo.required = false;
-            equipo.value = '';
+            if (tipoFalla.value === 'Equipo') {
+                campoEquipo.classList.remove('hidden');
+                equipo.required = true;
+            } else {
+                campoEquipo.classList.add('hidden');
+                equipo.required = false;
+                equipo.value = '';
+            }
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        mostrarCampoEquipo();
-    });
-</script>
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarCampoEquipo();
+        });
+    </script>
 </body>
 
 </html>

@@ -20,17 +20,10 @@
 
 <body class="bg-[#070b19] text-white font-sans h-screen flex antialiased overflow-hidden">
 
-
-    {{-- ========================================================= --}}
-    {{-- SIDEBAR --}}
-    {{-- ========================================================= --}}
-
     <aside
         class="w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 flex flex-col justify-between hidden md:flex h-screen shrink-0 overflow-hidden">
 
         <div class="min-h-0">
-
-            {{-- LOGO --}}
 
             <div class="flex items-center gap-2 mb-10">
 
@@ -41,9 +34,6 @@
                 </span>
 
             </div>
-
-
-            {{-- USUARIO --}}
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
 

@@ -6,646 +6,416 @@ use App\Models\Aviso;
 use App\Models\Departamento;
 use App\Models\User;
 use App\Models\Notificacion;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AvisosusuarioController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | LISTADO DE AVISOS DEL USUARIO
-    |--------------------------------------------------------------------------
-    */
-
-    public function create()
+    public function create(Request $request)
     {
         $usuario = Auth::user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | DATOS DEL USUARIO
-        |--------------------------------------------------------------------------
-        */
+        $usuarioId = $usuario->id;
+        $departamentoId = $usuario->departamento?->id;
+        $empresaId = $usuario->departamento?->oficina?->empresa_id;
 
-        $empresaId =
-            $usuario->departamento?->oficina?->empresa_id;
+        $buscar = trim(
+            $request->input('buscar', '')
+        );
 
-        $departamentoId =
-            $usuario->departamento?->id;
-
-        $usuarioId =
-            $usuario->id;
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES DEL USUARIO
-        |--------------------------------------------------------------------------
-        |
-        | IMPORTANTE:
-        |
-        | Aquí obtenemos las notificaciones del usuario actual.
-        |
-        | No creamos notificaciones.
-        |
-        | Las notificaciones de tipo "aviso" para Tecnologías
-        | son excluidas desde AvisosController.
-        |
-        */
-
-        $notificaciones =
-            Notificacion::where(
-                'user_id',
-                $usuarioId
+        $filtroTipo = strtolower(
+            trim(
+                $request->input('tipo', 'todos')
             )
+        );
+
+        $notificaciones = Notificacion::where(
+            'user_id',
+            $usuarioId
+        )
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES NO LEÍDAS
-        |--------------------------------------------------------------------------
-        */
-
-        $notificacionesNoLeidas =
-            Notificacion::where(
-                'user_id',
-                $usuarioId
-            )
-            ->where(
-                'leida',
-                false
-            )
+        $notificacionesNoLeidas = Notificacion::where(
+            'user_id',
+            $usuarioId
+        )
+            ->where('leida', false)
             ->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | SI EL USUARIO NO TIENE EMPRESA
-        |--------------------------------------------------------------------------
-        */
-
         if (!$empresaId) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'avisos' => [],
+                    'total' => 0,
+                    'filtroTipo' => $filtroTipo,
+                    'buscar' => $buscar,
+                ]);
+            }
 
             return view('user.avisos', [
-
-                'avisos' =>
-                    collect(),
-
-                'usuarios' =>
-                    collect(),
-
-                'departamentos' =>
-                    collect(),
-
-                'notificaciones' =>
-                    $notificaciones,
-
-                'notificacionesNoLeidas' =>
-                    $notificacionesNoLeidas,
+                'avisos' => collect(),
+                'avisosTodos' => collect(),
+                'usuarios' => collect(),
+                'departamentos' => collect(),
+                'notificaciones' => $notificaciones,
+                'notificacionesNoLeidas' => $notificacionesNoLeidas,
+                'buscar' => $buscar,
+                'filtroTipo' => $filtroTipo,
             ]);
         }
 
+        $avisos = Aviso::with('publicadoPor')
+            ->where(
+                'fecha_inicio',
+                '<=',
+                now()
+            )
+            ->where(function ($query) {
+                $query
+                    ->whereNull('fecha_fin')
+                    ->orWhere(
+                        'fecha_fin',
+                        '>=',
+                        now()
+                    );
+            })
+            ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | OBTENER AVISOS ACTIVOS
-        |--------------------------------------------------------------------------
-        */
-
-        $avisos =
-            Aviso::with('publicadoPor')
-                ->where(
-                    'fecha_inicio',
-                    '<=',
-                    now()
-                )
-                ->where(function ($query) {
-
-                    $query
-                        ->whereNull('fecha_fin')
-                        ->orWhere(
-                            'fecha_fin',
-                            '>=',
-                            now()
-                        );
-                })
-                ->get()
-                ->filter(function ($aviso) use (
-                    $empresaId,
-                    $departamentoId,
-                    $usuarioId
-                ) {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | OBTENER AFECTADOS
-                    |--------------------------------------------------------------------------
-                    */
-
-                    $afecta =
-                        $aviso->afecta_a;
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | CONVERTIR JSON A ARRAY
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (
-                        is_string($afecta)
-                    ) {
-
-                        $afecta =
-                            json_decode(
-                                $afecta,
-                                true
-                            );
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | VALIDAR ESTRUCTURA
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (
-                        !is_array($afecta)
-                    ) {
-
-                        return false;
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | AVISO PARA TODA LA EMPRESA
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (
-                        ($afecta['tipo'] ?? null)
-                        === 'todos'
-                    ) {
-
-                        if (
-                            isset(
-                                $afecta['empresa_id']
-                            ) &&
-                            (int)
-                            $afecta['empresa_id']
-                            !==
-                            (int)
-                            $empresaId
-                        ) {
-
-                            return false;
-                        }
-
-                        return true;
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | AVISO PARA DEPARTAMENTOS
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (
-                        ($afecta['tipo'] ?? null)
-                        === 'departamentos'
-                    ) {
-
-                        $departamentoIds =
-                            $afecta['ids'] ?? [];
-
-
-                        if (
-                            !is_array(
-                                $departamentoIds
-                            )
-                        ) {
-
-                            return false;
-                        }
-
-
-                        $departamentoIds =
-                            array_map(
-                                'intval',
-                                $departamentoIds
-                            );
-
-
-                        return in_array(
-                            (int)
-                            $departamentoId,
-                            $departamentoIds,
-                            true
-                        );
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | AVISO PARA USUARIOS ESPECÍFICOS
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (
-                        ($afecta['tipo'] ?? null)
-                        === 'usuarios'
-                    ) {
-
-                        $usuarioIds =
-                            $afecta['ids'] ?? [];
-
-
-                        if (
-                            !is_array(
-                                $usuarioIds
-                            )
-                        ) {
-
-                            return false;
-                        }
-
-
-                        $usuarioIds =
-                            array_map(
-                                'intval',
-                                $usuarioIds
-                            );
-
-
-                        return in_array(
-                            (int)
-                            $usuarioId,
-                            $usuarioIds,
-                            true
-                        );
-                    }
-
-
-                    return false;
-                })
-                ->sortByDesc('fijado')
-                ->sortByDesc('fecha_inicio')
-                ->values();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | PREPARAR INFORMACIÓN DE LOS AVISOS
-        |--------------------------------------------------------------------------
-        */
-
-        foreach (
-            $avisos
-            as $aviso
-        ) {
-
-            $afecta =
-                $aviso->afecta_a;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | CONVERTIR JSON A ARRAY
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                is_string($afecta)
+        $avisos = $avisos->filter(
+            function ($aviso) use (
+                $empresaId,
+                $departamentoId,
+                $usuarioId
             ) {
+                $afecta = $aviso->afecta_a;
 
-                $afecta =
-                    json_decode(
+                if (is_string($afecta)) {
+                    $afecta = json_decode(
                         $afecta,
                         true
                     );
+                }
+
+                if (!is_array($afecta)) {
+                    return false;
+                }
+
+                $tipo = $afecta['tipo'] ?? null;
+
+                if ($tipo === 'todos') {
+                    if (
+                        isset($afecta['empresa_id']) &&
+                        (int) $afecta['empresa_id'] !==
+                        (int) $empresaId
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                if ($tipo === 'departamentos') {
+                    $departamentoIds =
+                        $afecta['ids'] ?? [];
+
+                    if (
+                        !is_array($departamentoIds) ||
+                        !$departamentoId
+                    ) {
+                        return false;
+                    }
+
+                    $departamentoIds = array_map(
+                        'intval',
+                        $departamentoIds
+                    );
+
+                    return in_array(
+                        (int) $departamentoId,
+                        $departamentoIds,
+                        true
+                    );
+                }
+
+                if ($tipo === 'usuarios') {
+                    $usuarioIds =
+                        $afecta['ids'] ?? [];
+
+                    if (!is_array($usuarioIds)) {
+                        return false;
+                    }
+
+                    $usuarioIds = array_map(
+                        'intval',
+                        $usuarioIds
+                    );
+
+                    return in_array(
+                        (int) $usuarioId,
+                        $usuarioIds,
+                        true
+                    );
+                }
+
+                return false;
+            }
+        );
+
+        $avisos = $avisos->filter(
+            function ($aviso) use ($filtroTipo) {
+                if (
+                    $filtroTipo === '' ||
+                    $filtroTipo === 'todos'
+                ) {
+                    return true;
+                }
+
+                return strtolower(
+                    $aviso->tipo ?? ''
+                ) === $filtroTipo;
+            }
+        );
+
+        $avisos = $avisos->filter(
+            function ($aviso) use ($buscar) {
+                if ($buscar === '') {
+                    return true;
+                }
+
+                $texto = mb_strtolower(
+                    $buscar,
+                    'UTF-8'
+                );
+
+                $titulo = mb_strtolower(
+                    $aviso->titulo ?? '',
+                    'UTF-8'
+                );
+
+                $descripcion = mb_strtolower(
+                    $aviso->descripcion ?? '',
+                    'UTF-8'
+                );
+
+                $tipo = mb_strtolower(
+                    $aviso->tipo ?? '',
+                    'UTF-8'
+                );
+
+                $importancia = mb_strtolower(
+                    $aviso->importancia ?? '',
+                    'UTF-8'
+                );
+
+                return
+                    str_contains($titulo, $texto) ||
+                    str_contains($descripcion, $texto) ||
+                    str_contains($tipo, $texto) ||
+                    str_contains($importancia, $texto);
+            }
+        );
+
+        $avisos = $avisos
+            ->sortByDesc('fecha_inicio')
+            ->sortByDesc('fijado')
+            ->values();
+
+        $avisosTodos = $avisos->values();
+
+        foreach ($avisosTodos as $aviso) {
+            $afecta = $aviso->afecta_a;
+
+            if (is_string($afecta)) {
+                $afecta = json_decode(
+                    $afecta,
+                    true
+                );
             }
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | VALOR POR DEFECTO
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                !is_array($afecta)
-            ) {
-
+            if (!is_array($afecta)) {
                 $afecta = [];
             }
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | GUARDAR AFECTA_A COMO ARRAY
-            |--------------------------------------------------------------------------
-            */
-
-            $aviso->afecta_a =
-                $afecta;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | VALORES POR DEFECTO
-            |--------------------------------------------------------------------------
-            */
-
+            $aviso->afecta_a = $afecta;
             $aviso->afecta_texto =
                 'Todos los usuarios';
 
-            $aviso->afecta_usuarios =
-                [];
+            $aviso->afecta_usuarios = [];
+            $aviso->afecta_departamentos = [];
 
-            $aviso->afecta_departamentos =
-                [];
+            $tipo = $afecta['tipo'] ?? null;
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | TODA LA EMPRESA
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                ($afecta['tipo'] ?? null)
-                === 'todos'
-            ) {
-
+            if ($tipo === 'todos') {
                 $aviso->afecta_texto =
                     'Toda la empresa';
 
                 continue;
             }
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | DEPARTAMENTOS
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                ($afecta['tipo'] ?? null)
-                === 'departamentos'
-            ) {
-
-                $ids =
-                    $afecta['ids'] ?? [];
-
+            if ($tipo === 'departamentos') {
+                $ids = $afecta['ids'] ?? [];
 
                 if (
                     !is_array($ids) ||
                     empty($ids)
                 ) {
-
                     $aviso->afecta_texto =
                         'Departamentos';
 
                     continue;
                 }
 
-
-                $ids =
-                    array_map(
-                        'intval',
-                        $ids
-                    );
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | OBTENER DEPARTAMENTOS
-                |--------------------------------------------------------------------------
-                */
+                $ids = array_map(
+                    'intval',
+                    $ids
+                );
 
                 $departamentosAviso =
                     Departamento::with('oficina')
-                        ->whereIn(
-                            'id',
-                            $ids
-                        )
+                        ->whereIn('id', $ids)
                         ->orderBy('nombre')
                         ->get();
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | INFORMACIÓN PARA ALPINE
-                |--------------------------------------------------------------------------
-                */
-
                 $aviso->afecta_departamentos =
                     $departamentosAviso
-                        ->map(function (
-                            $departamento
-                        ) {
+                        ->map(
+                            function ($departamento) {
+                                return [
+                                    'id' =>
+                                        $departamento->id,
 
-                            return [
+                                    'nombre' =>
+                                        $departamento->nombre,
 
-                                'id' =>
-                                    $departamento->id,
-
-                                'nombre' =>
-                                    $departamento->nombre,
-
-                                'oficina' =>
-                                    $departamento
-                                        ->oficina
-                                        ?->nombre,
-                            ];
-                        })
+                                    'oficina' =>
+                                        $departamento
+                                            ->oficina
+                                            ?->nombre,
+                                ];
+                            }
+                        )
                         ->values()
                         ->toArray();
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | TEXTO DEL AVISO
-                |--------------------------------------------------------------------------
-                */
-
                 $nombres =
                     $departamentosAviso
-                        ->map(function (
-                            $departamento
-                        ) {
+                        ->map(
+                            function ($departamento) {
+                                $nombre =
+                                    $departamento->nombre;
 
-                            $nombre =
-                                $departamento->nombre;
+                                if (
+                                    $departamento->oficina
+                                ) {
+                                    $nombre .=
+                                        ' — ' .
+                                        $departamento
+                                            ->oficina
+                                            ->nombre;
+                                }
 
-
-                            if (
-                                $departamento->oficina
-                            ) {
-
-                                $nombre .=
-                                    ' — ' .
-                                    $departamento
-                                        ->oficina
-                                        ->nombre;
+                                return $nombre;
                             }
-
-
-                            return $nombre;
-                        })
+                        )
                         ->implode(', ');
-
 
                 $aviso->afecta_texto =
                     $nombres
                     ?: 'Departamentos';
 
-
                 continue;
             }
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | USUARIOS ESPECÍFICOS
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                ($afecta['tipo'] ?? null)
-                === 'usuarios'
-            ) {
-
-                $ids =
-                    $afecta['ids'] ?? [];
-
+            if ($tipo === 'usuarios') {
+                $ids = $afecta['ids'] ?? [];
 
                 if (
                     !is_array($ids) ||
                     empty($ids)
                 ) {
-
                     $aviso->afecta_texto =
                         'Usuarios específicos';
 
                     continue;
                 }
 
-
-                $ids =
-                    array_map(
-                        'intval',
-                        $ids
-                    );
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | OBTENER USUARIOS
-                |--------------------------------------------------------------------------
-                */
+                $ids = array_map(
+                    'intval',
+                    $ids
+                );
 
                 $usuariosAviso =
                     User::with(
                         'departamento.oficina'
                     )
-                    ->whereIn(
-                        'id',
-                        $ids
-                    )
-                    ->orderBy('name')
-                    ->get();
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | INFORMACIÓN PARA ALPINE
-                |--------------------------------------------------------------------------
-                */
+                        ->whereIn('id', $ids)
+                        ->orderBy('name')
+                        ->get();
 
                 $aviso->afecta_usuarios =
                     $usuariosAviso
-                        ->map(function (
-                            $usuario
-                        ) {
+                        ->map(
+                            function ($usuario) {
+                                return [
+                                    'id' =>
+                                        $usuario->id,
 
-                            return [
+                                    'name' =>
+                                        $usuario->name,
 
-                                'id' =>
-                                    $usuario->id,
+                                    'departamento' =>
+                                        $usuario
+                                            ->departamento
+                                            ?->nombre,
 
-                                'name' =>
-                                    $usuario->name,
-
-                                'departamento' =>
-                                    $usuario
-                                        ->departamento
-                                        ?->nombre,
-
-                                'oficina' =>
-                                    $usuario
-                                        ->departamento
-                                        ?->oficina
-                                        ?->nombre,
-                            ];
-                        })
+                                    'oficina' =>
+                                        $usuario
+                                            ->departamento
+                                            ?->oficina
+                                            ?->nombre,
+                                ];
+                            }
+                        )
                         ->values()
                         ->toArray();
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | TEXTO DEL AVISO
-                |--------------------------------------------------------------------------
-                */
-
                 $nombres =
                     $usuariosAviso
-                        ->map(function (
-                            $usuario
-                        ) {
-
-                            $nombre =
-                                $usuario->name;
-
-
-                            if (
-                                $usuario->departamento
-                            ) {
-
-                                $nombre .=
-                                    ' — ' .
-                                    $usuario
-                                        ->departamento
-                                        ->nombre;
-
+                        ->map(
+                            function ($usuario) {
+                                $nombre =
+                                    $usuario->name;
 
                                 if (
-                                    $usuario
-                                        ->departamento
-                                        ->oficina
+                                    $usuario->departamento
                                 ) {
-
                                     $nombre .=
                                         ' — ' .
                                         $usuario
                                             ->departamento
-                                            ->oficina
                                             ->nombre;
+
+                                    if (
+                                        $usuario
+                                            ->departamento
+                                            ->oficina
+                                    ) {
+                                        $nombre .=
+                                            ' — ' .
+                                            $usuario
+                                                ->departamento
+                                                ->oficina
+                                                ->nombre;
+                                    }
                                 }
+
+                                return $nombre;
                             }
-
-
-                            return $nombre;
-                        })
+                        )
                         ->implode(', ');
-
 
                 $aviso->afecta_texto =
                     $nombres
@@ -653,80 +423,100 @@ class AvisosusuarioController extends Controller
             }
         }
 
+        $totalAvisos =
+            $avisosTodos->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | USUARIOS DISPONIBLES PARA LA VISTA
-        |--------------------------------------------------------------------------
-        */
+        if ($request->expectsJson()) {
+            return response()->json([
+                'avisos' =>
+                    $avisosTodos->values(),
+
+                'total' =>
+                    $totalAvisos,
+
+                'filtroTipo' =>
+                    $filtroTipo,
+
+                'buscar' =>
+                    $buscar,
+            ]);
+        }
+
+        $paginaActual =
+            LengthAwarePaginator::resolveCurrentPage();
+
+        $porPagina = 5;
+
+        $avisosPagina =
+            $avisosTodos
+                ->forPage(
+                    $paginaActual,
+                    $porPagina
+                )
+                ->values();
+
+        $avisosPaginados =
+            new LengthAwarePaginator(
+                $avisosPagina,
+                $totalAvisos,
+                $porPagina,
+                $paginaActual,
+                [
+                    'path' =>
+                        $request->url(),
+
+                    'query' =>
+                        $request->query(),
+                ]
+            );
 
         $usuarios =
-            User::with(
-                'departamento'
-            )
-            ->orderBy('name')
-            ->get()
-            ->map(function (
-                $usuario
-            ) {
+            User::with('departamento')
+                ->orderBy('name')
+                ->get()
+                ->map(
+                    function ($usuario) {
+                        return [
+                            'id' =>
+                                $usuario->id,
 
-                return [
+                            'name' =>
+                                $usuario->name,
 
-                    'id' =>
-                        $usuario->id,
-
-                    'name' =>
-                        $usuario->name,
-
-                    'departamento' =>
-                        $usuario
-                            ->departamento
-                            ?->nombre
-                            ?? 'Sin departamento',
-                ];
-            })
-            ->values();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEPARTAMENTOS DISPONIBLES PARA LA VISTA
-        |--------------------------------------------------------------------------
-        */
+                            'departamento' =>
+                                $usuario
+                                    ->departamento
+                                    ?->nombre
+                                    ?? 'Sin departamento',
+                        ];
+                    }
+                )
+                ->values();
 
         $departamentos =
-            Departamento::orderBy(
-                'nombre'
-            )
-            ->get()
-            ->map(function (
-                $departamento
-            ) {
+            Departamento::orderBy('nombre')
+                ->get()
+                ->map(
+                    function ($departamento) {
+                        return [
+                            'id' =>
+                                $departamento->id,
 
-                return [
-
-                    'id' =>
-                        $departamento->id,
-
-                    'nombre' =>
-                        $departamento->nombre,
-                ];
-            })
-            ->values();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | VISTA
-        |--------------------------------------------------------------------------
-        */
+                            'nombre' =>
+                                $departamento->nombre,
+                        ];
+                    }
+                )
+                ->values();
 
         return view(
             'user.avisos',
             [
-
                 'avisos' =>
-                    $avisos,
+                    $avisosPaginados,
+
+                'avisosTodos' =>
+                    $avisosTodos,
 
                 'usuarios' =>
                     $usuarios,
@@ -739,6 +529,12 @@ class AvisosusuarioController extends Controller
 
                 'notificacionesNoLeidas' =>
                     $notificacionesNoLeidas,
+
+                'buscar' =>
+                    $buscar,
+
+                'filtroTipo' =>
+                    $filtroTipo,
             ]
         );
     }

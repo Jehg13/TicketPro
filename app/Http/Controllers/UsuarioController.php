@@ -9,19 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class UsuarioController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | DASHBOARD DEL USUARIO
-    |--------------------------------------------------------------------------
-    */
-
     public function index()
     {
         $usuario = Auth::user();
-
-        // =========================================================
-        // RESUMEN DE TICKETS
-        // =========================================================
 
         $resumen = [
             'total' => TicketU::where(
@@ -58,11 +48,6 @@ class UsuarioController extends Controller
                 ->count(),
         ];
 
-
-        // =========================================================
-        // ÚLTIMO TICKET
-        // =========================================================
-
         $ultimoTicketModel = TicketU::with([
             'user.departamento.oficina',
             'solucion',
@@ -91,11 +76,6 @@ class UsuarioController extends Controller
                 ->tomadoPor
                 ?->name;
 
-
-            // =====================================================
-            // FECHA DE ASIGNACIÓN
-            // =====================================================
-
             $fechaAsignacion = null;
 
             if ($ultimoTicketModel->fecha_tomado) {
@@ -105,11 +85,6 @@ class UsuarioController extends Controller
                     ->timezone('America/Matamoros')
                     ->format('d M Y');
             }
-
-
-            // =====================================================
-            // FECHA DE REPORTE
-            // =====================================================
 
             $fechaReporte = null;
 
@@ -121,22 +96,12 @@ class UsuarioController extends Controller
                     ->format('d M Y');
             }
 
-
-            // =====================================================
-            // ESTADO DE SOLUCIÓN
-            // =====================================================
-
             $solucionado = (
                 $ultimoTicketModel->estado === 'solucionado' ||
                 $ultimoTicketModel->solucion !== null
             )
                 ? 'Sí'
                 : 'No';
-
-
-            // =====================================================
-            // INFORMACIÓN DEL ÚLTIMO TICKET
-            // =====================================================
 
             $ultimoTicket = [
 
@@ -175,11 +140,6 @@ class UsuarioController extends Controller
             ];
         }
 
-
-        // =========================================================
-        // TICKETS RECIENTES
-        // =========================================================
-
         $ticketsRecientes = TicketU::with([
             'user.departamento.oficina',
             'tomadoPor',
@@ -190,19 +150,43 @@ class UsuarioController extends Controller
             ->limit(5)
             ->get();
 
+        $actividad = collect();
 
-        // =========================================================
-        // AVISOS
-        // =========================================================
+        foreach ($ticketsRecientes as $ticket) {
+
+            $actividad->push([
+                'fecha' => $ticket->created_at,
+                'texto' => 'Tu ticket ' . $ticket->folio . ' se creó correctamente',
+                'color' => 'bg-blue-600',
+            ]);
+
+            if ($ticket->tomadoPor && $ticket->fecha_tomado) {
+
+                $actividad->push([
+                    'fecha' => $ticket->fecha_tomado,
+                    'texto' => $ticket->tomadoPor->name . ' tomó tu ticket ' . $ticket->folio,
+                    'color' => 'bg-green-600',
+                ]);
+            }
+
+            if ($ticket->solucion) {
+
+                $actividad->push([
+                    'fecha' => $ticket->solucion->created_at,
+                    'texto' => 'Tu ticket ' . $ticket->folio . ' fue solucionado',
+                    'color' => 'bg-green-600',
+                ]);
+            }
+        }
+
+        $actividad = $actividad
+            ->sortByDesc('fecha')
+            ->take(5)
+            ->values();
 
         $avisos = Aviso::orderByDesc('created_at')
             ->limit(3)
             ->get();
-
-
-        // =========================================================
-        // NOTIFICACIONES
-        // =========================================================
 
         $notificaciones = Notificacion::where(
             'user_id',
@@ -212,11 +196,6 @@ class UsuarioController extends Controller
             ->limit(10)
             ->get();
 
-
-        // =========================================================
-        // NOTIFICACIONES NO LEÍDAS
-        // =========================================================
-
         $notificacionesNoLeidas = Notificacion::where(
             'user_id',
             $usuario->id
@@ -224,17 +203,13 @@ class UsuarioController extends Controller
             ->where('leida', false)
             ->count();
 
-
-        // =========================================================
-        // VISTA DASHBOARD
-        // =========================================================
-
         return view(
             'user.index',
             compact(
                 'resumen',
                 'ultimoTicket',
                 'ticketsRecientes',
+                'actividad',
                 'avisos',
                 'notificaciones',
                 'notificacionesNoLeidas'
@@ -242,30 +217,13 @@ class UsuarioController extends Controller
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | DETALLES DEL TICKET
-    |--------------------------------------------------------------------------
-    */
-
     public function verTicket(TicketU $ticket)
     {
         $usuario = Auth::user();
 
-
-        // =========================================================
-        // VERIFICAR QUE EL TICKET PERTENEZCA AL USUARIO
-        // =========================================================
-
         if ($ticket->user_id !== $usuario->id) {
             abort(403);
         }
-
-
-        // =========================================================
-        // CARGAR RELACIONES DEL TICKET
-        // =========================================================
 
         $ticket->load([
             'user.departamento.oficina',
@@ -274,11 +232,6 @@ class UsuarioController extends Controller
             'solucion.solucionadoPor',
         ]);
 
-
-        // =========================================================
-        // NOTIFICACIONES
-        // =========================================================
-
         $notificaciones = Notificacion::where(
             'user_id',
             $usuario->id
@@ -287,11 +240,6 @@ class UsuarioController extends Controller
             ->limit(10)
             ->get();
 
-
-        // =========================================================
-        // NOTIFICACIONES NO LEÍDAS
-        // =========================================================
-
         $notificacionesNoLeidas = Notificacion::where(
             'user_id',
             $usuario->id
@@ -299,19 +247,9 @@ class UsuarioController extends Controller
             ->where('leida', false)
             ->count();
 
-
-        // =========================================================
-        // AVISOS
-        // =========================================================
-
         $avisos = Aviso::orderByDesc('created_at')
             ->limit(3)
             ->get();
-
-
-        // =========================================================
-        // VISTA DETALLES
-        // =========================================================
 
         return view(
             'user.detalles',

@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
-        <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <title>TicketPro | Dashboard</title>
 </head>
@@ -175,252 +175,252 @@
 
                     <div class="relative inline-block text-left">
 
-<!-- =========================================================
+                        <!-- =========================================================
                         NOTIFICACIONES
                      ========================================================== -->
 
-                    <div class="relative" x-data="{ notificacionesAbiertas: false }">
+                        <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-                        <!-- BOTÓN DE NOTIFICACIONES -->
-                        <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
-                            @click.outside="notificacionesAbiertas = false"
-                            class="relative flex items-center justify-center w-10 h-10 rounded-xl
+                            <!-- BOTÓN DE NOTIFICACIONES -->
+                            <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                                @click.outside="notificacionesAbiertas = false"
+                                class="relative flex items-center justify-center w-10 h-10 rounded-xl
                        bg-slate-900/80 border border-slate-800
                        text-slate-400 hover:text-white hover:bg-slate-800
                        transition-all duration-200 focus:outline-none">
 
-                            <i data-lucide="bell" class="w-5 h-5"></i>
+                                <i data-lucide="bell" class="w-5 h-5"></i>
 
 
-                            <!-- INDICADOR DE NOTIFICACIONES NUEVAS -->
-                            @if ($notificacionesNoLeidas > 0)
-                                <span
-                                    class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
+                                <!-- INDICADOR DE NOTIFICACIONES NUEVAS -->
+                                @if ($notificacionesNoLeidas > 0)
+                                    <span
+                                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
                                px-1 flex items-center justify-center
                                rounded-full bg-indigo-600
                                border-2 border-[#050814]
                                text-[9px] font-bold text-white">
 
-                                    {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
+                                        {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
 
-                                </span>
-                            @endif
+                                    </span>
+                                @endif
 
-                        </button>
+                            </button>
 
 
-                        <!-- =====================================================
+                            <!-- =====================================================
                  DROPDOWN DE NOTIFICACIONES
             ====================================================== -->
 
-                        <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
-                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                            @click.outside="notificacionesAbiertas = false"
-                            class="absolute right-0 top-full mt-3
+                            <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                                @click.outside="notificacionesAbiertas = false"
+                                class="absolute right-0 top-full mt-3
                        w-[360px] max-w-[calc(100vw-2rem)]
                        bg-[#0f1535]
                        border border-[#1e295d]
                        rounded-2xl
                        shadow-2xl shadow-black/40
                        overflow-hidden z-[99999]"
-                            style="display: none;">
+                                style="display: none;">
 
-                            <!-- =================================================
+                                <!-- =================================================
                      CABECERA
                 ================================================== -->
 
-                            <div
-                                class="flex items-center justify-between
+                                <div
+                                    class="flex items-center justify-between
                            px-4 py-4
                            border-b border-slate-800/80">
 
-                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2">
 
-                                    <div
-                                        class="w-8 h-8 rounded-lg
+                                        <div
+                                            class="w-8 h-8 rounded-lg
                                    bg-indigo-500/10
                                    border border-indigo-500/20
                                    flex items-center justify-center">
 
-                                        <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
-                                        </i>
+                                            <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
+                                            </i>
+
+                                        </div>
+
+                                        <div>
+
+                                            <h3 class="text-sm font-semibold text-white">
+                                                Notificaciones
+                                            </h3>
+
+                                            <p class="text-[10px] text-slate-500">
+                                                Tienes {{ $notificacionesNoLeidas }} nuevas
+                                            </p>
+
+                                        </div>
 
                                     </div>
 
-                                    <div>
 
-                                        <h3 class="text-sm font-semibold text-white">
-                                            Notificaciones
-                                        </h3>
+                                    <!-- MARCAR COMO LEÍDAS -->
+                                    @if ($notificacionesNoLeidas > 0)
+                                        <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
 
-                                        <p class="text-[10px] text-slate-500">
-                                            Tienes {{ $notificacionesNoLeidas }} nuevas
-                                        </p>
+                                            @csrf
 
-                                    </div>
+                                            @method('PATCH')
 
-                                </div>
-
-
-                                <!-- MARCAR COMO LEÍDAS -->
-                                @if ($notificacionesNoLeidas > 0)
-                                    <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
-
-                                        @csrf
-
-                                        @method('PATCH')
-
-                                        <button type="submit"
-                                            class="text-[11px] font-medium
+                                            <button type="submit"
+                                                class="text-[11px] font-medium
                                        text-indigo-400
                                        hover:text-indigo-300
                                        transition-colors">
 
-                                            Marcar leídas
+                                                Marcar leídas
 
-                                        </button>
+                                            </button>
 
-                                    </form>
-                                @endif
+                                        </form>
+                                    @endif
 
-                            </div>
+                                </div>
 
 
-                            <!-- =================================================
+                                <!-- =================================================
                      LISTA DE NOTIFICACIONES
                 ================================================== -->
 
-                            <div class="max-h-[400px] overflow-y-auto">
+                                <div class="max-h-[400px] overflow-y-auto">
 
-                                @forelse ($notificaciones as $notificacion)
-                                    <a href="{{ $notificacion->url ?? '#' }}"
-                                        class="group flex gap-3 px-4 py-4
+                                    @forelse ($notificaciones as $notificacion)
+                                        <a href="{{ $notificacion->url ?? '#' }}"
+                                            class="group flex gap-3 px-4 py-4
                                    border-b border-slate-800/50
                                    transition-colors
                                    hover:bg-slate-800/40
                                    {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
 
-                                        <!-- ICONO -->
-                                        <div
-                                            class="w-10 h-10 shrink-0
+                                            <!-- ICONO -->
+                                            <div
+                                                class="w-10 h-10 shrink-0
                                        rounded-xl
                                        border border-indigo-500/20
                                        bg-indigo-500/10
                                        flex items-center justify-center">
 
-                                            <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
-                                                class="w-5 h-5 text-indigo-400">
-                                            </i>
-
-                                        </div>
-
-
-                                        <!-- CONTENIDO -->
-                                        <div class="flex-1 min-w-0">
-
-                                            <div class="flex items-start justify-between gap-2">
-
-                                                <p
-                                                    class="text-xs font-semibold
-                                               text-white
-                                               group-hover:text-indigo-400
-                                               transition-colors">
-
-                                                    {{ $notificacion->titulo }}
-
-                                                </p>
-
-
-                                                <!-- PUNTO DE NO LEÍDA -->
-                                                @if (!$notificacion->leida)
-                                                    <span
-                                                        class="w-2 h-2 shrink-0 mt-1.5
-                                                   rounded-full
-                                                   bg-indigo-500">
-                                                    </span>
-                                                @endif
+                                                <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                    class="w-5 h-5 text-indigo-400">
+                                                </i>
 
                                             </div>
 
 
-                                            <p
-                                                class="mt-1 text-[11px]
+                                            <!-- CONTENIDO -->
+                                            <div class="flex-1 min-w-0">
+
+                                                <div class="flex items-start justify-between gap-2">
+
+                                                    <p
+                                                        class="text-xs font-semibold
+                                               text-white
+                                               group-hover:text-indigo-400
+                                               transition-colors">
+
+                                                        {{ $notificacion->titulo }}
+
+                                                    </p>
+
+
+                                                    <!-- PUNTO DE NO LEÍDA -->
+                                                    @if (!$notificacion->leida)
+                                                        <span
+                                                            class="w-2 h-2 shrink-0 mt-1.5
+                                                   rounded-full
+                                                   bg-indigo-500">
+                                                        </span>
+                                                    @endif
+
+                                                </div>
+
+
+                                                <p
+                                                    class="mt-1 text-[11px]
                                            leading-relaxed
                                            text-slate-400">
 
-                                                {{ $notificacion->mensaje }}
+                                                    {{ $notificacion->mensaje }}
 
-                                            </p>
+                                                </p>
 
 
-                                            <p
-                                                class="mt-2 text-[10px]
+                                                <p
+                                                    class="mt-2 text-[10px]
                                            text-slate-500">
 
-                                                {{ $notificacion->created_at->diffForHumans() }}
+                                                    {{ $notificacion->created_at->diffForHumans() }}
 
-                                            </p>
+                                                </p>
 
-                                        </div>
+                                            </div>
 
-                                    </a>
+                                        </a>
 
-                                @empty
+                                    @empty
 
-                                    <!-- SIN NOTIFICACIONES -->
-                                    <div class="px-6 py-10 text-center">
+                                        <!-- SIN NOTIFICACIONES -->
+                                        <div class="px-6 py-10 text-center">
 
-                                        <div
-                                            class="mx-auto mb-3
+                                            <div
+                                                class="mx-auto mb-3
                                        w-12 h-12
                                        rounded-full
                                        bg-slate-800/50
                                        border border-slate-800
                                        flex items-center justify-center">
 
-                                            <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
-                                            </i>
+                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
+                                                </i>
+
+                                            </div>
+
+                                            <p class="text-xs font-medium text-slate-400">
+                                                No tienes notificaciones
+                                            </p>
+
+                                            <p class="text-[10px] text-slate-600 mt-1">
+                                                Aquí aparecerán tus nuevas notificaciones.
+                                            </p>
 
                                         </div>
+                                    @endforelse
 
-                                        <p class="text-xs font-medium text-slate-400">
-                                            No tienes notificaciones
-                                        </p>
-
-                                        <p class="text-[10px] text-slate-600 mt-1">
-                                            Aquí aparecerán tus nuevas notificaciones.
-                                        </p>
-
-                                    </div>
-                                @endforelse
-
-                            </div>
+                                </div>
 
 
-                            <!-- =================================================
+                                <!-- =================================================
                      PIE DEL DROPDOWN
                 ================================================== -->
 
-                            @if ($notificaciones->count() > 0)
-                                <div
-                                    class="px-4 py-3
+                                @if ($notificaciones->count() > 0)
+                                    <div
+                                        class="px-4 py-3
                                border-t border-slate-800/80
                                bg-[#0b1026]">
 
-                                    <p class="text-[10px] text-center text-slate-500">
-                                        Mostrando tus notificaciones recientes
-                                    </p>
+                                        <p class="text-[10px] text-center text-slate-500">
+                                            Mostrando tus notificaciones recientes
+                                        </p>
 
-                                </div>
-                            @endif
+                                    </div>
+                                @endif
+
+                            </div>
 
                         </div>
-
-                    </div>
 
                     </div>
 
@@ -1161,34 +1161,13 @@
 
                     </div>
 
-                    @php
-                        $actividad = [
-                            [
-                                'color' => 'bg-green-600',
-                                'fecha' => '05 Ago 2026 - 10:30 AM',
-                                'texto' => 'Carlos Martinez tomo tu ticket TKT-2026-0015',
-                            ],
-                            [
-                                'color' => 'bg-blue-600',
-                                'fecha' => '05 Ago 2026 - 10:15 AM',
-                                'texto' => 'Se agrego un comentario a tu ticket TKT-2026-0015',
-                            ],
-                            [
-                                'color' => 'bg-blue-600',
-                                'fecha' => '05 Ago 2026 - 10:00 AM',
-                                'texto' => 'Tu ticket TKT-2026-0015 se creo correctamente',
-                            ],
-                        ];
-                    @endphp
-
                     <div class="mt-4">
 
-                        @foreach ($actividad as $item)
+                        @forelse ($actividad as $item)
                             <div class="relative flex gap-3 pb-5 last:pb-0">
 
                                 @if (!$loop->last)
-                                    <span class="absolute left-[5px] top-3 h-full w-px bg-white/10">
-                                    </span>
+                                    <span class="absolute left-[5px] top-3 h-full w-px bg-white/10"></span>
                                 @endif
 
                                 <span class="relative mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {{ $item['color'] }}">
@@ -1197,7 +1176,7 @@
                                 <div class="text-sm">
 
                                     <p class="font-bold text-white">
-                                        {{ $item['fecha'] }}
+                                        {{ $item['fecha']->timezone('America/Matamoros')->format('d M Y - h:i A') }}
                                     </p>
 
                                     <p class="text-gray-400">
@@ -1207,7 +1186,17 @@
                                 </div>
 
                             </div>
-                        @endforeach
+
+                        @empty
+
+                            <div class="py-8 text-center">
+
+                                <p class="text-sm text-gray-500">
+                                    No hay actividad reciente en tus tickets.
+                                </p>
+
+                            </div>
+                        @endforelse
 
                     </div>
 

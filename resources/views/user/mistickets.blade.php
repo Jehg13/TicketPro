@@ -831,11 +831,11 @@
                 <div
                     class="mt-6 pt-4 border-t border-[#1e295d] flex flex-col sm:flex-row justify-between items-center gap-4">
 
-                    {{-- <p class="text-sm font-semibold text-gray-200">
+                    <p class="text-sm font-semibold text-gray-200">
                         Mostrando {{ $tickets->firstItem() ?? 0 }}
                         a {{ $tickets->lastItem() ?? 0 }}
                         de {{ $tickets->total() }} tickets
-                    </p> --}}
+                    </p>
 
                     <div class="flex items-center gap-2">
 
@@ -964,11 +964,6 @@
 
                 <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
 
-
-                    {{-- ===================================================== --}}
-                    {{-- INFORMACIÓN DEL TICKET --}}
-                    {{-- ===================================================== --}}
-
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                         {{-- FOLIO --}}
@@ -1047,11 +1042,6 @@
                         </div>
 
                     </div>
-
-
-                    {{-- ===================================================== --}}
-                    {{-- SOLUCIÓN APLICADA --}}
-                    {{-- ===================================================== --}}
 
                     <div>
 

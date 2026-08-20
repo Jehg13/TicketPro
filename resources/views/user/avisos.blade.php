@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="view-transition" content="same-origin">
     <title>Avisos - TicketPro</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -487,16 +487,16 @@
 
                 <div class="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0">
 
-                    <button type="button" @click="filtroTipo = 'todos'"
+                    <button type="button" @click="cambiarFiltro('todos')"
                         :class="filtroTipo === 'todos'
                             ?
                             'bg-blue-600 text-white shadow-md shadow-blue-600/30 border-blue-600' :
-                            'bg-[#060818] border-[#1e295d] text-gray-300 hover:border-gray-500'"
+                            'bg-[#0f1535] border-[#1e295d] text-gray-300 hover:bg-[#151d45] hover:border-gray-500'"
                         class="px-5 py-2 rounded-lg border font-medium text-xs sm:text-sm whitespace-nowrap transition">
                         Todos
                     </button>
 
-                    <button type="button" @click="filtroTipo = 'mantenimiento'"
+                    <button type="button" @click="cambiarFiltro('mantenimiento')"
                         :class="filtroTipo === 'mantenimiento'
                             ?
                             'bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-600/20' :
@@ -505,7 +505,7 @@
                         Mantenimiento
                     </button>
 
-                    <button type="button" @click="filtroTipo = 'incidente'"
+                    <button type="button" @click="cambiarFiltro('incidente')"
                         :class="filtroTipo === 'incidente'
                             ?
                             'bg-red-600 text-white border-red-500 shadow-md shadow-red-600/20' :
@@ -514,7 +514,7 @@
                         Falla / Incidente
                     </button>
 
-                    <button type="button" @click="filtroTipo = 'informativo'"
+                    <button type="button" @click="cambiarFiltro('informativo')"
                         :class="filtroTipo === 'informativo'
                             ?
                             'bg-cyan-600 text-white border-cyan-500 shadow-md shadow-cyan-600/20' :
@@ -523,11 +523,11 @@
                         Informativo
                     </button>
 
-                    <button type="button" @click="filtroTipo = 'general'"
+                    <button type="button" @click="cambiarFiltro('general')"
                         :class="filtroTipo === 'general'
                             ?
                             'bg-gray-600 text-white border-gray-500 shadow-md shadow-gray-600/20' :
-                            'bg-[#060818] border-[#1e295d] text-gray-300 hover:border-gray-500'"
+                            'bg-[#0f1535] border-[#1e295d] text-gray-300 hover:bg-[#151d45] hover:border-gray-500'"
                         class="px-4 py-2 rounded-lg border transition font-medium text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap">
                         General
                     </button>
@@ -536,10 +536,25 @@
 
                 <div class="relative w-full lg:w-64">
 
-                    <input type="text" x-model="busqueda" placeholder="Buscar aviso..."
+                    <input type="text" x-model="busqueda" @keydown.enter.prevent="buscarAvisos()"
+                        placeholder="Buscar aviso..."
                         class="w-full bg-[#060818] border border-[#1e295d] rounded-full py-2 pl-4 pr-10 text-xs sm:text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition">
 
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                    <button type="button" x-show="busqueda.trim() !== ''" @click="limpiarBusqueda()" x-transition
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition"
+                        title="Limpiar búsqueda">
+
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+
+                        </svg>
+
+                    </button>
+
+                    <div x-show="busqueda.trim() === ''"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
 
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
@@ -557,236 +572,183 @@
         </div>
 
         <div class="px-6 pb-10">
-
             <div class="bg-[#0f1535] rounded-2xl border border-[#1e295d] p-5 sm:p-6 space-y-4">
 
-                @forelse($avisos ?? [] as $aviso)
-                    @php
-                        $tipo = $aviso->tipo;
+                <template x-if="avisosPagina.length > 0">
+                    <template x-for="aviso in avisosPagina" :key="aviso.id">
 
-                        $tipoConfig = [
-                            'mantenimiento' => [
-                                'label' => 'MANTENIMIENTO',
-                                'bg' => '#3b2900',
-                            ],
-                            'incidente' => [
-                                'label' => 'FALLA / INCIDENTE',
-                                'bg' => '#3f0e0e',
-                            ],
-                            'informativo' => [
-                                'label' => 'INFORMATIVO',
-                                'bg' => '#092c42',
-                            ],
-                            'general' => [
-                                'label' => 'GENERAL',
-                                'bg' => '#111827',
-                            ],
-                        ];
-
-                        $config = $tipoConfig[$tipo] ?? $tipoConfig['general'];
-
-                        $afecta = $aviso->afecta_a;
-
-                        if (is_string($afecta)) {
-                            $decoded = json_decode($afecta, true);
-
-                            if (json_last_error() === JSON_ERROR_NONE) {
-                                $afecta = $decoded;
-                            }
-                        }
-
-                        $afectaTexto = 'Todos los usuarios';
-
-                        if (is_array($afecta)) {
-                            if (($afecta['tipo'] ?? null) === 'todos') {
-                                $afectaTexto = 'Todos los usuarios — Aplica a toda la empresa';
-                            } elseif (($afecta['tipo'] ?? null) === 'departamentos') {
-                                $ids = $afecta['ids'] ?? [];
-
-                                $nombres = \App\Models\Departamento::whereIn('id', $ids)
-                                    ->orderBy('nombre')
-                                    ->pluck('nombre')
-                                    ->toArray();
-
-                                $afectaTexto = !empty($nombres)
-                                    ? implode(', ', $nombres)
-                                    : 'Departamentos seleccionados';
-                            } elseif (($afecta['tipo'] ?? null) === 'usuarios') {
-                                $ids = $afecta['ids'] ?? [];
-
-                                $nombres = \App\Models\User::whereIn('id', $ids)
-                                    ->orderBy('name')
-                                    ->pluck('name')
-                                    ->toArray();
-
-                                $afectaTexto = !empty($nombres) ? implode(', ', $nombres) : 'Usuarios seleccionados';
-                            }
-                        }
-                    @endphp
-
-                    <div x-show="mostrarAviso(
-                        @js($aviso->tipo),
-                        @js($aviso->titulo),
-                        @js($aviso->descripcion)
+                        <div x-show="mostrarAviso(
+                        aviso.tipo,
+                        aviso.titulo,
+                        aviso.descripcion
                     )"
-                        x-transition.opacity.duration.200ms
-                        class="bg-[#0b102b] border border-[#1e295d] rounded-xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5 hover:border-blue-500/40 transition">
+                            x-transition.opacity.duration.200ms
+                            class="bg-[#0b102b] border border-[#1e295d] rounded-xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5 hover:border-blue-500/40 transition">
 
-                        <div class="flex flex-col sm:flex-row items-start gap-4 flex-1">
+                            <div class="flex flex-col sm:flex-row items-start gap-4 flex-1">
 
-                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center shrink-0"
-                                style="background-color: {{ $config['bg'] }};">
+                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center shrink-0"
+                                    :style="`background-color: ${
+                                                                                                                                                                                                                    {
+                                                                                                                                                                                                                        mantenimiento: '#3b2900',
+                                                                                                                                                                                                                        incidente: '#3f0e0e',
+                                                                                                                                                                                                                        informativo: '#092c42',
+                                                                                                                                                                                                                        general: '#111827'
+                                                                                                                                                                                                                    }[aviso.tipo] || '#111827'
+                                                                                                                                                                                                                }`">
 
-                                @if ($tipo === 'mantenimiento')
-                                    <svg class="w-9 h-9 text-amber-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
+                                    <template x-if="aviso.tipo === 'mantenimiento'">
+                                        <svg class="w-9 h-9 text-amber-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10.325 4.317a1.724 1.724 0 013.35 0 1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3.31-.826-2.37-2.37a1.724 1.724 0 001.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 012.572-1.065z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </template>
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10.325 4.317a1.724 1.724 0 013.35 0 1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3.31.826-2.37-2.37a1.724 1.724 0 001.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 012.572-1.065z" />
+                                    <template x-if="aviso.tipo === 'incidente'">
+                                        <svg class="w-9 h-9 text-red-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </template>
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <template x-if="aviso.tipo === 'informativo'">
+                                        <svg class="w-9 h-9 text-cyan-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </template>
 
-                                    </svg>
-                                @elseif($tipo === 'incidente')
-                                    <svg class="w-9 h-9 text-red-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
+                                    <template
+                                        x-if="aviso.tipo !== 'mantenimiento' && aviso.tipo !== 'incidente' && aviso.tipo !== 'informativo'">
+                                        <svg class="w-9 h-9 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                        </svg>
+                                    </template>
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </div>
 
-                                    </svg>
-                                @elseif($tipo === 'informativo')
-                                    <svg class="w-9 h-9 text-cyan-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
+                                <div class="space-y-1.5">
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                                    </svg>
-                                @else
-                                    <svg class="w-9 h-9 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-
-                                    </svg>
-                                @endif
-
-                            </div>
-
-                            <div class="space-y-1.5">
-
-                                <span
-                                    class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider"
-                                    style="background-color: {{ $config['bg'] }};">
-
-                                    {{ $config['label'] }}
-
-                                </span>
-
-                                <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wide">
-                                    {{ $aviso->titulo }}
-                                </h3>
-
-                                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-2xl line-clamp-2">
-                                    {{ $aviso->descripcion }}
-                                </p>
-
-                                <p class="text-xs text-gray-400 pt-1">
-
-                                    <span class="font-semibold text-gray-300">
-                                        Afecta a:
+                                    <span
+                                        class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider"
+                                        :style="`background-color: ${
+                                                                                                                                                                                                                                            {
+                                                                                                                                                                                                                                                mantenimiento: '#3b2900',
+                                                                                                                                                                                                                                                incidente: '#3f0e0e',
+                                                                                                                                                                                                                                                informativo: '#092c42',
+                                                                                                                                                                                                                                                general: '#111827'
+                                                                                                                                                                                                                                            }[aviso.tipo] || '#111827'
+                                                                                                                                                                                                                                        }`"
+                                        x-text="{
+                                    mantenimiento: 'MANTENIMIENTO',
+                                    incidente: 'FALLA / INCIDENTE',
+                                    informativo: 'INFORMATIVO',
+                                    general: 'GENERAL'
+                                }[aviso.tipo] || 'GENERAL'">
                                     </span>
 
-                                    {{ $afectaTexto }}
+                                    <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wide"
+                                        x-text="aviso.titulo">
+                                    </h3>
 
-                                </p>
+                                    <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-2xl line-clamp-2"
+                                        x-text="aviso.descripcion">
+                                    </p>
 
+                                    <p class="text-xs text-gray-400 pt-1">
+                                        <span class="font-semibold text-gray-300">
+                                            Afecta a:
+                                        </span>
+
+                                        <span x-text="aviso.afecta_texto || 'Todos los usuarios'"></span>
+                                    </p>
+
+                                </div>
                             </div>
 
-                        </div>
+                            <div
+                                class="flex lg:flex-col justify-between items-end shrink-0 border-t lg:border-t-0 border-[#1e295d] pt-3 lg:pt-0 gap-2">
 
-                        <div
-                            class="flex lg:flex-col justify-between items-end shrink-0 border-t lg:border-t-0 border-[#1e295d] pt-3 lg:pt-0 gap-2">
+                                <span class="px-3 py-1 rounded-md text-xs font-semibold"
+                                    :class="{
+                                        'bg-red-950 border border-red-500 text-red-400': aviso
+                                            .importancia === 'critica',
+                                    
+                                        'bg-orange-950 border border-orange-500 text-orange-400': aviso
+                                            .importancia === 'alta',
+                                    
+                                        'bg-yellow-950 border border-yellow-500 text-yellow-400': aviso
+                                            .importancia === 'media',
+                                    
+                                        'bg-slate-800 border border-slate-600 text-slate-300':
+                                            !['critica', 'alta', 'media'].includes(aviso.importancia)
+                                    }"
+                                    x-text="aviso.importancia
+                                ? aviso.importancia.charAt(0).toUpperCase() + aviso.importancia.slice(1)
+                                : ''">
+                                </span>
 
-                            <span
-                                class="px-3 py-1 rounded-md text-xs font-semibold
-                                @if ($aviso->importancia === 'critica') bg-red-950 border border-red-500 text-red-400
-                                @elseif($aviso->importancia === 'alta')
-                                    bg-orange-950 border border-orange-500 text-orange-400
-                                @elseif($aviso->importancia === 'media')
-                                    bg-yellow-950 border border-yellow-500 text-yellow-400
-                                @else
-                                    bg-slate-800 border border-slate-600 text-slate-300 @endif">
+                                <div class="text-right text-[11px] text-gray-400 space-y-0.5">
 
-                                {{ ucfirst($aviso->importancia) }}
+                                    <p class="flex items-center justify-end gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
 
-                            </span>
+                                        <span x-text="formatearFecha(aviso.fecha_inicio)">
+                                        </span>
+                                    </p>
 
-                            <div class="text-right text-[11px] text-gray-400 space-y-0.5">
+                                    <p class="flex items-center justify-end gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
 
-                                <p class="flex items-center justify-end gap-1">
+                                        <span x-text="formatearHora(aviso.fecha_inicio)">
+                                        </span>
+                                    </p>
+
+                                </div>
+
+                                <button type="button" @click="abrirAviso(aviso)"
+                                    class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition">
+
+                                    Ver más
 
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
-
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-
+                                            d="M9 5l7 7-7 7" />
                                     </svg>
 
-                                    {{ optional($aviso->fecha_inicio)->format('d M Y') }}
-
-                                </p>
-
-                                <p class="flex items-center justify-end gap-1">
-
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                                    </svg>
-
-                                    {{ optional($aviso->fecha_inicio)->format('H:i') }}
-
-                                </p>
+                                </button>
 
                             </div>
-
-                            <button type="button" @click='abrirAviso(@json($aviso))'
-                                class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition">
-
-                                Ver más
-
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7" />
-
-                                </svg>
-
-                            </button>
-
                         </div>
 
-                    </div>
+                    </template>
+                </template>
 
-                @empty
-
+                <template x-if="avisosPagina.length === 0">
                     <div class="text-center py-16">
 
                         <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
 
                             <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
-
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z" />
-
                             </svg>
 
                         </div>
@@ -800,20 +762,93 @@
                         </p>
 
                     </div>
-                @endforelse
+                </template>
 
-                <div x-cloak x-show="hayAvisos() && !hayAvisosVisibles()" x-transition.opacity.duration.200ms
-                    class="text-center py-16">
+                <div x-show="avisosTotales.length > 0"
+                    class="mt-6 pt-4 border-t border-[#1e295d] flex flex-col sm:flex-row justify-between items-center gap-4">
+
+                    <p class="text-sm font-semibold text-gray-200">
+
+                        Mostrando
+
+                        <span
+                            x-text="avisosTotales.length === 0
+                        ? 0
+                        : ((paginaActual - 1) * porPagina) + 1">
+                        </span>
+
+                        a
+
+                        <span
+                            x-text="Math.min(
+                        paginaActual * porPagina,
+                        avisosTotales.length
+                    )">
+                        </span>
+
+                        de
+
+                        <span x-text="avisosTotales.length"></span>
+
+                        avisos
+
+                    </p>
+
+                    <div x-show="totalPaginas > 1" class="flex items-center gap-2">
+
+                        <button type="button" @click="paginaAnterior()" :disabled="paginaActual === 1"
+                            class="w-9 h-9 rounded-lg bg-[#060818] border border-[#1e295d] flex items-center justify-center transition"
+                            :class="paginaActual === 1 ?
+                                'text-gray-600 cursor-not-allowed' :
+                                'text-gray-400 hover:text-white hover:border-blue-500'">
+
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+
+                        </button>
+
+                        <template x-for="pagina in totalPaginas" :key="pagina">
+
+                            <button type="button" @click="irPagina(pagina)"
+                                class="w-9 h-9 rounded-lg font-semibold text-sm flex items-center justify-center transition"
+                                :class="pagina === paginaActual ?
+                                    'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]' :
+                                    'bg-[#060818] border border-[#1e295d] text-gray-300 hover:border-blue-500'">
+
+                                <span x-text="pagina"></span>
+
+                            </button>
+
+                        </template>
+
+                        <button type="button" @click="paginaSiguiente()" :disabled="paginaActual === totalPaginas"
+                            class="w-9 h-9 rounded-lg bg-[#060818] border border-[#1e295d] flex items-center justify-center transition"
+                            :class="paginaActual === totalPaginas ?
+                                'text-gray-600 cursor-not-allowed' :
+                                'text-gray-400 hover:text-white hover:border-blue-500'">
+
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7-7" />
+                            </svg>
+
+                        </button>
+
+                    </div>
+                </div>
+
+                <div x-cloak x-show="avisosTotales.length > 0 && avisosPagina.length === 0"
+                    x-transition.opacity.duration.200ms class="text-center py-16">
 
                     <div
                         class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
 
                         <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
-
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-
                         </svg>
 
                     </div>
@@ -823,16 +858,13 @@
                     </h3>
 
                     <p class="text-sm text-gray-500 mt-1">
-
                         No hay
-
-                        <span class="text-gray-400" x-text="nombreFiltro()"></span>
-
+                        <span class="text-gray-400" x-text="nombreFiltro()">
+                        </span>
                         que coincidan con tu búsqueda.
-
                     </p>
 
-                    <button type="button" @click="filtroTipo = 'todos'; busqueda = ''"
+                    <button type="button" @click="limpiarFiltros()"
                         class="mt-5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition">
 
                         Limpiar filtros
@@ -842,7 +874,6 @@
                 </div>
 
             </div>
-
         </div>
 
     </main>
@@ -1358,121 +1389,467 @@
     <script>
         function avisosUsuario() {
             return {
+
+                // ============================================================
+                // MODAL
+                // ============================================================
+
                 modalAbierto: false,
 
                 avisoSeleccionado: {},
 
-                filtroTipo: 'todos',
 
-                busqueda: '',
+                // ============================================================
+                // FILTROS
+                // ============================================================
 
-                avisosTotales: @js($avisos ?? []),
+                filtroTipo: @js(request('tipo', 'todos')),
 
+                busqueda: @js(request('buscar', '')),
+
+
+                // ============================================================
+                // DATOS
+                // ============================================================
+
+                avisosTotales: @js($avisosTodos),
                 departamentos: @js($departamentos ?? []),
 
                 usuarios: @js($usuarios ?? []),
+                paginaActual: 1,
 
-                abrirAviso(aviso) {
-                    if (typeof aviso.afecta_a === 'string') {
-                        try {
-                            aviso.afecta_a = JSON.parse(aviso.afecta_a);
-                        } catch (error) {
-                            console.error('Error al convertir afecta_a:', error);
-                            aviso.afecta_a = {};
+                porPagina: 5,
+
+                get avisosPagina() {
+                    const inicio =
+                        (this.paginaActual - 1) * this.porPagina;
+
+                    return this.avisosTotales.slice(
+                        inicio,
+                        inicio + this.porPagina
+                    );
+                },
+
+                get totalPaginas() {
+                    return Math.ceil(
+                        this.avisosTotales.length / this.porPagina
+                    );
+                },
+                irPagina(pagina) {
+                    pagina = Number(pagina);
+
+                    if (
+                        pagina < 1 ||
+                        pagina > this.totalPaginas
+                    ) {
+                        return;
+                    }
+
+                    this.paginaActual = pagina;
+                },
+
+                paginaAnterior() {
+                    if (this.paginaActual > 1) {
+                        this.paginaActual--;
+                    }
+                },
+
+                paginaSiguiente() {
+                    if (this.paginaActual < this.totalPaginas) {
+                        this.paginaActual++;
+                    }
+                },
+
+
+                // ============================================================
+                // INIT
+                // ============================================================
+
+                init() {
+
+                    this.filtroTipo = String(
+                        this.filtroTipo || 'todos'
+                    ).trim().toLowerCase();
+
+                    this.busqueda = String(
+                        this.busqueda || ''
+                    ).trim();
+
+                },
+
+
+                // ============================================================
+                // CAMBIAR FILTRO
+                // ============================================================
+
+                async cambiarFiltro(tipo) {
+                    tipo = String(tipo || 'todos')
+                        .trim()
+                        .toLowerCase();
+
+                    if (this.filtroTipo === tipo) {
+                        return;
+                    }
+
+                    this.filtroTipo = tipo;
+                    this.paginaActual = 1;
+
+                    const url = new URL(window.location.href);
+
+                    if (tipo === 'todos') {
+                        url.searchParams.delete('tipo');
+                    } else {
+                        url.searchParams.set('tipo', tipo);
+                    }
+
+                    const texto = String(
+                        this.busqueda || ''
+                    ).trim();
+
+                    if (texto !== '') {
+                        url.searchParams.set(
+                            'buscar',
+                            texto
+                        );
+                    } else {
+                        url.searchParams.delete(
+                            'buscar'
+                        );
+                    }
+
+                    url.searchParams.delete('page');
+
+                    try {
+                        const response = await fetch(
+                            url.toString(), {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error(
+                                'Error al cargar los avisos'
+                            );
                         }
+
+                        const data =
+                            await response.json();
+
+                        this.avisosTotales =
+                            data.avisos;
+
+                        this.paginaActual = 1;
+
+                        window.history.replaceState({},
+                            '',
+                            url.toString()
+                        );
+
+                    } catch (error) {
+                        console.error(
+                            'Error al cambiar el filtro:',
+                            error
+                        );
                     }
-
-                    if (!aviso.afecta_a || typeof aviso.afecta_a !== 'object') {
-                        aviso.afecta_a = {};
-                    }
-
-                    this.avisoSeleccionado = aviso;
-                    this.modalAbierto = true;
-
-                    document.body.classList.add('overflow-hidden');
                 },
 
-                cerrarAviso() {
-                    this.modalAbierto = false;
 
-                    document.body.classList.remove('overflow-hidden');
-
-                    setTimeout(() => {
-                        this.avisoSeleccionado = {};
-                    }, 200);
-                },
+                // ============================================================
+                // MOSTRAR AVISO
+                // ============================================================
 
                 mostrarAviso(tipo, titulo, descripcion) {
-                    if (
-                        this.filtroTipo !== 'todos' &&
-                        tipo !== this.filtroTipo
-                    ) {
-                        return false;
-                    }
 
-                    const texto = this.busqueda.toLowerCase().trim();
+                    const filtro = String(
+                            this.filtroTipo || 'todos'
+                        )
+                        .trim()
+                        .toLowerCase();
 
-                    if (!texto) {
+                    const tipoAviso = String(
+                            tipo || ''
+                        )
+                        .trim()
+                        .toLowerCase();
+
+
+                    // TODOS
+                    if (filtro === 'todos') {
                         return true;
                     }
 
-                    const contenido = [
-                            titulo ?? '',
-                            descripcion ?? '',
-                            tipo ?? ''
-                        ]
-                        .join(' ')
-                        .toLowerCase();
 
-                    return contenido.includes(texto);
+                    // FILTRO POR TIPO
+                    return tipoAviso === filtro;
                 },
 
+
+                // ============================================================
+                // VERIFICAR SI EXISTEN AVISOS VISIBLES
+                // ============================================================
+
                 hayAvisosVisibles() {
+
+                    if (!Array.isArray(this.avisosTotales)) {
+                        return false;
+                    }
+
                     return this.avisosTotales.some(aviso => {
+
                         return this.mostrarAviso(
                             aviso.tipo,
                             aviso.titulo,
                             aviso.descripcion
                         );
+
                     });
                 },
 
+
+                // ============================================================
+                // EXISTEN AVISOS
+                // ============================================================
+
                 hayAvisos() {
-                    return this.avisosTotales.length > 0;
+
+                    return Array.isArray(this.avisosTotales) &&
+                        this.avisosTotales.length > 0;
                 },
+
+
+                // ============================================================
+                // EXISTE BÚSQUEDA
+                // ============================================================
+
+                hayBusqueda() {
+
+                    return String(
+                            this.busqueda || ''
+                        )
+                        .trim()
+                        .length > 0;
+                },
+
+
+                // ============================================================
+                // BUSCAR
+                // ============================================================
+
+                async buscarAvisos() {
+                    const url = new URL(window.location.href);
+
+                    const texto = String(this.busqueda || '').trim();
+
+                    if (texto !== '') {
+                        url.searchParams.set('buscar', texto);
+                    } else {
+                        url.searchParams.delete('buscar');
+                    }
+
+                    if (
+                        this.filtroTipo &&
+                        this.filtroTipo !== 'todos'
+                    ) {
+                        url.searchParams.set('tipo', this.filtroTipo);
+                    } else {
+                        url.searchParams.delete('tipo');
+                    }
+
+                    url.searchParams.delete('page');
+
+                    this.paginaActual = 1;
+
+                    try {
+                        const response = await fetch(url.toString(), {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Error al buscar avisos');
+                        }
+
+                        const data = await response.json();
+
+                        this.avisosTotales = Array.isArray(data.avisos) ?
+                            data.avisos : [];
+
+                        this.paginaActual = 1;
+
+                        window.history.replaceState({},
+                            '',
+                            url.toString()
+                        );
+
+                    } catch (error) {
+                        console.error('Error al buscar avisos:', error);
+                    }
+                },
+
+
+                async limpiarBusqueda() {
+                    this.busqueda = '';
+
+                    const url = new URL(window.location.href);
+
+                    url.searchParams.delete('buscar');
+                    url.searchParams.delete('page');
+
+                    if (
+                        this.filtroTipo &&
+                        this.filtroTipo !== 'todos'
+                    ) {
+                        url.searchParams.set('tipo', this.filtroTipo);
+                    } else {
+                        url.searchParams.delete('tipo');
+                    }
+
+                    this.paginaActual = 1;
+
+                    try {
+                        const response = await fetch(url.toString(), {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Error al limpiar búsqueda');
+                        }
+
+                        const data = await response.json();
+
+                        this.avisosTotales = Array.isArray(data.avisos) ?
+                            data.avisos : [];
+
+                        this.paginaActual = 1;
+
+                        window.history.replaceState({},
+                            '',
+                            url.toString()
+                        );
+
+                    } catch (error) {
+                        console.error(
+                            'Error al limpiar búsqueda:',
+                            error
+                        );
+                    }
+                },
+
+
+                // ============================================================
+                // LIMPIAR TODOS LOS FILTROS
+                // ============================================================
+
+                limpiarFiltros() {
+
+                    this.filtroTipo = 'todos';
+
+                    this.busqueda = '';
+
+                    const url = new URL(
+                        window.location.href
+                    );
+
+                    url.searchParams.delete(
+                        'tipo'
+                    );
+
+                    url.searchParams.delete(
+                        'buscar'
+                    );
+
+                    url.searchParams.delete(
+                        'page'
+                    );
+
+                    window.location.href =
+                        url.toString();
+                },
+
+
+                // ============================================================
+                // NOMBRE DEL FILTRO
+                // ============================================================
 
                 nombreFiltro() {
+
                     const nombres = {
+
                         todos: 'todos los avisos',
+
                         mantenimiento: 'avisos de mantenimiento',
+
                         incidente: 'avisos de falla o incidente',
+
                         informativo: 'avisos informativos',
+
                         general: 'avisos generales'
+
                     };
 
-                    return nombres[this.filtroTipo] ?? 'avisos';
+                    return nombres[
+                        this.filtroTipo
+                    ] ?? 'avisos';
                 },
+
+
+                // ============================================================
+                // LABEL DEL TIPO
+                // ============================================================
 
                 tipoLabel(tipo) {
+
                     const tipos = {
+
                         mantenimiento: 'MANTENIMIENTO',
+
                         incidente: 'FALLA / INCIDENTE',
+
                         informativo: 'INFORMATIVO',
+
                         general: 'GENERAL'
+
                     };
 
-                    return tipos[tipo] ?? 'GENERAL';
+                    return tipos[tipo] ??
+                        'GENERAL';
                 },
 
+
+                // ============================================================
+                // CAPITALIZAR
+                // ============================================================
+
                 capitalizar(texto) {
+
                     if (!texto) {
                         return '';
                     }
 
-                    return texto.charAt(0).toUpperCase() + texto.slice(1);
+                    return texto
+                        .charAt(0)
+                        .toUpperCase() +
+                        texto.slice(1);
                 },
 
+
+                // ============================================================
+                // FECHA
+                // ============================================================
+
                 formatearFecha(fecha) {
+
                     if (!fecha) {
                         return 'No especificada';
                     }
@@ -1483,36 +1860,139 @@
                         return fecha;
                     }
 
-                    return new Intl.DateTimeFormat('es-MX', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }).format(date);
+                    return new Intl.DateTimeFormat(
+                        'es-MX', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }
+                    ).format(date);
                 },
 
+
+                // ============================================================
+                // ABRIR MODAL
+                // ============================================================
+
+                abrirAviso(aviso) {
+
+                    if (!aviso) {
+                        return;
+                    }
+
+                    if (
+                        typeof aviso.afecta_a === 'string'
+                    ) {
+
+                        try {
+
+                            aviso.afecta_a =
+                                JSON.parse(
+                                    aviso.afecta_a
+                                );
+
+                        } catch (error) {
+
+                            console.error(
+                                'Error al convertir afecta_a:',
+                                error
+                            );
+
+                            aviso.afecta_a = {};
+                        }
+                    }
+
+
+                    if (
+                        !aviso.afecta_a ||
+                        typeof aviso.afecta_a !== 'object'
+                    ) {
+
+                        aviso.afecta_a = {};
+                    }
+
+
+                    this.avisoSeleccionado =
+                        aviso;
+
+                    this.modalAbierto =
+                        true;
+
+                    document.body.classList.add(
+                        'overflow-hidden'
+                    );
+                },
+
+
+                // ============================================================
+                // CERRAR MODAL
+                // ============================================================
+
+                cerrarAviso() {
+
+                    this.modalAbierto =
+                        false;
+
+                    document.body.classList.remove(
+                        'overflow-hidden'
+                    );
+
+                    setTimeout(() => {
+
+                        this.avisoSeleccionado = {};
+
+                    }, 200);
+                },
+
+
+                // ============================================================
+                // ARCHIVOS
+                // ============================================================
+
                 urlArchivo(archivo) {
+
                     if (!archivo) {
                         return '';
+                    }
+
+                    if (
+                        typeof archivo === 'string' &&
+                        (
+                            archivo.startsWith(
+                                'http://'
+                            ) ||
+                            archivo.startsWith(
+                                'https://'
+                            ) ||
+                            archivo.startsWith('/')
+                        )
+                    ) {
+
+                        return archivo;
                     }
 
                     return '/storage/' + archivo;
                 },
 
+
                 extensionArchivo(archivo) {
+
                     if (!archivo) {
                         return '';
                     }
 
-                    return archivo
+                    return String(archivo)
                         .split('?')[0]
                         .split('.')
                         .pop()
                         .toLowerCase();
                 },
 
+
                 esImagen(archivo) {
+
                     return [
                         'jpg',
                         'jpeg',
@@ -1520,66 +2000,124 @@
                         'gif',
                         'webp',
                         'svg'
-                    ].includes(this.extensionArchivo(archivo));
+                    ].includes(
+                        this.extensionArchivo(
+                            archivo
+                        )
+                    );
                 },
+
 
                 esPdf(archivo) {
-                    return this.extensionArchivo(archivo) === 'pdf';
+
+                    return this.extensionArchivo(
+                        archivo
+                    ) === 'pdf';
                 },
 
+
                 esVideo(archivo) {
+
                     return [
                         'mp4',
                         'webm',
                         'ogg',
                         'mov'
-                    ].includes(this.extensionArchivo(archivo));
+                    ].includes(
+                        this.extensionArchivo(
+                            archivo
+                        )
+                    );
                 },
 
+
+                // ============================================================
+                // DEPARTAMENTOS
+                // ============================================================
+
                 obtenerDepartamentos(ids) {
+
                     if (!Array.isArray(ids)) {
                         return [];
                     }
 
-                    const idsNumeros = ids.map(id => Number(id));
+                    const idsNumeros =
+                        ids.map(id => Number(id));
+
 
                     if (
                         this.departamentos &&
-                        !Array.isArray(this.departamentos) &&
-                        typeof this.departamentos === 'object'
+                        !Array.isArray(
+                            this.departamentos
+                        ) &&
+                        typeof this.departamentos ===
+                        'object'
                     ) {
+
                         return idsNumeros
-                            .map(id => this.departamentos[id])
+                            .map(id =>
+                                this.departamentos[id]
+                            )
                             .filter(nombre => nombre);
                     }
 
-                    if (Array.isArray(this.departamentos)) {
+
+                    if (
+                        Array.isArray(
+                            this.departamentos
+                        )
+                    ) {
+
                         return this.departamentos
                             .filter(departamento => {
+
                                 return idsNumeros.includes(
-                                    Number(departamento.id)
+                                    Number(
+                                        departamento.id
+                                    )
                                 );
+
                             })
-                            .map(departamento => departamento.nombre)
-                            .filter(nombre => nombre);
+                            .map(
+                                departamento =>
+                                departamento.nombre
+                            )
+                            .filter(
+                                nombre => nombre
+                            );
                     }
+
 
                     return [];
                 },
 
+
+                // ============================================================
+                // USUARIOS
+                // ============================================================
+
                 obtenerUsuarios(ids) {
+
                     if (!Array.isArray(ids)) {
                         return [];
                     }
 
-                    const idsNumeros = ids.map(id => Number(id));
+                    const idsNumeros =
+                        ids.map(id => Number(id));
 
-                    return this.usuarios.filter(usuario => {
-                        return idsNumeros.includes(
-                            Number(usuario.id)
-                        );
-                    });
+                    return this.usuarios.filter(
+                        usuario => {
+
+                            return idsNumeros.includes(
+                                Number(
+                                    usuario.id
+                                )
+                            );
+
+                        }
+                    );
                 }
+
             };
         }
     </script>

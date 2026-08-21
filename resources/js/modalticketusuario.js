@@ -102,7 +102,8 @@ Alpine.data('ticketModal', () => ({
                 return;
             }
 
-            const display = window.getComputedStyle(fila).display;
+            const display =
+                window.getComputedStyle(fila).display;
 
             if (display !== 'none') {
                 resultados++;
@@ -329,5 +330,3 @@ Alpine.data('ticketModal', () => ({
         return `/tickets/${ticketId}/comentarios`;
     }
 }));
-
-Alpine.start();

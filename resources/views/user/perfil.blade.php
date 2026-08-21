@@ -20,8 +20,10 @@
         </div>
 
         <div class="flex items-center gap-3 mb-10 px-2">
-            <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
-                class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
+            <img src="{{ auth()->user()->picture
+                ? asset('storage/' . auth()->user()->picture)
+                : asset('storage/profile-photos/user.png') }}"
+                alt="{{ auth()->user()->name }}" class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
 
             <div>
                 <h3 class="text-sm font-semibold text-white">
@@ -391,7 +393,10 @@
                     <button type="button" @click="perfilAbierto = !perfilAbierto"
                         class="flex items-center gap-3 cursor-pointer rounded-xl px-2 py-1.5 hover:bg-[#151b3b] transition-all duration-200 focus:outline-none">
 
-                        <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                        <img src="{{ auth()->user()->picture
+                            ? asset('storage/' . auth()->user()->picture)
+                            : asset('storage/profile-photos/user.png') }}"
+                            alt="{{ auth()->user()->name }}"
                             class="w-10 h-10 rounded-full border border-gray-600 object-cover">
 
                         <div class="hidden md:block text-right">
@@ -584,164 +589,486 @@
                             Esta información es proporcionada por la empresa
                         </p>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            <div class="flex items-start gap-3">
+                            {{-- ========================================================= --}}
+                            {{-- COLUMNA IZQUIERDA - INFORMACIÓN PERSONAL --}}
+                            {{-- ========================================================= --}}
 
-                                <div class="p-2.5 rounded-lg bg-[#0b102b] border border-[#1e295d] text-gray-300">
+                            <div class="bg-[#030712]/40 border border-slate-800/80 rounded-2xl p-5">
 
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {{-- TÍTULO --}}
+                                <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-800/80">
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7-7">
-                                        </path>
+                                    <div class="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                        <i data-lucide="user" class="w-4 h-4"></i>
+                                    </div>
 
-                                    </svg>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-white">
+                                            Información personal
+                                        </h3>
+
+                                        <p class="text-[10px] text-slate-500 mt-0.5">
+                                            Datos personales y medios de contacto
+                                        </p>
+                                    </div>
 
                                 </div>
 
-                                <div>
-                                    <p class="text-xs font-medium text-gray-400">
-                                        Nombre completo
-                                    </p>
 
-                                    <p class="text-sm font-semibold text-white mt-0.5">
-                                        {{ Auth::user()->name ?? 'Juan Perez' }}
-                                    </p>
+                                <div class="space-y-5">
+
+                                    {{-- ================================================= --}}
+                                    {{-- NOMBRE COMPLETO --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Nombre completo
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+                                                {{ Auth::user()->name ?? 'No registrado' }}
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- CORREO ELECTRÓNICO --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Correo electrónico
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+                                                {{ Auth::user()->email ?? 'No registrado' }}
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- TELÉFONO --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Teléfono
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+                                                {{ Auth::user()->phone ?? 'No registrado' }}
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- USUARIO / LOGIN --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="at-sign" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Usuario de acceso
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+                                                {{ Auth::user()->login ?? 'No registrado' }}
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- NÚMERO DE EMPLEADO --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="badge" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Número de empleado
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+                                                {{ Auth::user()->numeroempleado ?? 'No registrado' }}
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
                                 </div>
 
                             </div>
 
-                            <div class="flex items-start gap-3">
 
-                                <div class="p-2.5 rounded-lg bg-[#0b102b] border border-[#1e295d] text-gray-300">
 
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {{-- ========================================================= --}}
+                            {{-- COLUMNA DERECHA - INFORMACIÓN LABORAL --}}
+                            {{-- ========================================================= --}}
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0V7m0 0h4m-4 0H9">
-                                        </path>
+                            <div class="bg-[#030712]/40 border border-slate-800/80 rounded-2xl p-5">
 
-                                    </svg>
+                                {{-- TÍTULO --}}
+                                <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-800/80">
 
-                                </div>
+                                    <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                                        <i data-lucide="briefcase-business" class="w-4 h-4"></i>
+                                    </div>
 
-                                <div>
-                                    <p class="text-xs font-medium text-gray-400">
-                                        Empresa
-                                    </p>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-white">
+                                            Información laboral
+                                        </h3>
 
-                                    <p class="text-sm font-semibold text-white mt-0.5">
-                                        {{ Auth::user()->departamento?->oficina?->empresa?->empresa ?? 'Desconocido' }}
-                                    </p>
-                                </div>
-
-                            </div>
-
-                            <div class="flex items-start gap-3">
-
-                                <div class="p-2.5 rounded-lg bg-[#0b102b] border border-[#1e295d] text-gray-300">
-
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                                        </path>
-
-                                    </svg>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">
+                                            Información correspondiente a tu puesto y organización
+                                        </p>
+                                    </div>
 
                                 </div>
 
-                                <div>
-                                    <p class="text-xs font-medium text-gray-400">
-                                        Correo electrónico
-                                    </p>
 
-                                    <p class="text-sm font-semibold text-white mt-0.5">
-                                        {{ Auth::user()->email ?? 'juanp@cymez.com' }}
-                                    </p>
-                                </div>
+                                <div class="space-y-5">
 
-                            </div>
+                                    {{-- ================================================= --}}
+                                    {{-- EMPRESA --}}
+                                    {{-- ================================================= --}}
 
-                            <div class="flex items-start gap-3">
+                                    <div class="space-y-1.5">
 
-                                <div class="p-2.5 rounded-lg bg-[#0b102b] border border-[#1e295d] text-gray-300">
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
 
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <span class="flex items-center gap-1.5">
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                                        </path>
+                                                <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-500"></i>
 
-                                    </svg>
+                                                Empresa
 
-                                </div>
+                                            </span>
 
-                                <div>
-                                    <p class="text-xs font-medium text-gray-400">
-                                        Oficina / Sucursal
-                                    </p>
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
 
-                                    <p class="text-sm font-semibold text-white mt-0.5">
-                                        {{ Auth::user()->departamento?->oficina?->nombre ?? 'Desconocido' }}
-                                    </p>
-                                </div>
+                                        </label>
 
-                            </div>
 
-                            <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
 
-                                <div class="p-2.5 rounded-lg bg-[#0b102b] border border-[#1e295d] text-gray-300">
+                                            <span class="truncate">
 
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                {{ Auth::user()->departamento?->oficina?->empresa?->empresa ?? 'No registrada' }}
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0V7m0 0h4m-4 0H9">
-                                        </path>
+                                            </span>
 
-                                    </svg>
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
 
-                                </div>
+                                                Fijo
 
-                                <div>
-                                    <p class="text-xs font-medium text-gray-400">
-                                        Departamento
-                                    </p>
+                                            </span>
 
-                                    <p class="text-sm font-semibold text-white mt-0.5">
-                                        {{ Auth::user()->departamento?->nombre ?? 'Desconocido' }}
-                                    </p>
-                                </div>
+                                        </div>
 
-                            </div>
+                                    </div>
 
-                            <div class="flex items-start gap-3">
 
-                                <div class="p-2.5 rounded-lg bg-[#0b102b] border border-[#1e295d] text-gray-300">
+                                    {{-- ================================================= --}}
+                                    {{-- DEPARTAMENTO --}}
+                                    {{-- ================================================= --}}
 
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="space-y-1.5">
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                        </path>
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
 
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z">
-                                        </path>
+                                            <span class="flex items-center gap-1.5">
 
-                                    </svg>
+                                                <i data-lucide="briefcase-business"
+                                                    class="w-3.5 h-3.5 text-slate-500"></i>
 
-                                </div>
+                                                Departamento
 
-                                <div>
-                                    <p class="text-xs font-medium text-gray-400">
-                                        Ubicación
-                                    </p>
+                                            </span>
 
-                                    <p class="text-sm font-semibold text-white mt-0.5">
-                                        Edificio A, piso 2
-                                    </p>
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+
+                                                {{ Auth::user()->departamento?->nombre ?? 'No registrado' }}
+
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- ROL --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Rol
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate capitalize">
+
+                                                {{ Auth::user()->role ?? 'No asignado' }}
+
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- OFICINA / SUCURSAL --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Oficina / Sucursal
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+
+                                                {{ Auth::user()->departamento?->oficina?->nombre ?? 'No registrada' }}
+
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- ================================================= --}}
+                                    {{-- UBICACIÓN FÍSICA --}}
+                                    {{-- ================================================= --}}
+
+                                    <div class="space-y-1.5">
+
+                                        <label
+                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                            <span class="flex items-center gap-1.5">
+
+                                                <i data-lucide="building" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                                Ubicación física
+
+                                            </span>
+
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+
+                                        </label>
+
+
+                                        <div
+                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                            <span class="truncate">
+                                                Edificio A, piso 2
+                                            </span>
+
+                                            <span
+                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                Fijo
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
                                 </div>
 
                             </div>
@@ -840,10 +1167,90 @@
                                 </div>
 
                             </div>
+                            <button type="button"
+                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-slate-200 border border-slate-700 hover:bg-slate-800 transition shrink-0">
+
+                                <i data-lucide="shield" class="w-4 h-4 text-blue-400"></i>
+
+                                Actualizar contraseña
+
+                            </button>
+
+                        </div>
+                        <div
+                            class="bg-[#0b102b] border border-[#1e295d] rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
+
+                            {{-- INFORMACIÓN MFA --}}
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="p-2.5 rounded-lg bg-slate-900
+                       border border-slate-800 text-slate-400">
+
+                                    <i data-lucide="shield-check" class="w-5 h-5">
+                                    </i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <h4 class="text-xs font-bold text-white">
+                                        Verificación en dos pasos
+                                    </h4>
+
+                                    <p class="text-xs text-gray-400 mt-0.5">
+                                        Agrega una capa adicional de seguridad a tu cuenta.
+                                    </p>
+
+
+                                    {{-- ESTADO MFA --}}
+
+                                    <div class="mt-1">
+
+                                        @if (Auth::user()->mfa === 'Y')
+                                            <span class="text-[11px] text-emerald-400">
+                                                ● Activada
+                                            </span>
+                                        @else
+                                            <span class="text-[11px] text-slate-500">
+                                                ● Desactivada
+                                            </span>
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- BOTÓN MFA --}}
+
+                            <button type="button" @click="abrirMFA()"
+                                class="flex items-center gap-1.5 px-4 py-2
+           rounded-xl text-xs font-semibold
+           bg-blue-600/10 text-blue-400
+           border border-blue-500/30
+           hover:bg-blue-600/20
+           transition shrink-0">
+
+                                @if (Auth::user()->mfa === 'Y')
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                    Configurar
+                                @else
+                                    <i data-lucide="shield-plus" class="w-4 h-4"></i>
+                                    Activar
+                                @endif
+
+                            </button>
 
                         </div>
 
                     </div>
+
 
                 </div>
 
@@ -888,7 +1295,9 @@
 
                             <div class="relative my-4">
 
-                                <img src="{{ asset('storage/' . auth()->user()->foto) }}"
+                                <img src="{{ auth()->user()->picture
+                                    ? asset('storage/' . auth()->user()->picture)
+                                    : asset('storage/profile-photos/user.png') }}"
                                     alt="{{ auth()->user()->name }}"
                                     class="w-44 h-44 rounded-full object-cover border-4 border-[#1e295d] shadow-xl"
                                     id="profileImage">
@@ -934,7 +1343,7 @@
 
                         </form>
 
-                        @if (auth()->user()->foto)
+                        @if (auth()->user()->picture)
                             <form action="{{ route('eliminarfoto') }}" method="POST" class="w-full mt-3">
 
                                 @csrf
@@ -970,19 +1379,25 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
+<div>
 
-                            <div>
+                                <p class="text-xs font-medium text-gray-400 mb-1.5">
+                                Estado de la cuenta
+                            </p>
 
-                                <p class="text-xs font-medium text-gray-400">
-                                    Fecha de creación
-                                </p>
-
-                                <p class="text-sm font-bold text-white mt-1">
-                                    {{ Auth::user()->created_at ?? 'Desconocido' }}
-                                </p>
+                            @if (Auth::user()->active === 'Y')
+                                <span
+                                    class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-[#06331e] border border-emerald-600 text-emerald-400">
+                                    Activa
+                                </span>
+                            @else
+                                <span
+                                    class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-red-950/40 border border-red-600 text-red-400">
+                                    Inactiva
+                                </span>
+                            @endif
 
                             </div>
-
                             <div>
 
                                 <p class="text-xs font-medium text-gray-400">
@@ -990,23 +1405,10 @@
                                 </p>
 
                                 <p class="text-sm font-bold text-white mt-1">
-                                    {{ Auth::user()->rol ?? 'Desconocido' }}
+                                    {{ Auth::user()->role ?? 'Desconocido' }}
                                 </p>
 
                             </div>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs font-medium text-gray-400 mb-1.5">
-                                Estado de la cuenta
-                            </p>
-
-                            <span
-                                class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-[#06331e] border border-emerald-600 text-emerald-400">
-                                Activa
-                            </span>
 
                         </div>
 
@@ -1125,12 +1527,24 @@
                         </option>
 
                         <option value="oficina"
-                            data-valor="{{ Auth::user()->departamento?->oficina?->nombre ?? '' }}">
+                            data-valor="{{ Auth::user()->departamento?->oficina?->nombre ?? 'No proporcionada' }}">
                             Oficina / Sucursal
                         </option>
 
-                        <option value="departamento" data-valor="{{ Auth::user()->departamento?->nombre ?? '' }}">
+                        <option value="departamento" data-valor="{{ Auth::user()->departamento?->nombre ?? 'No proporcionada' }}">
                             Departamento
+                        </option>
+                        <option value="telefono" data-valor="{{ Auth::user()->phone ?? 'No proporcionada' }}">
+                            Telefono
+                        </option>
+                        <option value="usuario" data-valor="{{ Auth::user()->login ?? 'No proporcionada' }}">
+                            Usuario
+                        </option>
+                        <option value="numeroempleado" data-valor="{{ Auth::user()->numeroempleado ?? 'No proporcionada' }}">
+                            Numero de empleado
+                        </option>
+                        <option value="role" data-valor="{{ Auth::user()->role ?? 'No proporcionada' }}">
+                            Role
                         </option>
 
                     </select>

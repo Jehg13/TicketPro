@@ -12,8 +12,6 @@ class SolicitudCambio extends Model
     protected $table = 'solicitudes_cambio';
 
     protected $fillable = [
-        'folio',
-        'user_id',
         'campo',
         'valor_actual',
         'nuevo_valor',
@@ -22,6 +20,7 @@ class SolicitudCambio extends Model
         'comentario_admin',
         'revisado_por',
         'revisado_at',
+        'login'
     ];
 
     protected $casts = [

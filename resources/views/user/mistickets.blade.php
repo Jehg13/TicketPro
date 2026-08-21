@@ -9,9 +9,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-    window.usuarioActualId = @json(Auth::id());
-    window.usuarioActualLogin = @json(Auth::user()->login);
-</script>
+        window.usuarioActualId = @json(Auth::id());
+        window.usuarioActualLogin = @json(Auth::user()->login);
+    </script>
 </head>
 
 <body x-data="ticketModal()" class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden">
@@ -23,8 +23,10 @@
         </div>
 
         <div class="flex items-center gap-3 mb-10 px-2">
-            <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
-                class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
+            <img src="{{ auth()->user()->picture
+                ? asset('storage/' . auth()->user()->picture)
+                : asset('storage/profile-photos/user.png') }}"
+                alt="{{ auth()->user()->name }}" class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
 
             <div>
                 <h3 class="text-sm font-semibold text-white">
@@ -222,7 +224,7 @@
 
                                 <!-- MARCAR COMO LEÍDAS -->
                                 @if ($notificacionesNoLeidas > 0)
-                                    <form method="POST" action="{{ route('notificacionesusuario.marcarLeidas') }}">
+                                    <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
 
                                         @csrf
 
@@ -383,7 +385,10 @@
                     <button type="button" @click="perfilAbierto = !perfilAbierto"
                         class="flex items-center gap-3 cursor-pointer rounded-xl px-2 py-1.5 hover:bg-[#151b3b] transition-all duration-200 focus:outline-none">
 
-                        <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                        <img src="{{ auth()->user()->picture
+                            ? asset('storage/' . auth()->user()->picture)
+                            : asset('storage/profile-photos/user.png') }}"
+                            alt="{{ auth()->user()->name }}"
                             class="w-10 h-10 rounded-full border border-gray-600 object-cover">
 
                         <div class="hidden md:block text-right">
@@ -588,8 +593,8 @@
                                                      */
                                                     'role' => $usuarioComentario?->role ?? 'Usuario',
 
-                                                    'foto' => $usuarioComentario?->foto
-                                                        ? Storage::url($usuarioComentario->foto)
+                                                    'picture' => $usuarioComentario?->picture
+                                                        ? Storage::url($usuarioComentario->picture)
                                                         : null,
                                                 ],
 
@@ -673,7 +678,7 @@
                                     
                                                 'login' => $ticket->tomadoPor->login,
                                     
-                                                'foto' => $ticket->tomadoPor->foto ? Storage::url($ticket->tomadoPor->foto) : null,
+                                                'picture' => $ticket->tomadoPor->picture ? Storage::url($ticket->tomadoPor->picture) : null,
                                             ]
                                             : null,
                                     
@@ -685,7 +690,7 @@
                                     
                                                 'login' => $ticket->user->login,
                                     
-                                                'foto' => $ticket->user->foto ? Storage::url($ticket->user->foto) : null,
+                                                'picture' => $ticket->user->picture ? Storage::url($ticket->user->picture) : null,
                                             ]
                                             : null,
                                     
@@ -1572,12 +1577,29 @@
 
                                             </div>
 
-                                            <img :src="avatarUsuario(
-                                                selectedTicket?.user?.name ??
-                                                selectedTicket?.usuario?.name ??
-                                                'Usuario'
-                                            )"
-                                                class="w-8 h-8 rounded-full object-cover border border-blue-400/40">
+                                            <img :src="selectedTicket?.user?.picture ?
+                                                selectedTicket.user.picture :
+                                                '{{ asset('storage/profile-photos/user.png') }}'"
+                                                :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
+                                                    ?.name ?? 'Usuario'"
+                                                class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
+                                                x-on:error="
+        if ($event.target.dataset.fallback === 'avatar') {
+            return;
+        }
+
+        if ($event.target.dataset.fallback !== 'user') {
+            $event.target.dataset.fallback = 'user';
+            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+        } else {
+            $event.target.dataset.fallback = 'avatar';
+            $event.target.src = avatarUsuario(
+                selectedTicket?.user?.name ??
+                selectedTicket?.usuario?.name ??
+                'Usuario'
+            );
+        }
+    ">
 
                                         </div>
 
@@ -1847,38 +1869,55 @@
 
 
                             {{-- FORMULARIO --}}
+                            @if (isset($ticket))
+                                <form id="formComentario"
+                                    action="{{ route('tickets.comentarios.store', $ticket->id) }}" method="POST"
+                                    enctype="multipart/form-data" class="flex items-end gap-3">
 
-                            <form id="formComentario" action="{{ route('tickets.comentarios.store', $ticket->id) }}"
-                                method="POST" enctype="multipart/form-data" class="flex items-end gap-3">
+                                    @csrf
 
-                                @csrf
+                                    {{-- FOTO DEL USUARIO --}}
+                                    <div class="shrink-0">
 
-                                {{-- FOTO DEL USUARIO --}}
-                                <div class="shrink-0">
+                                        <img :src="selectedTicket?.user?.picture ?
+                                                            selectedTicket.user.picture :
+                                                            '{{ asset('storage/profile-photos/user.png') }}'"
+                                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
+                                                                ?.name ?? 'Usuario'"
+                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
+                                                            x-on:error="
+        if ($event.target.dataset.fallback === 'avatar') {
+            return;
+        }
 
-                                    <img src="{{ auth()->user()->foto
-                                        ? Storage::url(auth()->user()->foto)
-                                        : 'https://ui-avatars.com/api/?name=' .
-                                            urlencode(auth()->user()->name ?? 'Usuario') .
-                                            '&background=0D8ABC&color=fff' }}"
-                                        class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
-                                        alt="{{ auth()->user()->name ?? 'Usuario' }}">
+        if ($event.target.dataset.fallback !== 'user') {
+            $event.target.dataset.fallback = 'user';
+            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+        } else {
+            $event.target.dataset.fallback = 'avatar';
+            $event.target.src = avatarUsuario(
+                selectedTicket?.user?.name ??
+                selectedTicket?.usuario?.name ??
+                'Usuario'
+            );
+        }
+    ">
 
-                                </div>
-
-
-                                {{-- CONTENEDOR DEL COMENTARIO --}}
-                                <div class="relative flex-1">
-
-                                    {{-- ARCHIVO --}}
-                                    <input type="file" name="archivo" x-ref="fileInputModal"
-                                        @change="seleccionarArchivo($event)" class="hidden">
+                                    </div>
 
 
-                                    {{-- CAMPO --}}
-                                    <input type="text" name="mensaje" placeholder="Escribe un comentario..."
-                                        autocomplete="off"
-                                        class="w-full h-11 pl-4 pr-24 text-xs
+                                    {{-- CONTENEDOR DEL COMENTARIO --}}
+                                    <div class="relative flex-1">
+
+                                        {{-- ARCHIVO --}}
+                                        <input type="file" name="archivo" x-ref="fileInputModal"
+                                            @change="seleccionarArchivo($event)" class="hidden">
+
+
+                                        {{-- CAMPO --}}
+                                        <input type="text" name="mensaje" placeholder="Escribe un comentario..."
+                                            autocomplete="off"
+                                            class="w-full h-11 pl-4 pr-24 text-xs
                    bg-[#030712]
                    border border-slate-800
                    rounded-xl
@@ -1891,27 +1930,27 @@
                    transition">
 
 
-                                    {{-- BOTONES --}}
-                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                        {{-- BOTONES --}}
+                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
 
-                                        {{-- ADJUNTAR --}}
-                                        <button type="button" @click="$refs.fileInputModal.click()"
-                                            class="w-8 h-8 flex items-center justify-center
+                                            {{-- ADJUNTAR --}}
+                                            <button type="button" @click="$refs.fileInputModal.click()"
+                                                class="w-8 h-8 flex items-center justify-center
                        rounded-lg
                        text-slate-400
                        hover:text-blue-400
                        hover:bg-blue-500/10
                        transition"
-                                            title="Adjuntar archivo">
+                                                title="Adjuntar archivo">
 
-                                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                                                <i data-lucide="paperclip" class="w-4 h-4"></i>
 
-                                        </button>
+                                            </button>
 
 
-                                        {{-- ENVIAR --}}
-                                        <button type="submit" id="btnEnviarComentario"
-                                            class="h-8 px-3
+                                            {{-- ENVIAR --}}
+                                            <button type="submit" id="btnEnviarComentario"
+                                                class="h-8 px-3
                        flex items-center justify-center
                        rounded-lg
                        bg-blue-600
@@ -1922,17 +1961,18 @@
                        transition
                        shadow-lg shadow-blue-900/20">
 
-                                            <i data-lucide="send" class="w-3.5 h-3.5 mr-1.5"></i>
+                                                <i data-lucide="send" class="w-3.5 h-3.5 mr-1.5"></i>
 
-                                            Enviar
+                                                Enviar
 
-                                        </button>
+                                            </button>
+
+                                        </div>
 
                                     </div>
 
-                                </div>
-
-                            </form>
+                                </form>
+                            @endif
                             {{-- ARCHIVO SELECCIONADO --}}
 
                             <template x-if="archivoAdjunto">
@@ -1998,11 +2038,29 @@
                                     <div class="flex items-start gap-3">
 
 
-                                        <img :src="comentario.usuario?.foto ?
-                                            comentario.usuario.foto :
-                                            avatarUsuario(comentario.usuario?.name || 'Usuario')"
-                                            class="w-8 h-8 rounded-full object-cover shrink-0 border border-blue-400/30"
-                                            :alt="comentario.usuario?.name || 'Usuario'">
+                                        <img :src="selectedTicket?.user?.picture ?
+                                                            selectedTicket.user.picture :
+                                                            '{{ asset('storage/profile-photos/user.png') }}'"
+                                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
+                                                                ?.name ?? 'Usuario'"
+                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
+                                                            x-on:error="
+        if ($event.target.dataset.fallback === 'avatar') {
+            return;
+        }
+
+        if ($event.target.dataset.fallback !== 'user') {
+            $event.target.dataset.fallback = 'user';
+            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+        } else {
+            $event.target.dataset.fallback = 'avatar';
+            $event.target.src = avatarUsuario(
+                selectedTicket?.user?.name ??
+                selectedTicket?.usuario?.name ??
+                'Usuario'
+            );
+        }
+    ">
 
 
                                         <div class="flex-1 min-w-0">

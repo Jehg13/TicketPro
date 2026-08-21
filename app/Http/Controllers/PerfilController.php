@@ -5,18 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\SolicitudCambio;
 use App\Models\User;
 use App\Models\Notificacion;
 
 class PerfilController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR PERFIL
-    |--------------------------------------------------------------------------
-    */
-
     public function create()
     {
         /** @var \App\Models\User $user */
@@ -26,30 +21,14 @@ class PerfilController extends Controller
             abort(401);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES
-        |--------------------------------------------------------------------------
-        |
-        | Ahora se relacionan mediante:
-        |
-        | notificaciones.login = users.login
-        |
-        */
+        $esAdmin = $this->esAdministradorTI($user);
 
         $queryNotificaciones = Notificacion::where(
             'login',
             $user->login
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | TECNOLOGÍAS NO VE AVISOS
-        |--------------------------------------------------------------------------
-        */
-
-        if ($user->role === 'tecnologias') {
-
+        if ($esAdmin) {
             $queryNotificaciones->where(
                 'tipo',
                 '!=',
@@ -62,30 +41,15 @@ class PerfilController extends Controller
             ->limit(10)
             ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES NO LEÍDAS
-        |--------------------------------------------------------------------------
-        */
-
         $queryNoLeidas = Notificacion::where(
             'login',
             $user->login
-        )
-            ->where(
-                'leida',
-                false
-            );
+        )->where(
+            'leida',
+            false
+        );
 
-        /*
-        |--------------------------------------------------------------------------
-        | TECNOLOGÍAS NO CUENTA AVISOS
-        |--------------------------------------------------------------------------
-        */
-
-        if ($user->role === 'tecnologias') {
-
+        if ($esAdmin) {
             $queryNoLeidas->where(
                 'tipo',
                 '!=',
@@ -93,18 +57,9 @@ class PerfilController extends Controller
             );
         }
 
-        $notificacionesNoLeidas =
-            $queryNoLeidas->count();
+        $notificacionesNoLeidas = $queryNoLeidas->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | MOSTRAR VISTA SEGÚN ROL
-        |--------------------------------------------------------------------------
-        */
-
-        if ($user->role === 'tecnologias') {
-
+        if ($esAdmin) {
             return view(
                 'admin.perfil',
                 compact(
@@ -123,24 +78,145 @@ class PerfilController extends Controller
         );
     }
 
+    private function esAdministradorTI(User $user): bool
+    {
+        return in_array(
+            $user->role,
+            [
+                'Gerente Ti',
+                'Soporte Tecnico',
+            ],
+            true
+        )
+            && $user->priv_admin === 'Y';
+    }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR FOTO DE PERFIL
-    |--------------------------------------------------------------------------
-    */
+    public function actualizarPassword(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
+
+        $request->validate([
+            'password_actual' => [
+                'required',
+                'string',
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+        ], [
+            'password_actual.required' =>
+                'Debes ingresar tu contraseña actual.',
+
+            'password.required' =>
+                'Debes ingresar una nueva contraseña.',
+
+            'password.min' =>
+                'La nueva contraseña debe tener al menos 8 caracteres.',
+
+            'password.confirmed' =>
+                'Las contraseñas nuevas no coinciden.',
+        ]);
+
+        $passwordGuardada = $user->pswd;
+
+        if (!$passwordGuardada) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'No se encontró una contraseña válida para tu usuario.'
+                );
+        }
+
+        $esBcrypt = is_string($passwordGuardada)
+            && (
+                str_starts_with($passwordGuardada, '$2y$')
+                || str_starts_with($passwordGuardada, '$2a$')
+                || str_starts_with($passwordGuardada, '$2b$')
+            );
+
+        if ($esBcrypt) {
+            $passwordActualCorrecta = Hash::check(
+                $request->password_actual,
+                $passwordGuardada
+            );
+        } else {
+            $passwordActualCorrecta = hash_equals(
+                (string) $passwordGuardada,
+                (string) $request->password_actual
+            );
+        }
+
+        if (!$passwordActualCorrecta) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'La contraseña actual no es correcta.'
+                );
+        }
+
+        if ($esBcrypt) {
+            $mismaPassword = Hash::check(
+                $request->password,
+                $passwordGuardada
+            );
+        } else {
+            $mismaPassword = hash_equals(
+                (string) $passwordGuardada,
+                (string) $request->password
+            );
+        }
+
+        if ($mismaPassword) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'La nueva contraseña debe ser diferente a la contraseña actual.'
+                );
+        }
+
+        $user->pswd = Hash::make(
+            $request->password
+        );
+
+        $user->pswd_last_updated = now();
+
+        $user->save();
+
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('login')
+            ->with(
+                'success',
+                'Tu contraseña fue actualizada correctamente. Inicia sesión nuevamente con tu nueva contraseña.'
+            );
+    }
 
     public function update(Request $request)
     {
         $request->validate([
-
-            'foto' => [
+            'picture' => [
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png',
                 'max:2048',
             ],
-
         ]);
 
         /** @var \App\Models\User $user */
@@ -150,54 +226,31 @@ class PerfilController extends Controller
             abort(401);
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR FOTO ANTERIOR
-        |--------------------------------------------------------------------------
-        */
-
         if (
-            $user->foto &&
-            $user->foto !== 'profile-photos/user.png'
+            $user->picture &&
+            $user->picture !== 'profile-photos/user.png'
         ) {
-
             Storage::disk('public')->delete(
-                $user->foto
+                $user->picture
             );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | GUARDAR NUEVA FOTO
-        |--------------------------------------------------------------------------
-        */
-
         $path = $request
-            ->file('foto')
+            ->file('picture')
             ->store(
                 'profile-photos',
                 'public'
             );
 
-        $user->foto = $path;
+        $user->picture = $path;
 
         $user->save();
-
 
         return back()->with(
             'success',
             'Foto de perfil actualizada correctamente.'
         );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ELIMINAR FOTO DE PERFIL
-    |--------------------------------------------------------------------------
-    */
 
     public function delete()
     {
@@ -208,48 +261,24 @@ class PerfilController extends Controller
             abort(401);
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR FOTO PERSONAL
-        |--------------------------------------------------------------------------
-        */
-
         if (
-            $user->foto &&
-            $user->foto !== 'profile-photos/user.png'
+            $user->picture &&
+            $user->picture !== 'profile-photos/user.png'
         ) {
-
             Storage::disk('public')->delete(
-                $user->foto
+                $user->picture
             );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | FOTO POR DEFECTO
-        |--------------------------------------------------------------------------
-        */
-
-        $user->foto =
-            'profile-photos/user.png';
+        $user->picture = 'profile-photos/user.png';
 
         $user->save();
-
 
         return back()->with(
             'success',
             'Foto de perfil eliminada correctamente.'
         );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR PERFIL DE TECNOLOGÍAS
-    |--------------------------------------------------------------------------
-    */
 
     public function updateTecnologias(Request $request)
     {
@@ -260,37 +289,40 @@ class PerfilController extends Controller
             abort(401);
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | SOLO TECNOLOGÍAS
-        |--------------------------------------------------------------------------
-        */
-
-        if ($user->role !== 'tecnologias') {
-            abort(403);
+        if (!$this->esAdministradorTI($user)) {
+            abort(
+                403,
+                'No tienes permisos administrativos para modificar esta información.'
+            );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDACIÓN
-        |--------------------------------------------------------------------------
-        */
+        $loginActual = $user->login;
 
         $request->validate([
-
             'name' => [
                 'required',
                 'string',
                 'max:255',
             ],
 
+            'login' => [
+                'required',
+                'string',
+                'max:100',
+                'unique:users,login,' . $loginActual . ',login',
+            ],
+
             'email' => [
                 'required',
                 'email',
                 'max:255',
-                'unique:users,email,' . $user->id,
+                'unique:users,email,' . $loginActual . ',login',
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
             ],
 
             'departamento' => [
@@ -299,67 +331,50 @@ class PerfilController extends Controller
                 'max:255',
             ],
 
+            'role' => [
+                'required',
+                'string',
+                'in:Gerente Ti,Soporte Tecnico',
+            ],
         ]);
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | ACTUALIZAR USUARIO
-        |--------------------------------------------------------------------------
-        */
-
-        $user->name =
-            $request->name;
-
-        $user->email =
-            $request->email;
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | ACTUALIZAR DEPARTAMENTO
-        |--------------------------------------------------------------------------
-        */
+        $user->name = $request->name;
+        $user->login = $request->login;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->role = $request->role;
 
         if ($user->departamento) {
-
             $user->departamento->nombre =
                 $request->departamento;
 
             $user->departamento->save();
         }
 
-
         $user->save();
 
+        if ($loginActual !== $user->login) {
+            Notificacion::where(
+                'login',
+                $loginActual
+            )->update([
+                'login' => $user->login,
+            ]);
+        }
 
         return back()->with(
             'success',
-            'Información personal actualizada correctamente.'
+            'Información personal y laboral actualizada correctamente.'
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | SOLICITAR CAMBIO DE PERFIL
-    |--------------------------------------------------------------------------
-    */
-
     public function solicitarCambio(Request $request)
     {
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDACIÓN
-        |--------------------------------------------------------------------------
-        */
-
         $request->validate([
-
             'campo' => [
                 'required',
                 'string',
-                'in:nombre,correo,oficina,departamento,ubicacion',
+                'in:nombre,correo,oficina,departamento,telefono,usuario,numeroempleado,role',
             ],
 
             'nuevo_valor' => [
@@ -373,15 +388,19 @@ class PerfilController extends Controller
                 'string',
                 'max:1000',
             ],
+        ], [
+            'campo.required' =>
+                'Debes seleccionar el campo que deseas modificar.',
 
+            'campo.in' =>
+                'El campo seleccionado no es válido.',
+
+            'nuevo_valor.required' =>
+                'Debes ingresar el nuevo valor.',
+
+            'motivo.required' =>
+                'Debes indicar el motivo del cambio.',
         ]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | USUARIO AUTENTICADO
-        |--------------------------------------------------------------------------
-        */
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -390,115 +409,65 @@ class PerfilController extends Controller
             abort(401);
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | OBTENER VALOR ACTUAL
-        |--------------------------------------------------------------------------
-        */
-
         switch ($request->campo) {
 
             case 'nombre':
-
-                $valorActual =
-                    $user->name;
-
+                $valorActual = $user->name;
                 break;
-
 
             case 'correo':
-
-                $valorActual =
-                    $user->email;
-
+                $valorActual = $user->email;
                 break;
-
-
-            case 'departamento':
-
-                $valorActual =
-                    $user->departamento
-                        ? $user->departamento->nombre
-                        : null;
-
-                break;
-
 
             case 'oficina':
-
-                $valorActual =
-                    $user->departamento &&
-                    $user->departamento->oficina
-
-                        ? $user
-                            ->departamento
-                            ->oficina
-                            ->nombre
-
-                        : null;
-
+                $valorActual = $user->departamento?->oficina?->nombre;
                 break;
 
-
-            case 'ubicacion':
-
-                $valorActual =
-                    $user->ubicacion;
-
+            case 'departamento':
+                $valorActual = $user->departamento?->nombre;
                 break;
 
+            case 'telefono':
+                $valorActual = $user->phone;
+                break;
+
+            case 'usuario':
+                $valorActual = $user->login;
+                break;
+
+            case 'numeroempleado':
+                $valorActual = $user->numeroempleado;
+                break;
+
+            case 'role':
+                $valorActual = $user->role;
+                break;
 
             default:
-
                 $valorActual = null;
-
                 break;
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREAR SOLICITUD
-        |--------------------------------------------------------------------------
-        |
-        | solicitud_cambios.login = users.login
-        |
-        */
-
         $solicitud = SolicitudCambio::create([
-
-            'login' =>
-                $user->login,
-
-            'campo' =>
-                $request->campo,
-
-            'valor_actual' =>
-                $valorActual,
-
-            'nuevo_valor' =>
-                $request->nuevo_valor,
-
-            'motivo' =>
-                $request->motivo,
-
-            'estado' =>
-                'pendiente',
-
+            'login' => $user->login,
+            'campo' => $request->campo,
+            'valor_actual' => $valorActual,
+            'nuevo_valor' => $request->nuevo_valor,
+            'motivo' => $request->motivo,
+            'estado' => 'pendiente',
         ]);
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | OBTENER USUARIOS DE TECNOLOGÍAS
-        |--------------------------------------------------------------------------
-        */
-
-        $tecnologias = User::where(
+        $administradores = User::whereIn(
             'role',
-            'tecnologias'
+            [
+                'Gerente Ti',
+                'Soporte Tecnico',
+            ]
         )
+            ->where(
+                'priv_admin',
+                'Y'
+            )
             ->where(
                 'login',
                 '!=',
@@ -506,99 +475,73 @@ class PerfilController extends Controller
             )
             ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOMBRE DEL CAMPO
-        |--------------------------------------------------------------------------
-        */
-
         $nombresCampos = [
-
             'nombre' =>
-                'nombre',
+                'nombre completo',
 
             'correo' =>
                 'correo electrónico',
 
             'oficina' =>
-                'oficina',
+                'oficina / sucursal',
 
             'departamento' =>
                 'departamento',
 
-            'ubicacion' =>
-                'ubicación',
+            'telefono' =>
+                'teléfono',
 
+            'usuario' =>
+                'usuario de acceso',
+
+            'numeroempleado' =>
+                'número de empleado',
+
+            'role' =>
+                'rol',
         ];
 
         $nombreCampo =
-            $nombresCampos[
-                $request->campo
-            ] ?? $request->campo;
+            $nombresCampos[$request->campo]
+            ?? $request->campo;
 
+        foreach ($administradores as $administrador) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREAR NOTIFICACIONES PARA TECNOLOGÍAS
-        |--------------------------------------------------------------------------
-        */
+    Notificacion::create([
+        'login' =>
+            $administrador->login,
 
-        foreach ($tecnologias as $tecnico) {
+        'tipo' =>
+            'solicitud_cambio',
 
-            Notificacion::create([
+        'titulo' =>
+            'Nueva solicitud de cambio',
 
-                /*
-                |--------------------------------------------------------------------------
-                | DESTINATARIO
-                |--------------------------------------------------------------------------
-                |
-                | notificaciones.login = users.login
-                |
-                */
+        'mensaje' =>
+            $user->name .
+            ' solicitó cambiar su ' .
+            $nombreCampo .
+            '.',
 
-                'login' =>
-                    $tecnico->login,
+        'url' =>
+            route(
+                'cambiostecnologias',
+                [
+                    'solicitud' =>
+                        $solicitud->id,
+                ]
+            ),
 
-                'tipo' =>
-                    'solicitud_cambio',
+        'leida' =>
+            false,
 
-                'titulo' =>
-                    'Nueva solicitud de cambio',
+        'icono' =>
+            'user-cog',
 
-                'mensaje' =>
-                    $user->name .
-                    ' solicitó cambiar su ' .
-                    $nombreCampo .
-                    '.',
-
-                'url' =>
-                    route(
-                        'cambiostecnologias',
-                        [
-                            'solicitud' =>
-                                $solicitud->id
-                        ]
-                    ),
-
-                'leida' =>
-                    false,
-
-                'icono' =>
-                    'user-cog',
-
-                'color' =>
-                    'blue',
-
-            ]);
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RESPUESTA
-        |--------------------------------------------------------------------------
-        */
+        'color' =>
+            'blue',
+    ]);
+}
 
         return back()->with(
             'success',

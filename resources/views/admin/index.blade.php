@@ -23,7 +23,7 @@
             </div>
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
-                <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                <img src="{{ asset('storage/' . auth()->user()->picture) }}" alt="{{ auth()->user()->name }}"
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
 
                 <div class="overflow-hidden">
@@ -49,11 +49,18 @@
                     <span class="font-medium text-sm">Tickets</span>
                 </a>
 
-                <a href="{{ route('cambiostecnologias') }}"
+                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('cambiostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Cambios</span>
-                </a>
+
+                        <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
+
+                        <span class="text-sm">
+                            Cambios
+                        </span>
+
+                    </a>
+                @endif
 
                 <a href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
@@ -368,8 +375,8 @@
                        transition-all duration-200
                        focus:outline-none">
 
-                            <!-- FOTO -->
-                            <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                            <!-- picture -->
+                            <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                                 alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
 
@@ -969,233 +976,355 @@
                 </div>
             </section>
 
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+           <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <div class="lg:col-span-2 p-5 rounded-2xl bg-[#0b1026] border border-slate-800/80 flex flex-col justify-between"
-                    x-data="evolucionTickets()" x-init="cargarPeriodo('semana')">
+    <div
+        class="lg:col-span-2 p-5 rounded-2xl bg-[#0b1026] border border-slate-800/80 flex flex-col justify-between"
+        x-data="evolucionTickets()"
+        x-init="cargarPeriodo('semana')"
+    >
+
+        <div>
+
+            <!-- ========================================================= -->
+            <!-- ENCABEZADO -->
+            <!-- ========================================================= -->
+
+            <div class="flex items-center justify-between mb-1">
+
+                <div class="flex items-center gap-2">
+
+                    <i
+                        data-lucide="trending-up"
+                        class="w-4 h-4 text-blue-400"
+                    ></i>
+
+                    <h3 class="text-sm font-semibold text-white">
+                        Evolución de tickets
+                    </h3>
+
+                </div>
+
+
+                <!-- PERIODOS -->
+
+                <div
+                    class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-xs text-slate-400"
+                >
+
+                    <button
+                        type="button"
+                        @click="cargarPeriodo('hoy')"
+                        :class="
+                            periodo === 'hoy'
+                                ? 'bg-blue-600 text-white font-medium'
+                                : 'hover:text-white'
+                        "
+                        class="px-2.5 py-1 rounded-md transition"
+                    >
+                        Hoy
+                    </button>
+
+
+                    <button
+                        type="button"
+                        @click="cargarPeriodo('semana')"
+                        :class="
+                            periodo === 'semana'
+                                ? 'bg-blue-600 text-white font-medium'
+                                : 'hover:text-white'
+                        "
+                        class="px-2.5 py-1 rounded-md transition"
+                    >
+                        Semana
+                    </button>
+
+
+                    <button
+                        type="button"
+                        @click="cargarPeriodo('mes')"
+                        :class="
+                            periodo === 'mes'
+                                ? 'bg-blue-600 text-white font-medium'
+                                : 'hover:text-white'
+                        "
+                        class="px-2.5 py-1 rounded-md transition"
+                    >
+                        Mes
+                    </button>
+
+
+                    <button
+                        type="button"
+                        @click="cargarPeriodo('año')"
+                        :class="
+                            periodo === 'año'
+                                ? 'bg-blue-600 text-white font-medium'
+                                : 'hover:text-white'
+                        "
+                        class="px-2.5 py-1 rounded-md transition"
+                    >
+                        Año
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- DESCRIPCIÓN -->
+
+            <p class="text-xs text-slate-400 mb-6">
+                Comportamiento de tickets en el periodo seleccionado.
+            </p>
+
+
+
+            <!-- ========================================================= -->
+            <!-- GRÁFICA -->
+            <!-- ========================================================= -->
+
+            <div class="relative w-full h-44">
+
+
+                <!-- ===================================================== -->
+                <!-- LÍNEAS DE REFERENCIA -->
+                <!-- ===================================================== -->
+
+                <div
+                    class="absolute inset-0 flex flex-col justify-between text-[10px] text-slate-600 pointer-events-none"
+                >
+
+                    <div class="border-b border-slate-800/60 w-full">
+                        <span x-text="maxGrafica"></span>
+                    </div>
+
+
+                    <div class="border-b border-slate-800/60 w-full">
+                        <span x-text="Math.round(maxGrafica * 0.75)"></span>
+                    </div>
+
+
+                    <div class="border-b border-slate-800/60 w-full">
+                        <span x-text="Math.round(maxGrafica * 0.50)"></span>
+                    </div>
+
+
+                    <div class="border-b border-slate-800/60 w-full">
+                        <span x-text="Math.round(maxGrafica * 0.25)"></span>
+                    </div>
+
+
+                    <div class="w-full">
+                        <span>0</span>
+                    </div>
+
+                </div>
+
+
+
+                <!-- ===================================================== -->
+                <!-- SVG -->
+                <!-- ===================================================== -->
+
+                <svg
+                    class="absolute inset-0 w-full h-full overflow-visible"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 600 120"
+                >
+
+                    <!-- LÍNEA DE LA GRÁFICA -->
+
+                    <path
+                        :d="pathGrafica"
+                        fill="none"
+                        stroke="#2563eb"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    ></path>
+
+
+                    <!-- ================================================= -->
+                    <!-- PUNTOS -->
+                    <!-- ================================================= -->
+
+                    <g>
+
+                        <template
+                            x-for="(punto, index) in puntosGrafica"
+                            :key="index"
+                        >
+
+                            <circle
+                                :cx="punto.x"
+                                :cy="punto.y"
+                                r="4"
+                                fill="#2563eb"
+                            ></circle>
+
+                        </template>
+
+                    </g>
+
+                </svg>
+
+            </div>
+
+
+
+            <!-- ========================================================= -->
+            <!-- FECHAS -->
+            <!-- ========================================================= -->
+
+            <div class="relative mt-2 px-6 overflow-hidden">
+
+                <div
+                    class="flex justify-between text-[11px] text-slate-400 w-full"
+                >
+
+                    <template
+                        x-for="(dia, index) in evolucionTickets"
+                        :key="index"
+                    >
+
+                        <span
+                            x-text="dia.fecha"
+                            class="whitespace-nowrap"
+                            :class="{
+                                'hidden':
+                                    periodo === 'hoy' &&
+                                    index % 3 !== 0
+                            }"
+                        ></span>
+
+                    </template>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ========================================================= -->
+            <!-- MÉTRICAS -->
+            <!-- ========================================================= -->
+
+            <div
+                class="grid grid-cols-3 gap-4 pt-4 mt-6 border-t border-slate-800/60 text-xs"
+            >
+
+
+                <!-- ===================================================== -->
+                <!-- PROMEDIO -->
+                <!-- ===================================================== -->
+
+                <div class="flex items-center gap-3">
+
+                    <div
+                        class="p-2 rounded-xl bg-blue-500/10 text-blue-400"
+                    >
+
+                        <i
+                            data-lucide="target"
+                            class="w-4 h-4"
+                        ></i>
+
+                    </div>
+
 
                     <div>
 
-                        <div class="flex items-center justify-between mb-1">
-
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
-
-                                <h3 class="text-sm font-semibold text-white">
-                                    Evolución de tickets
-                                </h3>
-                            </div>
-
-                            <div
-                                class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-xs text-slate-400">
-
-                                <button type="button" @click="cargarPeriodo('hoy')"
-                                    :class="periodo === 'hoy'
-                                        ?
-                                        'bg-blue-600 text-white font-medium' :
-                                        'hover:text-white'"
-                                    class="px-2.5 py-1 rounded-md transition">
-                                    Hoy
-                                </button>
-
-                                <button type="button" @click="cargarPeriodo('semana')"
-                                    :class="periodo === 'semana'
-                                        ?
-                                        'bg-blue-600 text-white font-medium' :
-                                        'hover:text-white'"
-                                    class="px-2.5 py-1 rounded-md transition">
-                                    Semana
-                                </button>
-
-                                <button type="button" @click="cargarPeriodo('mes')"
-                                    :class="periodo === 'mes'
-                                        ?
-                                        'bg-blue-600 text-white font-medium' :
-                                        'hover:text-white'"
-                                    class="px-2.5 py-1 rounded-md transition">
-                                    Mes
-                                </button>
-
-                                <button type="button" @click="cargarPeriodo('año')"
-                                    :class="periodo === 'año'
-                                        ?
-                                        'bg-blue-600 text-white font-medium' :
-                                        'hover:text-white'"
-                                    class="px-2.5 py-1 rounded-md transition">
-                                    Año
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                        <p class="text-xs text-slate-400 mb-6">
-                            Comportamiento de tickets en el periodo seleccionado.
+                        <p class="text-slate-400 text-[11px]">
+                            Promedio
                         </p>
 
-
-                        <!-- GRÁFICA -->
-
-                        <div class="relative w-full h-44">
-
-                            <!-- Líneas de referencia -->
-
-                            <div
-                                class="absolute inset-0 flex flex-col justify-between text-[10px] text-slate-600 pointer-events-none">
-
-                                <div class="border-b border-slate-800/60 w-full">
-                                    <span x-text="maxGrafica"></span>
-                                </div>
-
-                                <div class="border-b border-slate-800/60 w-full">
-                                    <span x-text="Math.round(maxGrafica * 0.75)"></span>
-                                </div>
-
-                                <div class="border-b border-slate-800/60 w-full">
-                                    <span x-text="Math.round(maxGrafica * 0.50)"></span>
-                                </div>
-
-                                <div class="border-b border-slate-800/60 w-full">
-                                    <span x-text="Math.round(maxGrafica * 0.25)"></span>
-                                </div>
-
-                                <div class="w-full">
-                                    <span>0</span>
-                                </div>
-
-                            </div>
-
-
-                            <!-- SVG -->
-
-                            <svg class="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none"
-                                viewBox="0 0 600 120">
-
-                                <path :d="pathGrafica" fill="none" stroke="#2563eb" stroke-width="3"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                </path>
-
-
-                                <template x-for="(punto, index) in puntosGrafica" :key="index">
-
-                                    <circle :cx="punto.x" :cy="punto.y" r="4" fill="#2563eb">
-                                    </circle>
-
-                                </template>
-
-                            </svg>
-
-                        </div>
-
-
-                        <!-- FECHAS -->
-
-                        <!-- FECHAS -->
-
-                        <div class="relative mt-2 px-6 overflow-hidden">
-
-                            <div class="flex justify-between text-[11px] text-slate-400 w-full">
-
-                                <template x-for="(dia, index) in evolucionTickets" :key="index">
-
-                                    <span x-text="dia.fecha" class="whitespace-nowrap"
-                                        :class="{
-                                            'hidden': periodo === 'hoy' && index % 3 !== 0
-                                        }">
-                                    </span>
-
-                                </template>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- MÉTRICAS -->
-
-                        <div class="grid grid-cols-3 gap-4 pt-4 mt-6 border-t border-slate-800/60 text-xs">
-
-
-                            <!-- PROMEDIO -->
-
-                            <div class="flex items-center gap-3">
-
-                                <div class="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-
-                                    <i data-lucide="target" class="w-4 h-4">
-                                    </i>
-
-                                </div>
-
-                                <div>
-
-                                    <p class="text-slate-400 text-[11px]">
-                                        Promedio
-                                    </p>
-
-                                    <p class="text-lg font-bold text-white" x-text="promedioEvolucion">
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- MÁXIMO -->
-
-                            <div class="flex items-center gap-3">
-
-                                <div class="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-
-                                    <i data-lucide="trending-up" class="w-4 h-4">
-                                    </i>
-
-                                </div>
-
-                                <div>
-
-                                    <p class="text-slate-400 text-[11px]">
-                                        Máximo
-                                    </p>
-
-                                    <p class="text-lg font-bold text-white" x-text="maximoEvolucion">
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- MÍNIMO -->
-
-                            <div class="flex items-center gap-3">
-
-                                <div class="p-2 rounded-xl bg-rose-500/10 text-rose-400">
-
-                                    <i data-lucide="trending-down" class="w-4 h-4">
-                                    </i>
-
-                                </div>
-
-                                <div>
-
-                                    <p class="text-slate-400 text-[11px]">
-                                        Mínimo
-                                    </p>
-
-                                    <p class="text-lg font-bold text-white" x-text="minimoEvolucion">
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </div>
+                        <p
+                            class="text-lg font-bold text-white"
+                            x-text="promedioEvolucion"
+                        ></p>
 
                     </div>
 
                 </div>
-            </section>
+
+
+
+                <!-- ===================================================== -->
+                <!-- MÁXIMO -->
+                <!-- ===================================================== -->
+
+                <div class="flex items-center gap-3">
+
+                    <div
+                        class="p-2 rounded-xl bg-blue-500/10 text-blue-400"
+                    >
+
+                        <i
+                            data-lucide="trending-up"
+                            class="w-4 h-4"
+                        ></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <p class="text-slate-400 text-[11px]">
+                            Máximo
+                        </p>
+
+                        <p
+                            class="text-lg font-bold text-white"
+                            x-text="maximoEvolucion"
+                        ></p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ===================================================== -->
+                <!-- MÍNIMO -->
+                <!-- ===================================================== -->
+
+                <div class="flex items-center gap-3">
+
+                    <div
+                        class="p-2 rounded-xl bg-rose-500/10 text-rose-400"
+                    >
+
+                        <i
+                            data-lucide="trending-down"
+                            class="w-4 h-4"
+                        ></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <p class="text-slate-400 text-[11px]">
+                            Mínimo
+                        </p>
+
+                        <p
+                            class="text-lg font-bold text-white"
+                            x-text="minimoEvolucion"
+                        ></p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
         </div>
     </main>

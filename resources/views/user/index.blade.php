@@ -27,7 +27,10 @@
             </div>
 
             <div class="mb-10 flex items-center gap-3 px-2">
-                <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                <img src="{{ auth()->user()->picture
+                    ? asset('storage/' . auth()->user()->picture)
+                    : asset('storage/profile-photos/user.png') }}"
+                    alt="{{ auth()->user()->name }}"
                     class="h-12 w-12 rounded-full border-2 border-gray-500 object-cover">
 
                 <div>
@@ -554,6 +557,10 @@
                 <div
                     class="order-2 rounded-xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:order-1 lg:col-span-5">
 
+                    {{-- ========================================================= --}}
+                    {{-- ENCABEZADO --}}
+                    {{-- ========================================================= --}}
+
                     <div class="flex items-center gap-2.5">
 
                         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
@@ -575,13 +582,143 @@
 
                     </div>
 
+
+                    {{-- ========================================================= --}}
+                    {{-- picture --}}
+                    {{-- ========================================================= --}}
+
                     <div class="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
 
-                        <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
-                            class="h-24 w-24 shrink-0 rounded-full border border-gray-600 object-cover">
+                        <img src="{{ auth()->user()->picture
+                            ? asset('storage/' . auth()->user()->picture)
+                            : asset('storage/profile-photos/user.png') }}"
+                            alt="{{ auth()->user()->name ?? 'Usuario' }}"
+                            class="h-24 w-24 shrink-0 rounded-full border border-gray-600 object-cover"
+                            nerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Usuario') }}&background=0D8ABC&color=fff';">
 
-                        <dl class="grid w-full grid-cols-1 gap-y-2.5 text-sm">
+                        <div class="w-full">
 
+                            {{-- ================================================= --}}
+                            {{-- INFORMACIÓN LABORAL --}}
+                            {{-- ================================================= --}}
+
+                            <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-blue-400">
+                                Información laboral
+                            </h3>
+
+                            <dl class="grid w-full grid-cols-1 gap-y-2.5 text-sm">
+
+                                {{-- DEPARTAMENTO --}}
+                                <div class="flex items-center gap-2">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+
+                                        <rect x="4" y="4" width="16" height="16" rx="2" />
+                                        <path d="M8 9h8M8 13h5" />
+
+                                    </svg>
+
+                                    <dt class="font-semibold text-gray-400">
+                                        Departamento:
+                                    </dt>
+
+                                    <dd class="ml-auto font-bold text-white">
+                                        {{ Auth::user()->departamento->nombre ?? 'N/A' }}
+                                    </dd>
+
+                                </div>
+
+
+                                {{-- OFICINA --}}
+                                <div class="flex items-center gap-2">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+
+                                        <rect x="4" y="8" width="16" height="12" rx="1" />
+                                        <path d="M9 8V5a1 1 0 011-1h4a1 1 0 011 1v3" />
+
+                                    </svg>
+
+                                    <dt class="font-semibold text-gray-400">
+                                        Oficina:
+                                    </dt>
+
+                                    <dd class="ml-auto font-bold text-white">
+                                        {{ Auth::user()->departamento->oficina->nombre ?? 'N/A' }}
+                                    </dd>
+
+                                </div>
+
+
+                                {{-- EMPRESA --}}
+                                <div class="flex items-center gap-2">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+
+                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                        <path d="M8 21V7h8v14M8 11h8M8 15h8" />
+
+                                    </svg>
+
+                                    <dt class="font-semibold text-gray-400">
+                                        Empresa:
+                                    </dt>
+
+                                    <dd class="ml-auto font-bold text-white">
+                                        {{ Auth::user()->departamento->oficina->empresa->empresa ?? 'N/A' }}
+                                    </dd>
+
+                                </div>
+
+
+                                {{-- LOGIN --}}
+                                <div class="flex items-center gap-2">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+
+                                        <circle cx="12" cy="8" r="3.2" />
+                                        <path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6" />
+
+                                    </svg>
+
+                                    <dt class="font-semibold text-gray-400">
+                                        Login:
+                                    </dt>
+
+                                    <dd class="ml-auto font-bold text-white">
+                                        {{ Auth::user()->login ?? 'N/A' }}
+                                    </dd>
+
+                                </div>
+
+                            </dl>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- ========================================================= --}}
+                    {{-- INFORMACIÓN PERSONAL --}}
+                    {{-- ========================================================= --}}
+
+                    <div class="mt-5 border-t border-[#1e295d] pt-4">
+
+                        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-blue-400">
+                            Información personal
+                        </h3>
+
+                        <dl class="flex flex-col gap-2.5 text-sm">
+
+                            {{-- NOMBRE --}}
                             <div class="flex items-center gap-2">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
@@ -598,53 +735,13 @@
                                 </dt>
 
                                 <dd class="ml-auto font-bold text-white">
-                                    {{ Auth::user()->nombre ?? 'Juan Perez' }}
+                                    {{ Auth::user()->name ?? 'N/A' }}
                                 </dd>
 
                             </div>
 
-                            <div class="flex items-center gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" stroke-linejoin="round">
-
-                                    <rect x="4" y="8" width="16" height="12" rx="1" />
-                                    <path d="M9 8V5a1 1 0 011-1h4a1 1 0 011 1v3" />
-
-                                </svg>
-
-                                <dt class="font-semibold text-gray-400">
-                                    Empresa:
-                                </dt>
-
-                                <dd class="ml-auto font-bold text-white">
-                                    {{ Auth::user()->departamento->oficina->empresa->empresa ?? 'Desconocido' }}
-                                </dd>
-
-                            </div>
-
-                            <div class="flex items-center gap-2">
-
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" stroke-linejoin="round">
-
-                                    <rect x="4" y="4" width="16" height="16" rx="2" />
-                                    <path d="M8 9h8M8 13h5" />
-
-                                </svg>
-
-                                <dt class="font-semibold text-gray-400">
-                                    Departamento:
-                                </dt>
-
-                                <dd class="ml-auto font-bold text-white">
-                                    {{ Auth::user()->departamento->nombre ?? 'Desconocido' }}
-                                </dd>
-
-                            </div>
-
+                            {{-- EMAIL --}}
                             <div class="flex items-center gap-2">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
@@ -660,43 +757,52 @@
                                     Correo:
                                 </dt>
 
-                                <dd class="ml-auto font-bold text-white">
-                                    {{ Auth::user()->email ?? 'Desconocido' }}
+                                <dd class="ml-auto font-bold text-white break-all text-right">
+                                    {{ Auth::user()->email ?? 'N/A' }}
                                 </dd>
 
                             </div>
 
+
+                            {{-- TELÉFONO --}}
                             <div class="flex items-center gap-2">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                     stroke-linecap="round" stroke-linejoin="round">
 
-                                    <rect x="4" y="8" width="16" height="12" rx="1" />
-                                    <path d="M9 8V5a1 1 0 011-1h4a1 1 0 011 1v3" />
+                                    <path d="M22 16.92v3a2 2 0 01-2.18 2
+                             19.79 19.79 0 01-8.63-3.07
+                             19.5 19.5 0 01-6-6
+                             19.79 19.79 0 01-3.07-8.67
+                             A2 2 0 014.11 2h3
+                             a2 2 0 012 1.72
+                             12.84 12.84 0 00.7 2.81
+                             2 2 0 01-.45 2.11L8.09 9.91
+                             a16 16 0 006 6l1.27-1.27
+                             a2 2 0 012.11-.45
+                             12.84 12.84 0 002.81.7
+                             A2 2 0 0122 16.92z" />
 
                                 </svg>
 
                                 <dt class="font-semibold text-gray-400">
-                                    Oficina:
+                                    Teléfono:
                                 </dt>
 
                                 <dd class="ml-auto font-bold text-white">
-                                    {{ Auth::user()->departamento->oficina->nombre ?? 'Desconocido' }}
+                                    {{ Auth::user()->phone ?? 'No proporcionado' }}
                                 </dd>
 
                             </div>
 
-                            {{-- <div class="flex items-start gap-2">
 
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
+                            {{-- UBICACIÓN --}}
+                            <div class="flex items-start gap-2">
+
+                                <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    stroke-linecap="round" stroke-linejoin="round">
 
                                     <path d="M12 21s7-6.5 7-11a7 7 0 10-14 0c0 4.5 7 11 7 11z" />
                                     <circle cx="12" cy="10" r="2.3" />
@@ -711,13 +817,18 @@
                                     {{ $usuario['ubicacion'] ?? 'Edificio A, piso 2 Area administrativa' }}
                                 </dd>
 
-                            </div> --}}
+                            </div>
 
                         </dl>
 
                     </div>
 
-                    <div class="mt-4 flex flex-col gap-2.5 border-t border-[#1e295d] pt-4 text-sm">
+
+                    {{-- ========================================================= --}}
+                    {{-- INFORMACIÓN DEL EMPLEADO --}}
+                    {{-- ========================================================= --}}
+
+                    <div class="mt-4 border-t border-[#1e295d] pt-4">
 
                         <div class="flex items-center gap-2">
 
@@ -735,28 +846,7 @@
                             </dt>
 
                             <dd class="ml-auto font-bold text-white">
-                                {{ Auth::user()->numeroempleado ?? 'Desconocido' }}
-                            </dd>
-
-                        </div>
-
-                        <div class="flex items-center gap-2">
-
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-500"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                stroke-linecap="round" stroke-linejoin="round">
-
-                                <path d="M16 3v4M8 3v4M4 8h16" />
-                                <rect x="4" y="5" width="16" height="16" rx="2" />
-
-                            </svg>
-
-                            <dt class="font-semibold text-gray-400">
-                                Fecha ingreso:
-                            </dt>
-
-                            <dd class="ml-auto font-bold text-white">
-                                {{ Auth::user()->created_at ?? '10 enero 2024' }}
+                                {{ Auth::user()->numeroempleado ?? 'No proporcionado' }}
                             </dd>
 
                         </div>
@@ -1010,17 +1100,21 @@
                 <div
                     class="order-4 rounded-xl border border-[#1e295d] bg-[#0f1535] p-5 shadow-lg lg:order-3 lg:col-span-5">
 
+                    {{-- ENCABEZADO --}}
                     <div class="flex items-center justify-between">
 
                         <div class="flex items-center gap-2.5">
 
-                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#151b3b] text-white">
+                            <div
+                                class="flex h-8 w-8 items-center justify-center
+                       rounded-lg bg-[#151b3b] text-white">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                                     stroke-linejoin="round">
 
                                     <rect x="4" y="4" width="16" height="16" rx="2" />
+
                                     <path d="M8 9h8M8 13h5" />
 
                                 </svg>
@@ -1028,103 +1122,380 @@
                             </div>
 
                             <h2 class="text-lg font-bold text-white">
-                                Ultimo ticket
+                                Último ticket
                             </h2>
 
                         </div>
 
+
+                        {{-- BOTÓN SOLO SI EXISTE TICKET --}}
                         @if ($ultimoTicket)
                             <a href="{{ route('ticketusuario.detalles', ['ticket' => $ultimoTicket['id']]) }}"
-                                class="rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700">
+                                class="rounded-full bg-blue-600
+                       px-4 py-2
+                       text-xs font-bold text-white
+                       transition hover:bg-blue-700">
+
                                 Ver detalles
+
                             </a>
                         @endif
 
                     </div>
 
-                    <span class="mt-4 inline-block rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white">
-                        {{ $ultimoTicket['folio'] ?? 'TKT-2026-0015' }}
-                    </span>
 
-                    <div class="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+                    {{-- ========================================================= --}}
+                    {{-- SI EXISTE ÚLTIMO TICKET --}}
+                    {{-- ========================================================= --}}
 
-                        <div>
-                            <p class="text-gray-400">Tipo de falla:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['tipo_falla'] ?? 'Equipo de computo' }}
+                    @if ($ultimoTicket)
+                        {{-- FOLIO --}}
+                        <span
+                            class="mt-4 inline-block
+                   rounded-lg
+                   bg-blue-600
+                   px-3 py-1.5
+                   text-xs font-bold text-white">
+
+                            {{ $ultimoTicket['folio'] ?? 'N/A' }}
+
+                        </span>
+
+
+                        {{-- INFORMACIÓN --}}
+                        <div class="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+
+                            {{-- TIPO DE FALLA --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Tipo de falla:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['tipo_falla'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- FECHA REPORTE --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Fecha reporte:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['fecha_reporte'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- DEPARTAMENTO --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Departamento:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['departamento'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- ASIGNADO A --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Asignado a:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['asignado_a'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- SUCURSAL / OFICINA --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Sucursal / Oficina:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['oficina'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- TOMADO POR --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Tomado por:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['tomado_por'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- ESTADO --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Estado:
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block
+                           rounded-lg
+                           bg-[#1d2757]
+                           px-2.5 py-1
+                           text-xs font-bold text-blue-400">
+
+                                    {{ $ultimoTicket['estado'] ?? 'N/A' }}
+
+                                </span>
+
+                            </div>
+
+
+                            {{-- ASIGNACIÓN --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Asignación:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    {{ $ultimoTicket['fecha_asignacion'] ?? 'N/A' }}
+                                </p>
+
+                            </div>
+
+
+                            {{-- PRIORIDAD --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    Prioridad:
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block
+                           rounded-lg
+                           bg-[#4d1616]
+                           px-2.5 py-1
+                           text-xs font-bold text-red-400">
+
+                                    {{ $ultimoTicket['prioridad'] ?? 'N/A' }}
+
+                                </span>
+
+                            </div>
+
+
+                            {{-- SOLUCIONADO --}}
+                            <div>
+
+                                <p class="text-gray-400">
+                                    ¿Se solucionó?
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block
+                           rounded-lg
+                           bg-[#4d1616]
+                           px-2.5 py-1
+                           text-xs font-bold text-red-400">
+
+                                    {{ $ultimoTicket['solucionado'] ?? 'N/A' }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ========================================================= --}}
+                        {{-- NO EXISTE ÚLTIMO TICKET --}}
+                        {{-- ========================================================= --}}
+                    @else
+                        {{-- AVISO --}}
+                        <div
+                            class="mt-4
+                   rounded-xl
+                   border border-yellow-500/20
+                   bg-yellow-500/5
+                   px-4 py-3">
+
+                            <p class="text-sm font-bold text-yellow-400">
+                                No hay tickets
                             </p>
-                        </div>
 
-                        <div>
-                            <p class="text-gray-400">Fecha reporte:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['fecha_reporte'] ?? '05 ago 2026' }}
+                            <p class="mt-1 text-xs text-gray-400">
+                                Actualmente no tienes ningún ticket registrado.
                             </p>
+
                         </div>
 
-                        <div>
-                            <p class="text-gray-400">Departamento:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['departamento'] ?? 'Recursos humanos' }}
-                            </p>
+
+                        {{-- INFORMACIÓN VACÍA --}}
+                        <div class="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+
+                            {{-- TIPO DE FALLA --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Tipo de falla:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- FECHA REPORTE --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Fecha reporte:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- DEPARTAMENTO --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Departamento:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- ASIGNADO A --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Asignado a:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- SUCURSAL / OFICINA --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Sucursal / Oficina:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- TOMADO POR --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Tomado por:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- ESTADO --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Estado:
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block
+                           rounded-lg
+                           bg-[#1d2757]
+                           px-2.5 py-1
+                           text-xs font-bold text-gray-400">
+
+                                    N/A
+
+                                </span>
+                            </div>
+
+
+                            {{-- ASIGNACIÓN --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Asignación:
+                                </p>
+
+                                <p class="font-bold text-white">
+                                    N/A
+                                </p>
+                            </div>
+
+
+                            {{-- PRIORIDAD --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    Prioridad:
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block
+                           rounded-lg
+                           bg-[#1d2757]
+                           px-2.5 py-1
+                           text-xs font-bold text-gray-400">
+
+                                    N/A
+
+                                </span>
+                            </div>
+
+
+                            {{-- SOLUCIONADO --}}
+                            <div>
+                                <p class="text-gray-400">
+                                    ¿Se solucionó?
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block
+                           rounded-lg
+                           bg-[#1d2757]
+                           px-2.5 py-1
+                           text-xs font-bold text-gray-400">
+
+                                    N/A
+
+                                </span>
+                            </div>
+
                         </div>
-
-                        <div>
-                            <p class="text-gray-400">Asignado a:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['asignado_a'] ?? 'Carlos Mtz' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-400">Sucursal / Oficina:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['oficina'] ?? 'Reynosa, Centro' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-400">Tomado por:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['tomado_por'] ?? 'Carlos Mtz' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-400">Estado:</p>
-
-                            <span
-                                class="mt-1 inline-block rounded-lg bg-[#1d2757] px-2.5 py-1 text-xs font-bold text-blue-400">
-                                {{ $ultimoTicket['estado'] ?? 'En proceso' }}
-                            </span>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-400">Asignación:</p>
-                            <p class="font-bold text-white">
-                                {{ $ultimoTicket['fecha_asignacion'] ?? '05 ago 2026' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-400">Prioridad:</p>
-
-                            <span
-                                class="mt-1 inline-block rounded-lg bg-[#4d1616] px-2.5 py-1 text-xs font-bold text-red-400">
-                                {{ $ultimoTicket['prioridad'] ?? 'Alta' }}
-                            </span>
-                        </div>
-
-                        <div>
-                            <p class="text-gray-400">¿Se solucionó?</p>
-
-                            <span
-                                class="mt-1 inline-block rounded-lg bg-[#4d1616] px-2.5 py-1 text-xs font-bold text-red-400">
-                                {{ $ultimoTicket['solucionado'] ?? 'No' }}
-                            </span>
-                        </div>
-
-                    </div>
+                    @endif
 
                 </div>
 

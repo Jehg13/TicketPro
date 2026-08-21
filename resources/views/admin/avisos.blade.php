@@ -25,7 +25,7 @@
                 </span>
             </div>
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
-                <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="{{ auth()->user()->name }}"
+                <img src="{{ asset('storage/' . auth()->user()->picture) }}" alt="{{ auth()->user()->name }}"
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
                 <div class="overflow-hidden">
                     <h4 class="text-sm font-semibold text-slate-200 truncate">
@@ -51,13 +51,18 @@
                         Tickets
                     </span>
                 </a>
-                <a href="{{ route('cambiostecnologias') }}"
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('cambiostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">
-                        Cambios
-                    </span>
-                </a>
+
+                        <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
+
+                        <span class="text-sm">
+                            Cambios
+                        </span>
+
+                    </a>
+                @endif
                 <a href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30 transition">
                     <i data-lucide="megaphone" class="w-5 h-5"></i>
@@ -409,7 +414,7 @@
                             <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
                                 class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                                     alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
                                 <div class="text-left leading-tight hidden sm:block">

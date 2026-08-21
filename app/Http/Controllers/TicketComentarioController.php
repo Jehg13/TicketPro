@@ -40,9 +40,11 @@ class TicketComentarioController extends Controller
             'Cache-Control' =>
                 'no-store, no-cache, must-revalidate, max-age=0',
 
-            'Pragma' => 'no-cache',
+            'Pragma' =>
+                'no-cache',
 
-            'Expires' => '0',
+            'Expires' =>
+                '0',
         ]);
     }
 
@@ -57,6 +59,12 @@ class TicketComentarioController extends Controller
         Request $request,
         TicketU $ticket
     ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR DATOS
+        |--------------------------------------------------------------------------
+        */
 
         $request->validate([
             'mensaje' => [
@@ -118,7 +126,7 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | LOGIN DEL USUARIO ACTUAL
+        | LOGIN DEL USUARIO
         |--------------------------------------------------------------------------
         */
 
@@ -129,16 +137,20 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | ROL DEL USUARIO ACTUAL
+        | ROL DEL USUARIO
         |--------------------------------------------------------------------------
         */
 
-        $rolActual = strtolower(
-            trim(
-                (string) $usuarioActual->role
-            )
+        $rolActual = $this->normalizarRol(
+            $usuarioActual->role
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOG DEL COMENTARIO
+        |--------------------------------------------------------------------------
+        */
 
         Log::info(
             '========== NUEVO COMENTARIO =========='
@@ -157,7 +169,13 @@ class TicketComentarioController extends Controller
                     $usuarioActual->name,
 
                 'role' =>
+                    $usuarioActual->role,
+
+                'role_normalizado' =>
                     $rolActual,
+
+                'priv_admin' =>
+                    $usuarioActual->priv_admin,
 
                 'ticket_id' =>
                     $ticket->id,
@@ -210,7 +228,7 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | RECARGAR COMENTARIO
+        | RECARGAR COMENTARIO CON USUARIO
         |--------------------------------------------------------------------------
         */
 
@@ -290,7 +308,7 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | LOGIN DEL AUTOR DEL COMENTARIO
+        | LOGIN DEL AUTOR
         |--------------------------------------------------------------------------
         */
 
@@ -350,15 +368,8 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | OBTENER NOMBRE DEL AUTOR
+        | NOMBRE DEL AUTOR
         |--------------------------------------------------------------------------
-        |
-        | La notificación mostrará:
-        |
-        | Fernando Reyes comentó...
-        |
-        | Si no existe nombre, utiliza el login.
-        |
         */
 
         $nombreAutor = trim(
@@ -378,16 +389,14 @@ class TicketComentarioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $rolAutor = strtolower(
-            trim(
-                (string) $autor->role
-            )
+        $rolAutor = $this->normalizarRol(
+            $autor->role
         );
 
 
         /*
         |--------------------------------------------------------------------------
-        | MENSAJE DEL COMENTARIO
+        | MENSAJE
         |--------------------------------------------------------------------------
         */
 
@@ -440,15 +449,44 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | CASO 1:
+        | ROLES ADMINISTRADORES
+        |--------------------------------------------------------------------------
+        |
+        | Estos son los únicos roles que pueden recibir las notificaciones
+        | de comentarios de usuarios normales.
+        |
+        */
+
+        $rolesAdministradores = [
+            'gerente ti',
+            'soporte tecnico',
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CASO 1
         |
         | USUARIO NORMAL COMENTA
         |
-        | Todos los usuarios de tecnologías reciben la notificación.
+        | Deben recibir:
+        |
+        | - Gerente Ti + priv_admin = Y
+        | - Soporte Tecnico + priv_admin = Y
+        |
+        | NO reciben:
+        |
+        | - Gerente Ti + priv_admin != Y
+        | - Soporte Tecnico + priv_admin != Y
+        | - Cualquier otro rol
         |--------------------------------------------------------------------------
         */
 
-        if ($rolAutor !== 'tecnologias') {
+        if (!in_array(
+            $rolAutor,
+            $rolesAdministradores,
+            true
+        )) {
 
             Log::info(
                 'COMENTARIO REALIZADO POR USUARIO NORMAL'
@@ -457,14 +495,28 @@ class TicketComentarioController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | OBTENER TODOS LOS USUARIOS DE TECNOLOGÍAS
+            | BUSCAR ADMINISTRADORES
             |--------------------------------------------------------------------------
             */
 
-            $tecnologias = User::where(
-                'role',
-                'tecnologias'
-            )
+            $administradores = User::query()
+                ->where('priv_admin', 'Y')
+                ->where(function ($query) {
+
+                    $query
+                        ->whereRaw(
+                            'LOWER(TRIM(role)) = ?',
+                            ['gerente ti']
+                        )
+                        ->orWhereRaw(
+                            'LOWER(TRIM(role)) IN (?, ?)',
+                            [
+                                'soporte tecnico',
+                                'soporte técnico',
+                            ]
+                        );
+
+                })
                 ->where(
                     'login',
                     '!=',
@@ -473,15 +525,40 @@ class TicketComentarioController extends Controller
                 ->get();
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | LOG DE ADMINISTRADORES ENCONTRADOS
+            |--------------------------------------------------------------------------
+            */
+
             Log::info(
-                'TECNÓLOGOS ENCONTRADOS',
+                'ADMINISTRADORES ENCONTRADOS',
                 [
                     'cantidad' =>
-                        $tecnologias->count(),
+                        $administradores->count(),
 
-                    'logins' =>
-                        $tecnologias
-                            ->pluck('login')
+                    'usuarios' =>
+                        $administradores
+                            ->map(function ($usuario) {
+
+                                return [
+                                    'id' =>
+                                        $usuario->id,
+
+                                    'login' =>
+                                        $usuario->login,
+
+                                    'name' =>
+                                        $usuario->name,
+
+                                    'role' =>
+                                        $usuario->role,
+
+                                    'priv_admin' =>
+                                        $usuario->priv_admin,
+                                ];
+
+                            })
                             ->toArray(),
                 ]
             );
@@ -489,54 +566,80 @@ class TicketComentarioController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | CREAR NOTIFICACIÓN PARA CADA TECNÓLOGO
+            | CREAR NOTIFICACIÓN
             |--------------------------------------------------------------------------
             */
 
-            foreach ($tecnologias as $tecnologia) {
+            foreach (
+                $administradores
+                as $administrador
+            ) {
 
                 try {
 
                     $notificacion =
                         Notificacion::create([
+
                             /*
                             | DESTINATARIO
                             */
                             'login' =>
-                                $tecnologia->login,
+                                $administrador->login,
 
+                            /*
+                            | TIPO
+                            */
                             'tipo' =>
                                 'comentario',
 
+                            /*
+                            | TITULO
+                            */
                             'titulo' =>
                                 'Nuevo comentario',
 
                             /*
-                            | AUTOR
-                            |
-                            | Aquí aparece el nombre de quien comentó.
+                            | MENSAJE
                             */
                             'mensaje' =>
                                 $textoNotificacion,
 
+                            /*
+                            | URL
+                            */
                             'url' =>
                                 route(
                                     'tickettecnologias'
                                 ),
 
+                            /*
+                            | ESTADO
+                            */
                             'leida' =>
                                 false,
 
+                            /*
+                            | ICONO
+                            */
                             'icono' =>
                                 'message-circle',
 
+                            /*
+                            | COLOR
+                            */
                             'color' =>
                                 'blue',
                         ]);
 
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | LOG DE NOTIFICACIÓN CREADA
+                    |--------------------------------------------------------------------------
+                    */
+
                     Log::info(
-                        'NOTIFICACIÓN CREADA PARA TECNOLOGÍA',
+                        'NOTIFICACIÓN CREADA CORRECTAMENTE',
                         [
                             'notificacion_id' =>
                                 $notificacion->id,
@@ -548,7 +651,16 @@ class TicketComentarioController extends Controller
                                 $loginAutor,
 
                             'destinatario' =>
-                                $tecnologia->login,
+                                $administrador->login,
+
+                            'destinatario_nombre' =>
+                                $administrador->name,
+
+                            'destinatario_role' =>
+                                $administrador->role,
+
+                            'destinatario_priv_admin' =>
+                                $administrador->priv_admin,
 
                             'ticket_id' =>
                                 $ticket->id,
@@ -558,24 +670,36 @@ class TicketComentarioController extends Controller
                 } catch (\Throwable $e) {
 
                     Log::error(
-                        'ERROR CREANDO NOTIFICACIÓN PARA TECNOLOGÍA',
+                        'ERROR CREANDO NOTIFICACIÓN PARA ADMINISTRADOR',
                         [
                             'autor' =>
                                 $loginAutor,
 
                             'destinatario' =>
-                                $tecnologia->login,
+                                $administrador->login,
 
                             'ticket_id' =>
                                 $ticket->id,
 
                             'error' =>
                                 $e->getMessage(),
+
+                            'archivo' =>
+                                $e->getFile(),
+
+                            'linea' =>
+                                $e->getLine(),
                         ]
                     );
                 }
             }
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | TERMINAR CASO 1
+            |--------------------------------------------------------------------------
+            */
 
             return;
         }
@@ -583,22 +707,22 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | CASO 2:
+        | CASO 2
         |
-        | TECNOLOGÍAS COMENTA
+        | GERENTE TI / SOPORTE TECNICO COMENTA
         |
-        | Solamente el dueño del ticket recibe la notificación.
+        | Se notifica al dueño del ticket.
         |--------------------------------------------------------------------------
         */
 
         Log::info(
-            'COMENTARIO REALIZADO POR TECNOLOGÍAS'
+            'COMENTARIO REALIZADO POR GERENTE TI / SOPORTE TECNICO'
         );
 
 
         /*
         |--------------------------------------------------------------------------
-        | OBTENER DUEÑO DEL TICKET
+        | LOGIN DEL DUEÑO DEL TICKET
         |--------------------------------------------------------------------------
         */
 
@@ -623,7 +747,7 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | EVITAR NOTIFICARSE A SÍ MISMO
+        | EVITAR AUTONOTIFICACIÓN
         |--------------------------------------------------------------------------
         */
 
@@ -649,7 +773,7 @@ class TicketComentarioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | BUSCAR DUEÑO
+        | BUSCAR DUEÑO DEL TICKET
         |--------------------------------------------------------------------------
         */
 
@@ -686,9 +810,7 @@ class TicketComentarioController extends Controller
 
             $notificacion =
                 Notificacion::create([
-                    /*
-                    | DESTINATARIO
-                    */
+
                     'login' =>
                         $usuarioTicket->login,
 
@@ -698,9 +820,6 @@ class TicketComentarioController extends Controller
                     'titulo' =>
                         'Nuevo comentario',
 
-                    /*
-                    | AUTOR DEL COMENTARIO
-                    */
                     'mensaje' =>
                         $textoNotificacion,
 
@@ -724,8 +843,14 @@ class TicketComentarioController extends Controller
                 ]);
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | LOG
+            |--------------------------------------------------------------------------
+            */
+
             Log::info(
-                'NOTIFICACIÓN CREADA PARA USUARIO',
+                'NOTIFICACIÓN CREADA PARA DUEÑO DEL TICKET',
                 [
                     'notificacion_id' =>
                         $notificacion->id,
@@ -736,8 +861,14 @@ class TicketComentarioController extends Controller
                     'autor_login' =>
                         $loginAutor,
 
+                    'autor_role' =>
+                        $autor->role,
+
                     'destinatario' =>
                         $usuarioTicket->login,
+
+                    'destinatario_nombre' =>
+                        $usuarioTicket->name,
 
                     'ticket_id' =>
                         $ticket->id,
@@ -747,7 +878,7 @@ class TicketComentarioController extends Controller
         } catch (\Throwable $e) {
 
             Log::error(
-                'ERROR CREANDO NOTIFICACIÓN PARA USUARIO',
+                'ERROR CREANDO NOTIFICACIÓN PARA DUEÑO',
                 [
                     'autor' =>
                         $loginAutor,
@@ -760,9 +891,51 @@ class TicketComentarioController extends Controller
 
                     'error' =>
                         $e->getMessage(),
+
+                    'archivo' =>
+                        $e->getFile(),
+
+                    'linea' =>
+                        $e->getLine(),
                 ]
             );
         }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZAR ROL
+    |--------------------------------------------------------------------------
+    */
+
+    private function normalizarRol($rol): string
+    {
+        $rol = mb_strtolower(
+            trim(
+                (string) $rol
+            )
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Quitar acentos
+        |--------------------------------------------------------------------------
+        */
+
+        $rol = strtr(
+            $rol,
+            [
+                'á' => 'a',
+                'é' => 'e',
+                'í' => 'i',
+                'ó' => 'o',
+                'ú' => 'u',
+                'ü' => 'u',
+            ]
+        );
+
+        return $rol;
     }
 
 
@@ -777,6 +950,12 @@ class TicketComentarioController extends Controller
     ) {
 
         return [
+
+            /*
+            |--------------------------------------------------------------------------
+            | DATOS DEL COMENTARIO
+            |--------------------------------------------------------------------------
+            */
 
             'id' =>
                 $comentario->id,
@@ -793,6 +972,13 @@ class TicketComentarioController extends Controller
             'archivo' =>
                 $comentario->archivo,
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | URL DEL ARCHIVO
+            |--------------------------------------------------------------------------
+            */
+
             'url_archivo' =>
                 $comentario->archivo
                     ? Storage::url(
@@ -800,12 +986,26 @@ class TicketComentarioController extends Controller
                     )
                     : null,
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | NOMBRE DEL ARCHIVO
+            |--------------------------------------------------------------------------
+            */
+
             'nombre_archivo' =>
                 $comentario->archivo
                     ? basename(
                         $comentario->archivo
                     )
                     : null,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | EXTENSIÓN
+            |--------------------------------------------------------------------------
+            */
 
             'extension' =>
                 $comentario->archivo
@@ -816,6 +1016,13 @@ class TicketComentarioController extends Controller
                         )
                     )
                     : null,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | USUARIO
+            |--------------------------------------------------------------------------
+            */
 
             'usuario' =>
                 $comentario->usuario
@@ -834,15 +1041,28 @@ class TicketComentarioController extends Controller
                             $comentario->usuario->role
                             ?? 'Usuario',
 
-                        'foto' =>
-                            $comentario->usuario->foto
+                        /*
+                        |--------------------------------------------------------------------------
+                        | FOTO
+                        |--------------------------------------------------------------------------
+                        */
+
+                        'picture' =>
+                            $comentario->usuario->picture
                                 ? Storage::url(
-                                    $comentario->usuario->foto
+                                    $comentario->usuario->picture
                                 )
                                 : null,
 
                     ]
                     : null,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | FECHA ISO
+            |--------------------------------------------------------------------------
+            */
 
             'created_at' =>
                 $comentario->created_at
@@ -850,6 +1070,13 @@ class TicketComentarioController extends Controller
                         ->created_at
                         ->toISOString()
                     : null,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | FECHA FORMATEADA
+            |--------------------------------------------------------------------------
+            */
 
             'fecha' =>
                 $comentario->created_at

@@ -11,12 +11,70 @@ class SolicitudCambioController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
+    | VERIFICAR PERMISOS
+    |--------------------------------------------------------------------------
+    |
+    | Para poder administrar solicitudes de cambio se requiere:
+    |
+    | role = Gerente Ti
+    | priv_admin = Y
+    |
+    */
+
+    private function puedeAdministrarCambios(): bool
+    {
+        $usuario = Auth::user();
+
+        if (!$usuario) {
+            return false;
+        }
+
+        return $usuario->role === 'Gerente Ti'
+            && $usuario->priv_admin === 'Y';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AUTORIZAR ADMINISTRADOR
+    |--------------------------------------------------------------------------
+    */
+
+    private function verificarPermisos(): void
+    {
+        if (!$this->puedeAdministrarCambios()) {
+            abort(
+                403,
+                'No tienes permisos para administrar las solicitudes de cambio.'
+            );
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | LISTADO DE SOLICITUDES
     |--------------------------------------------------------------------------
     */
 
     public function index(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFICAR PERMISOS
+        |--------------------------------------------------------------------------
+        |
+        | Esto evita que alguien entre directamente a:
+        |
+        | /cambiostecnologias
+        |
+        | aunque el botón esté oculto en Blade.
+        |
+        */
+
+        $this->verificarPermisos();
+
+
         /*
         |--------------------------------------------------------------------------
         | USUARIO AUTENTICADO
@@ -65,53 +123,51 @@ class SolicitudCambioController extends Controller
 
             $buscar = $request->buscar;
 
-            $query->where(
-                function ($q) use ($buscar) {
+            $query->where(function ($q) use ($buscar) {
 
-                    $q->where(
-                        'campo',
+                $q->where(
+                    'campo',
+                    'LIKE',
+                    "%{$buscar}%"
+                )
+                    ->orWhere(
+                        'nuevo_valor',
                         'LIKE',
                         "%{$buscar}%"
                     )
-                        ->orWhere(
-                            'nuevo_valor',
-                            'LIKE',
-                            "%{$buscar}%"
-                        )
-                        ->orWhere(
-                            'valor_actual',
-                            'LIKE',
-                            "%{$buscar}%"
-                        )
-                        ->orWhere(
-                            'motivo',
-                            'LIKE',
-                            "%{$buscar}%"
-                        )
-                        ->orWhereHas(
-                            'usuario',
-                            function ($userQuery) use ($buscar) {
+                    ->orWhere(
+                        'valor_actual',
+                        'LIKE',
+                        "%{$buscar}%"
+                    )
+                    ->orWhere(
+                        'motivo',
+                        'LIKE',
+                        "%{$buscar}%"
+                    )
+                    ->orWhereHas(
+                        'usuario',
+                        function ($userQuery) use ($buscar) {
 
-                                $userQuery
-                                    ->where(
-                                        'name',
-                                        'LIKE',
-                                        "%{$buscar}%"
-                                    )
-                                    ->orWhere(
-                                        'email',
-                                        'LIKE',
-                                        "%{$buscar}%"
-                                    )
-                                    ->orWhere(
-                                        'login',
-                                        'LIKE',
-                                        "%{$buscar}%"
-                                    );
-                            }
-                        );
-                }
-            );
+                            $userQuery
+                                ->where(
+                                    'name',
+                                    'LIKE',
+                                    "%{$buscar}%"
+                                )
+                                ->orWhere(
+                                    'email',
+                                    'LIKE',
+                                    "%{$buscar}%"
+                                )
+                                ->orWhere(
+                                    'login',
+                                    'LIKE',
+                                    "%{$buscar}%"
+                                );
+                        }
+                    );
+            });
         }
 
 
@@ -121,8 +177,7 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $solicitudes =
-            $query->paginate(10);
+        $solicitudes = $query->paginate(10);
 
 
         /*
@@ -133,17 +188,14 @@ class SolicitudCambioController extends Controller
 
         $seleccionada = null;
 
-
         if ($request->filled('solicitud')) {
 
-            $seleccionada =
-                SolicitudCambio::with([
-                    'usuario.departamento.oficina',
-                    'revisor'
-                ])
-                    ->find(
-                        $request->solicitud
-                    );
+            $seleccionada = SolicitudCambio::with([
+                'usuario.departamento.oficina',
+                'revisor'
+            ])->find(
+                $request->solicitud
+            );
         }
 
 
@@ -158,43 +210,39 @@ class SolicitudCambioController extends Controller
             $solicitudes->total() > 0
         ) {
 
-            $primerId =
-                $solicitudes
-                    ->items()[0]
-                    ->id;
+            $primerId = $solicitudes
+                ->items()[0]
+                ->id;
 
-            $seleccionada =
-                SolicitudCambio::with([
-                    'usuario.departamento.oficina',
-                    'revisor'
-                ])
-                    ->find(
-                        $primerId
-                    );
+            $seleccionada = SolicitudCambio::with([
+                'usuario.departamento.oficina',
+                'revisor'
+            ])->find(
+                $primerId
+            );
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | NOTIFICACIONES - TECNOLOGÍAS
+        | NOTIFICACIONES
         |--------------------------------------------------------------------------
         */
 
-        $notificaciones =
-            Notificacion::where(
-                'login',
-                $login
+        $notificaciones = Notificacion::where(
+            'login',
+            $login
+        )
+            ->where(
+                'tipo',
+                '!=',
+                'aviso'
             )
-                ->where(
-                    'tipo',
-                    '!=',
-                    'aviso'
-                )
-                ->orderByDesc(
-                    'created_at'
-                )
-                ->limit(10)
-                ->get();
+            ->orderByDesc(
+                'created_at'
+            )
+            ->limit(10)
+            ->get();
 
 
         /*
@@ -203,21 +251,20 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $notificacionesNoLeidas =
-            Notificacion::where(
-                'login',
-                $login
+        $notificacionesNoLeidas = Notificacion::where(
+            'login',
+            $login
+        )
+            ->where(
+                'tipo',
+                '!=',
+                'aviso'
             )
-                ->where(
-                    'tipo',
-                    '!=',
-                    'aviso'
-                )
-                ->where(
-                    'leida',
-                    false
-                )
-                ->count();
+            ->where(
+                'leida',
+                false
+            )
+            ->count();
 
 
         /*
@@ -226,26 +273,22 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $total =
-            SolicitudCambio::count();
+        $total = SolicitudCambio::count();
 
-        $pendientes =
-            SolicitudCambio::where(
-                'estado',
-                'pendiente'
-            )->count();
+        $pendientes = SolicitudCambio::where(
+            'estado',
+            'pendiente'
+        )->count();
 
-        $aprobadas =
-            SolicitudCambio::where(
-                'estado',
-                'aprobada'
-            )->count();
+        $aprobadas = SolicitudCambio::where(
+            'estado',
+            'aprobada'
+        )->count();
 
-        $rechazadas =
-            SolicitudCambio::where(
-                'estado',
-                'rechazada'
-            )->count();
+        $rechazadas = SolicitudCambio::where(
+            'estado',
+            'rechazada'
+        )->count();
 
 
         /*
@@ -257,15 +300,12 @@ class SolicitudCambioController extends Controller
         return view(
             'admin.cambios',
             compact(
-
                 'solicitudes',
                 'seleccionada',
-
                 'total',
                 'pendientes',
                 'aprobadas',
                 'rechazadas',
-
                 'notificaciones',
                 'notificacionesNoLeidas'
             )
@@ -286,14 +326,20 @@ class SolicitudCambioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | SEGURIDAD
+        |--------------------------------------------------------------------------
+        */
+
+        $this->verificarPermisos();
+
+
+        /*
+        |--------------------------------------------------------------------------
         | VALIDAR ESTADO
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $solicitud->estado !==
-            'pendiente'
-        ) {
+        if ($solicitud->estado !== 'pendiente') {
 
             return back()->with(
                 'error',
@@ -309,16 +355,27 @@ class SolicitudCambioController extends Controller
         */
 
         $request->validate([
-
             'comentario_admin' => [
-
                 'nullable',
                 'string',
                 'max:1000'
-
             ],
-
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | USUARIO QUE REVISA
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANTE:
+        |
+        | Tu tabla users utiliza login como identificador.
+        | Por eso NO usamos Auth::id().
+        |
+        */
+
+        $usuarioRevisor = Auth::user();
 
 
         /*
@@ -327,23 +384,13 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $solicitud->estado =
-            'aprobada';
+        $solicitud->estado = 'aprobada';
 
         $solicitud->comentario_admin =
             $request->comentario_admin;
 
-        /*
-        |----------------------------------------------------------------------
-        | REVISADO POR
-        |----------------------------------------------------------------------
-        |
-        | Si revisado_por todavía usa el ID numérico, deja Auth::id().
-        |
-        */
-
         $solicitud->revisado_por =
-            Auth::id();
+            $usuarioRevisor->login;
 
         $solicitud->revisado_at =
             now();
@@ -353,7 +400,7 @@ class SolicitudCambioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | NOTIFICAR AL USUARIO
+        | NOTIFICAR RESULTADO
         |--------------------------------------------------------------------------
         */
 
@@ -397,14 +444,20 @@ class SolicitudCambioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | SEGURIDAD
+        |--------------------------------------------------------------------------
+        */
+
+        $this->verificarPermisos();
+
+
+        /*
+        |--------------------------------------------------------------------------
         | VALIDAR ESTADO
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $solicitud->estado !==
-            'pendiente'
-        ) {
+        if ($solicitud->estado !== 'pendiente') {
 
             return back()->with(
                 'error',
@@ -420,16 +473,21 @@ class SolicitudCambioController extends Controller
         */
 
         $request->validate([
-
             'comentario_admin' => [
-
                 'required',
                 'string',
                 'max:1000'
-
             ],
-
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | USUARIO QUE REVISA
+        |--------------------------------------------------------------------------
+        */
+
+        $usuarioRevisor = Auth::user();
 
 
         /*
@@ -438,20 +496,13 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $solicitud->estado =
-            'rechazada';
+        $solicitud->estado = 'rechazada';
 
         $solicitud->comentario_admin =
             $request->comentario_admin;
 
-        /*
-        |----------------------------------------------------------------------
-        | REVISADO POR
-        |----------------------------------------------------------------------
-        */
-
         $solicitud->revisado_por =
-            Auth::id();
+            $usuarioRevisor->login;
 
         $solicitud->revisado_at =
             now();
@@ -461,7 +512,7 @@ class SolicitudCambioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | NOTIFICAR AL USUARIO
+        | NOTIFICAR RESULTADO
         |--------------------------------------------------------------------------
         */
 
@@ -509,11 +560,9 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $login =
-            $solicitud->login;
+        $login = $solicitud->login;
 
         if (!$login) {
-
             return;
         }
 
@@ -524,10 +573,7 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $resultado ===
-            'aprobada'
-        ) {
+        if ($resultado === 'aprobada') {
 
             $titulo =
                 'Solicitud de cambio aprobada';
@@ -557,11 +603,7 @@ class SolicitudCambioController extends Controller
             $mensaje =
                 'Tu solicitud de cambio fue rechazada por el área de Tecnologías.';
 
-            if (
-                !empty(
-                    $solicitud->comentario_admin
-                )
-            ) {
+            if (!empty($solicitud->comentario_admin)) {
 
                 $mensaje .=
                     ' Motivo: ' .
@@ -580,13 +622,9 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         | CREAR NOTIFICACIÓN
         |--------------------------------------------------------------------------
-        |
-        | Ahora la notificación se relaciona mediante login.
-        |
         */
 
         Notificacion::create([
-
             'login' =>
                 $login,
 
@@ -610,7 +648,6 @@ class SolicitudCambioController extends Controller
 
             'color' =>
                 $color,
-
         ]);
     }
 }

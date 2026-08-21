@@ -9,9 +9,9 @@
     <title>TicketPro - Dashboard</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-<script>
-    window.usuarioActualLogin = @json(Auth::user()->login);
-</script>
+    <script>
+        window.usuarioActualLogin = @json(Auth::user()->login);
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -27,7 +27,7 @@
             </div>
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
-                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                     alt="{{ auth()->user()->name ?? 'Usuario' }}"
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
                 <div class="overflow-hidden">
@@ -51,11 +51,18 @@
                     <span class="text-sm">Tickets</span>
                 </a>
 
-                <a href="{{ route('cambiostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Cambios</span>
-                </a>
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('cambiostecnologias') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+
+                        <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
+
+                        <span class="text-sm">
+                            Cambios
+                        </span>
+
+                    </a>
+                @endif
 
                 <a href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
@@ -196,7 +203,7 @@
                         <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
                             <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
                                 class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
-                                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                                     alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
                                 <div class="text-left leading-tight hidden sm:block">
@@ -474,8 +481,8 @@
                                                     'login' => $comentario->usuario?->login,
                                                     'name' => $comentario->usuario?->name ?? 'Usuario',
                                                     'role' => $comentario->usuario?->role ?? 'Usuario',
-                                                    'foto' => $comentario->usuario?->foto
-                                                        ? Storage::url($comentario->usuario->foto)
+                                                    'picture' => $comentario->usuario?->picture
+                                                        ? Storage::url($comentario->usuario->picture)
                                                         : null,
                                                 ],
                                                 'fecha' => $comentario->created_at
@@ -536,7 +543,7 @@
                                         ? [
                                             'login' => $ticket->tomadoPor->login,
                                             'name' => $ticket->tomadoPor->name,
-                                            'foto' => $ticket->tomadoPor->foto,
+                                            'picture' => $ticket->tomadoPor->picture,
                                             'departamento' => $ticket->tomadoPor->departamento?->nombre,
                                         ]
                                         : null;
@@ -556,14 +563,14 @@
                                             ? [
                                                 'login' => $ticket->tomadoPor->login,
                                                 'name' => $ticket->tomadoPor->name,
-                                                'foto' => $ticket->tomadoPor->foto,
+                                                'picture' => $ticket->tomadoPor->picture,
                                             ]
                                             : null,
                                         'user' => $ticket->user
                                             ? [
                                                 'login' => $ticket->user->login,
                                                 'name' => $ticket->user->name,
-                                                'foto' => $ticket->user->foto ? Storage::url($ticket->user->foto) : null,
+                                                'picture' => $ticket->user->picture ? Storage::url($ticket->user->picture) : null,
                                             ]
                                             : null,
                                         'comentarios' => $comentariosData,
@@ -653,8 +660,8 @@
                                                         tomado_por: @js($tomadoPorData)
                                                     });
                                                 
-                                                    return datos.tomado_por?.foto ?
-                                                        '{{ asset('storage') }}/' + datos.tomado_por.foto :
+                                                    return datos.tomado_por?.picture ?
+                                                        '{{ asset('storage') }}/' + datos.tomado_por.picture :
                                                         '{{ asset('storage/profile-photos/user.png') }}';
                                                 })()"
                                                     class="w-full h-full object-cover" alt="Usuario">
@@ -1125,9 +1132,29 @@
                                                                 x-text="selectedTicket?.user?.email ?? selectedTicket?.usuario?.email ?? ''">
                                                             </div>
                                                         </div>
-                                                        <img :src="avatarUsuario(selectedTicket?.user?.name ?? selectedTicket
-                                                            ?.usuario?.name ?? 'Usuario')"
-                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40">
+                                                        <img :src="selectedTicket?.user?.picture ?
+                                                            selectedTicket.user.picture :
+                                                            '{{ asset('storage/profile-photos/user.png') }}'"
+                                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
+                                                                ?.name ?? 'Usuario'"
+                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
+                                                            x-on:error="
+        if ($event.target.dataset.fallback === 'avatar') {
+            return;
+        }
+
+        if ($event.target.dataset.fallback !== 'user') {
+            $event.target.dataset.fallback = 'user';
+            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+        } else {
+            $event.target.dataset.fallback = 'avatar';
+            $event.target.src = avatarUsuario(
+                selectedTicket?.user?.name ??
+                selectedTicket?.usuario?.name ??
+                'Usuario'
+            );
+        }
+    ">
                                                     </div>
                                                 </div>
 
@@ -1252,13 +1279,18 @@
                                             @csrf
 
                                             <div class="shrink-0">
-                                                <img src="{{ auth()->user()->foto
-                                                    ? Storage::url(auth()->user()->foto)
-                                                    : 'https://ui-avatars.com/api/?name=' .
-                                                        urlencode(auth()->user()->name ?? 'Usuario') .
-                                                        '&background=0D8ABC&color=fff' }}"
+                                                <img src="{{ auth()->user()->picture ? Storage::url(auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
                                                     class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
-                                                    alt="{{ auth()->user()->name ?? 'Usuario' }}">
+                                                    alt="{{ auth()->user()->name ?? 'Usuario' }}"
+                                                    onerror="
+        if (this.dataset.fallback === 'user') {
+            this.dataset.fallback = 'avatar';
+            this.src = 'https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Usuario') }}&background=0D8ABC&color=fff';
+        } else {
+            this.dataset.fallback = 'user';
+            this.src = '{{ asset('storage/profile-photos/user.png') }}';
+        }
+    ">
                                             </div>
 
                                             <div class="relative flex-1">
@@ -1316,10 +1348,22 @@
 
                                             <template x-for="comentario in comentarios" :key="comentario.id">
                                                 <div class="flex items-start gap-3">
-                                                    <img :src="comentario.usuario?.foto ? comentario.usuario.foto : avatarUsuario(
-                                                        comentario.usuario?.name || 'Usuario')"
+                                                    <img :src="comentario.usuario?.picture ?
+                                                        comentario.usuario.picture :
+                                                        '{{ asset('storage/profile-photos/user.png') }}'"
                                                         class="w-8 h-8 rounded-full object-cover shrink-0 border border-blue-400/30"
-                                                        :alt="comentario.usuario?.name || 'Usuario'">
+                                                        :alt="comentario.usuario?.name || 'Usuario'"
+                                                        x-on:error="
+                                                            if ($event.target.dataset.fallback === 'user') {
+                                                                $event.target.dataset.fallback = 'avatar';
+                                                                $event.target.src = avatarUsuario(
+                                                                    comentario.usuario?.name || 'Usuario'
+                                                                );
+                                                            } else {
+                                                                $event.target.dataset.fallback = 'user';
+                                                                $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+                                                            }
+                                                        ">
 
                                                     <div class="flex-1 min-w-0">
                                                         <div class="flex items-center gap-2 mb-1 flex-wrap">

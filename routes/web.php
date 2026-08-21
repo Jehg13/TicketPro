@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
+
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ticketController;
 use App\Http\Controllers\MisticketsController;
@@ -17,21 +18,7 @@ use App\Http\Controllers\SolucionController;
 use App\Http\Controllers\TecnologiasController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\NotificacionController;
-use App\Models\User;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-
-/* METODOS POST */
+use App\Http\Controllers\MfaController;
 
 Route::post('/login', [LoginController::class, 'Login'])
     ->name('login.process');
@@ -42,7 +29,7 @@ Route::post('/tickets/{ticket}/comentarios', [TicketComentarioController::class,
 Route::get('/tickets/{ticket}/comentarios', [TicketComentarioController::class, 'index'])
     ->name('tickets.comentarios.index');
 
-Route::post('/tickets/{ticket}/tomar', [MisTicketsController::class, 'tomar'])
+Route::post('/tickets/{ticket}/tomar', [MisticketsController::class, 'tomar'])
     ->name('tickets.tomar');
 
 Route::post('/logout', function (Request $request) {
@@ -57,14 +44,11 @@ Route::post('/logout', function (Request $request) {
 })->name('logout');
 
 
-/* RUTAS SIN HABER INICIADO SESION */
-
 Route::middleware(['guest'])->group(function () {
 
     Route::get('/olvidecontraseña', function () {
         return view('forget-password');
     })->name('olvidecontraseña');
-
 
     Route::post('/olvidecontraseña', function (Request $request) {
 
@@ -82,7 +66,6 @@ Route::middleware(['guest'])->group(function () {
                 'status',
                 'Te hemos enviado un enlace para restablecer tu contraseña.'
             );
-
         }
 
         return back()->withErrors([
@@ -110,7 +93,15 @@ Route::middleware(['guest'])->group(function () {
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[^A-Za-z0-9]/',],
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/',
+                'regex:/[^A-Za-z0-9]/',
+            ],
         ]);
 
         $status = Password::reset(
@@ -137,7 +128,6 @@ Route::middleware(['guest'])->group(function () {
                     'status',
                     'Tu contraseña ha sido restablecida correctamente.'
                 );
-
         }
 
         return back()->withErrors([
@@ -163,17 +153,21 @@ Route::middleware(['guest'])->group(function () {
 
 });
 
+
 Route::patch('/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
     ->middleware('auth')
     ->name('notificaciones.marcarLeidas');
 
+    Route::post(
+    '/login/mfa/verificar',
+    [MfaController::class, 'verificar']
+)->name('mfa.verificar');
 
-/* RUTAS DE LOS USUARIOS QUE CREARAN TICKETS */
 
-Route::middleware(['auth', 'role:usuario'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
-   Route::get('/dashboard', [ UsuarioController::class,'index'])
-   ->name('dashboard');
+    Route::get('/dashboard', [UsuarioController::class, 'index'])
+        ->name('dashboard');
 
     Route::get('/dashboard/tickets', [TicketController::class, 'create'])
         ->name('ticketusuario');
@@ -182,9 +176,9 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
         ->name('ticketusuario.store');
 
     Route::get('/dashboard/tickets/{ticket}', [UsuarioController::class, 'verTicket'])
-    ->name('ticketusuario.detalles');
-    
-        Route::get('/dashboard/mistickets', [MisticketsController::class, 'create'])
+        ->name('ticketusuario.detalles');
+
+    Route::get('/dashboard/mistickets', [MisticketsController::class, 'create'])
         ->name('misticketusuario');
 
     Route::get('/dashboard/avisos', [AvisosusuarioController::class, 'create'])
@@ -196,30 +190,68 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
     Route::put('/dashboard/perfil/foto', [PerfilController::class, 'update'])
         ->name('actualizarfoto');
 
+    Route::put('/dashboard/perfil/password', [PerfilController::class, 'actualizarPassword'])
+    ->middleware('auth')
+    ->name('perfil.password.update');
+
     Route::delete('/dashboard/perfil/foto', [PerfilController::class, 'delete'])
         ->name('eliminarfoto');
+        
 
     Route::post('/dashboard/solicitar-cambio', [PerfilController::class, 'solicitarCambio'])
-    ->name('solicitar.cambio.store');
+        ->name('solicitar.cambio.store');
+
+        Route::get(
+        '/dashboard/perfil/mfa/configurar',
+        [MfaController::class, 'configurar']
+    )->name('usuario.mfa.configurar');
+
+    Route::post(
+        '/dashboard/perfil/mfa/verificar-activacion',
+        [MfaController::class, 'verificarActivacion']
+    )->name('usuario.mfa.verificar.activacion');
+
+    Route::post(
+        '/dashboard/perfil/mfa/desactivar',
+        [MfaController::class, 'desactivar']
+    )->name('usuario.mfa.desactivar');
+
+    Route::get(
+    '/perfil/mfa/configurar',
+    [MfaController::class, 'configurar']
+)->name('mfa.configurar');
+
+Route::post(
+    '/perfil/mfa/verificar-activacion',
+    [MfaController::class, 'verificarActivacion']
+)->name('mfa.verificar.activacion');
+
+Route::post(
+    '/perfil/mfa/desactivar',
+    [MfaController::class, 'desactivar']
+)->name('mfa.desactivar');
 
 });
 
 
-/* RUTAS DE TECNOLOGIAS */
+Route::middleware(['auth', 'role:admin'])->group(function () {
 
-Route::middleware(['auth', 'role:tecnologias'])->group(function () {
+    Route::get('/tecnologias', [TecnologiasController::class, 'index'])
+        ->name('tecnologias');
 
- Route::get('/tecnologias', [TecnologiasController::class, 'index'])
-    ->name('tecnologias');
+    Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
+        ->name('tecnologias.evolucion');
 
-Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
-    ->name('tecnologias.evolucion');
-
+Route::get('/tecnologias/usuarios', function () {
+    return view('admin.users');
+})->name('usuariostecnologias');
     Route::get('/tecnologias/tickets', [MisticketsController::class, 'tecnologias'])
         ->name('tickettecnologias');
+
     Route::post(
-        '/tecnologias/tickets/{ticket}/solucion', [SolucionController::class, 'store'])
-        ->name('tickets.solucion.store');
+        '/tecnologias/tickets/{ticket}/solucion',
+        [SolucionController::class, 'store']
+    )->name('tickets.solucion.store');
 
     Route::get('/tecnologias/avisos', [AvisosController::class, 'index'])
         ->name('avisostecnologias');
@@ -234,7 +266,7 @@ Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion']
         ->name('avisos.destroy');
 
     Route::get('/tecnologias/avisos/{aviso}', [AvisosController::class, 'show'])
-    ->name('avisos.show');
+        ->name('avisos.show');
 
     Route::get(
         '/tecnologias/cambios',
@@ -263,4 +295,8 @@ Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion']
     Route::put('/tecnologias/perfil', [PerfilController::class, 'updateTecnologias'])
         ->name('tecnologias.perfil.update');
 
+Route::put('/tecnologias/perfil/password', [PerfilController::class, 'actualizarPassword'])
+    ->middleware(['auth', 'role:tecnologias'])
+    ->name('tecnologias.perfil.password.update');
+    
 });

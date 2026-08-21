@@ -41,7 +41,7 @@
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
 
-                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
                     alt="{{ auth()->user()->name }}"
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
 
@@ -92,16 +92,31 @@
                 </a>
 
 
-                <a href="{{ route('cambiostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30">
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('cambiostecnologias') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30">
 
-                    <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
+                        <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
 
-                    <span class="text-sm">
-                        Cambios
-                    </span>
+                        <span class="text-sm">
+                            Cambios
+                        </span>
 
-                </a>
+                    </a>
+                @endif
+
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('usuariostecnologias') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+
+                        <i data-lucide="users" class="w-5 h-5"></i>
+
+                        <span class="text-sm">
+                            Usuarios
+                        </span>
+
+                    </a>
+                @endif
 
 
                 <a href="{{ route('avisostecnologias') }}"
@@ -495,7 +510,7 @@
                             <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
                                 class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
                                     alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
                                 <div class="text-left leading-tight hidden sm:block">
@@ -819,17 +834,6 @@
 
                     </a>
 
-
-                    <a href="{{ route('cambiostecnologias', ['estado' => 'rechazada']) }}"
-                        class="px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2
-    {{ request('estado') === 'rechazada' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white' }}">
-
-                        Rechazadas
-
-                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-
-                    </a>
-
                 </div>
 
 
@@ -926,9 +930,9 @@
 
                                             <div class="flex items-center gap-2">
 
-                                                <img src="{{ $solicitud->usuario?->foto
-                                                    ? asset('storage/' . $solicitud->usuario->foto)
-                                                    : asset('images/default-avatar.png') }}"
+                                                <img src="{{ $solicitud->usuario?->picture
+                                                    ? asset('storage/' . $solicitud->usuario->picture)
+                                                    : asset('storage/profile-photos/user.png') }}"
                                                     class="w-7 h-7 rounded-full object-cover">
 
                                                 <div>
@@ -1176,9 +1180,9 @@
 
                                 <div class="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl">
 
-                                    <img src="{{ $seleccionada->usuario?->foto
-                                        ? asset('storage/' . $seleccionada->usuario->foto)
-                                        : asset('images/default-avatar.png') }}"
+                                    <img src="{{ $seleccionada->usuario?->picture
+                                        ? asset('storage/' . $seleccionada->usuario->picture)
+                                        : asset('storage/profile-photos/user.png') }}"
                                         class="w-9 h-9 rounded-full object-cover">
 
                                     <div>
@@ -1313,10 +1317,10 @@
 
                                     <div class="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl">
 
-                                        <img src="{{ $seleccionada->revisor->foto
-                                            ? asset('storage/' . $seleccionada->revisor->foto)
-                                            : asset('images/default-avatar.png') }}"
-                                            class="w-8 h-8 rounded-full object-cover">
+                                        <img src="{{ $seleccionada->usuario?->picture
+                                            ? asset('storage/' . $seleccionada->usuario->picture)
+                                            : asset('storage/profile-photos/user.png') }}"
+                                            class="w-9 h-9 rounded-full object-cover">
 
                                         <div>
 

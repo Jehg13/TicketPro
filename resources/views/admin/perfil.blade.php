@@ -1,20 +1,23 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>TicketPro - Mi Perfil</title>
+
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
 </head>
 
-<body class="bg-[#070b19] text-white font-sans min-h-screen antialiased">
-
+<body x-data="perfilSeguridad()" class="bg-[#070b19] text-white font-sans min-h-screen antialiased">
     <aside
         class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 hidden md:flex flex-col justify-between">
 
@@ -30,7 +33,7 @@
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
 
-                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                     alt="{{ auth()->user()->name }}"
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
 
@@ -72,16 +75,18 @@
 
                 </a>
 
-                <a href="{{ route('cambiostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('cambiostecnologias') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
 
-                    <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
+                        <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
 
-                    <span class="font-medium text-sm">
-                        Cambios
-                    </span>
+                        <span class="text-sm">
+                            Cambios
+                        </span>
 
-                </a>
+                    </a>
+                @endif
 
                 <a href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
@@ -94,13 +99,10 @@
 
                 </a>
 
-                <!-- PERFIL -->
                 <a href="{{ route('perfiltecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30 transition">
 
-
-                    <i data-lucide="circle-user-round" class="w-5 h-5">
-                    </i>
+                    <i data-lucide="circle-user-round" class="w-5 h-5"></i>
 
                     <span>
                         Perfil
@@ -154,92 +156,104 @@
                 </div>
 
                 <div class="flex items-center gap-4 self-end md:self-auto">
+
                     @if (session('success'))
                         <div id="successMessage"
-                            class="fixed right-5 top-5 z-[9999] w-full max-w-sm
-                            rounded-2xl border border-green-500/30
-                            bg-[#0f1535] p-4
-                            shadow-[0_0_30px_rgba(34,197,94,0.20)]">
+                            class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
+
                             <div class="flex items-start gap-3">
+
                                 <div
-                                    class="flex h-10 w-10 shrink-0 items-center justify-center
-                                    rounded-full bg-green-500/15 text-green-400">
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400">
+
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+
                                     </svg>
+
                                 </div>
+
                                 <div class="flex-1">
+
                                     <p class="font-bold text-white">
                                         ¡Éxito!
                                     </p>
+
                                     <p class="mt-1 text-sm text-slate-400">
                                         {{ session('success') }}
                                     </p>
+
                                 </div>
-                                <button onclick="document.getElementById('successMessage').remove()"
+
+                                <button type="button" onclick="document.getElementById('successMessage')?.remove()"
                                     class="text-slate-500 hover:text-white">
+
                                     ✕
+
                                 </button>
+
                             </div>
+
                         </div>
                     @endif
+
                     @if (session('error'))
                         <div id="errorMessage"
-                            class="fixed right-5 top-5 z-[9999] w-full max-w-sm
-                            rounded-2xl border border-red-500/30
-                            bg-[#0f1535] p-4
-                            shadow-[0_0_30px_rgba(239,68,68,0.20)]">
+                            class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-red-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(239,68,68,0.20)]">
+
                             <div class="flex items-start gap-3">
+
                                 <div
-                                    class="flex h-10 w-10 shrink-0 items-center justify-center
-                                    rounded-full bg-red-500/15 text-red-400">
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-400">
+
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+
                                     </svg>
+
                                 </div>
+
                                 <div class="flex-1">
+
                                     <p class="font-bold text-white">
                                         ¡Error!
                                     </p>
+
                                     <p class="mt-1 text-sm text-slate-400">
                                         {{ session('error') }}
                                     </p>
+
                                 </div>
+
                                 <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
                                     class="text-slate-500 hover:text-white transition">
+
                                     ✕
+
                                 </button>
+
                             </div>
+
                         </div>
                     @endif
+
                     <div class="flex items-center gap-6 self-end md:self-auto">
-                        <!-- =========================================================
-                        NOTIFICACIONES
-                     ========================================================== -->
 
                         <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-                            <!-- BOTÓN DE NOTIFICACIONES -->
                             <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
                                 @click.outside="notificacionesAbiertas = false"
-                                class="relative flex items-center justify-center w-10 h-10 rounded-xl
-                       bg-slate-900/80 border border-slate-800
-                       text-slate-400 hover:text-white hover:bg-slate-800
-                       transition-all duration-200 focus:outline-none">
+                                class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
                                 <i data-lucide="bell" class="w-5 h-5"></i>
 
-
-                                <!-- INDICADOR DE NOTIFICACIONES NUEVAS -->
                                 @if ($notificacionesNoLeidas > 0)
                                     <span
-                                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
-                               px-1 flex items-center justify-center
-                               rounded-full bg-indigo-600
-                               border-2 border-[#050814]
-                               text-[9px] font-bold text-white">
+                                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-indigo-600 border-2 border-[#050814] text-[9px] font-bold text-white">
 
                                         {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
 
@@ -248,11 +262,6 @@
 
                             </button>
 
-
-                            <!-- =====================================================
-                 DROPDOWN DE NOTIFICACIONES
-            ====================================================== -->
-
                             <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -260,34 +269,17 @@
                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
                                 @click.outside="notificacionesAbiertas = false"
-                                class="absolute right-0 top-full mt-3
-                       w-[360px] max-w-[calc(100vw-2rem)]
-                       bg-[#0f1535]
-                       border border-[#1e295d]
-                       rounded-2xl
-                       shadow-2xl shadow-black/40
-                       overflow-hidden z-[99999]"
+                                class="absolute right-0 top-full mt-3 w-[360px] max-w-[calc(100vw-2rem)] bg-[#0f1535] border border-[#1e295d] rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[99999]"
                                 style="display: none;">
 
-                                <!-- =================================================
-                     CABECERA
-                ================================================== -->
-
-                                <div
-                                    class="flex items-center justify-between
-                           px-4 py-4
-                           border-b border-slate-800/80">
+                                <div class="flex items-center justify-between px-4 py-4 border-b border-slate-800/80">
 
                                     <div class="flex items-center gap-2">
 
                                         <div
-                                            class="w-8 h-8 rounded-lg
-                                   bg-indigo-500/10
-                                   border border-indigo-500/20
-                                   flex items-center justify-center">
+                                            class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
 
-                                            <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
-                                            </i>
+                                            <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
 
                                         </div>
 
@@ -305,20 +297,14 @@
 
                                     </div>
 
-
-                                    <!-- MARCAR COMO LEÍDAS -->
                                     @if ($notificacionesNoLeidas > 0)
                                         <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
 
                                             @csrf
-
                                             @method('PATCH')
 
                                             <button type="submit"
-                                                class="text-[11px] font-medium
-                                       text-indigo-400
-                                       hover:text-indigo-300
-                                       transition-colors">
+                                                class="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
 
                                                 Marcar leídas
 
@@ -329,80 +315,45 @@
 
                                 </div>
 
-
-                                <!-- =================================================
-                     LISTA DE NOTIFICACIONES
-                ================================================== -->
-
                                 <div class="max-h-[400px] overflow-y-auto">
 
                                     @forelse ($notificaciones as $notificacion)
                                         <a href="{{ $notificacion->url ?? '#' }}"
-                                            class="group flex gap-3 px-4 py-4
-                                   border-b border-slate-800/50
-                                   transition-colors
-                                   hover:bg-slate-800/40
-                                   {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
+                                            class="group flex gap-3 px-4 py-4 border-b border-slate-800/50 transition-colors hover:bg-slate-800/40 {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
 
-                                            <!-- ICONO -->
                                             <div
-                                                class="w-10 h-10 shrink-0
-                                       rounded-xl
-                                       border border-indigo-500/20
-                                       bg-indigo-500/10
-                                       flex items-center justify-center">
+                                                class="w-10 h-10 shrink-0 rounded-xl border border-indigo-500/20 bg-indigo-500/10 flex items-center justify-center">
 
                                                 <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
-                                                    class="w-5 h-5 text-indigo-400">
-                                                </i>
+                                                    class="w-5 h-5 text-indigo-400"></i>
 
                                             </div>
 
-
-                                            <!-- CONTENIDO -->
                                             <div class="flex-1 min-w-0">
 
                                                 <div class="flex items-start justify-between gap-2">
 
                                                     <p
-                                                        class="text-xs font-semibold
-                                               text-white
-                                               group-hover:text-indigo-400
-                                               transition-colors">
+                                                        class="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors">
 
                                                         {{ $notificacion->titulo }}
 
                                                     </p>
 
-
-                                                    <!-- PUNTO DE NO LEÍDA -->
                                                     @if (!$notificacion->leida)
                                                         <span
-                                                            class="w-2 h-2 shrink-0 mt-1.5
-                                                   rounded-full
-                                                   bg-indigo-500">
+                                                            class="w-2 h-2 shrink-0 mt-1.5 rounded-full bg-indigo-500">
                                                         </span>
                                                     @endif
 
                                                 </div>
 
-
-                                                <p
-                                                    class="mt-1 text-[11px]
-                                           leading-relaxed
-                                           text-slate-400">
-
+                                                <p class="mt-1 text-[11px] leading-relaxed text-slate-400">
                                                     {{ $notificacion->mensaje }}
-
                                                 </p>
 
-
-                                                <p
-                                                    class="mt-2 text-[10px]
-                                           text-slate-500">
-
+                                                <p class="mt-2 text-[10px] text-slate-500">
                                                     {{ $notificacion->created_at->diffForHumans() }}
-
                                                 </p>
 
                                             </div>
@@ -411,19 +362,12 @@
 
                                     @empty
 
-                                        <!-- SIN NOTIFICACIONES -->
                                         <div class="px-6 py-10 text-center">
 
                                             <div
-                                                class="mx-auto mb-3
-                                       w-12 h-12
-                                       rounded-full
-                                       bg-slate-800/50
-                                       border border-slate-800
-                                       flex items-center justify-center">
+                                                class="mx-auto mb-3 w-12 h-12 rounded-full bg-slate-800/50 border border-slate-800 flex items-center justify-center">
 
-                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
-                                                </i>
+                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500"></i>
 
                                             </div>
 
@@ -440,16 +384,8 @@
 
                                 </div>
 
-
-                                <!-- =================================================
-                     PIE DEL DROPDOWN
-                ================================================== -->
-
                                 @if ($notificaciones->count() > 0)
-                                    <div
-                                        class="px-4 py-3
-                               border-t border-slate-800/80
-                               bg-[#0b1026]">
+                                    <div class="px-4 py-3 border-t border-slate-800/80 bg-[#0b1026]">
 
                                         <p class="text-[10px] text-center text-slate-500">
                                             Mostrando tus notificaciones recientes
@@ -461,15 +397,17 @@
                             </div>
 
                         </div>
+
                         <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
 
                             <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
                                 class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                                <img src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                                     alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
                                 <div class="text-left leading-tight hidden sm:block">
+
                                     <p class="text-xs font-semibold text-white">
                                         {{ auth()->user()->name ?? 'Desconocido' }}
                                     </p>
@@ -477,6 +415,7 @@
                                     <p class="text-[10px] text-blue-400 font-medium">
                                         {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
                                     </p>
+
                                 </div>
 
                                 <svg id="profile-arrow"
@@ -491,7 +430,6 @@
                                 </svg>
 
                             </button>
-
 
                             <div id="profile-dropdown" x-show="perfilAbierto" @click.outside="perfilAbierto = false"
                                 x-transition
@@ -510,13 +448,16 @@
 
                                     </svg>
 
-                                    <span>Perfil</span>
+                                    <span>
+                                        Perfil
+                                    </span>
 
                                 </a>
 
                                 <div class="border-t border-[#1e295d]"></div>
 
                                 <form method="POST" action="{{ route('logout') }}">
+
                                     @csrf
 
                                     <button type="submit"
@@ -531,7 +472,9 @@
 
                                         </svg>
 
-                                        <span>Cerrar sesión</span>
+                                        <span>
+                                            Cerrar sesión
+                                        </span>
 
                                     </button>
 
@@ -540,399 +483,639 @@
                             </div>
 
                         </div>
+
                     </div>
+
                 </div>
 
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                @if (session('success'))
-                    <div id="successMessage"
-                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
-
-                        <div class="flex items-start gap-3">
-
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400">
-
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-
-                                </svg>
-
-                            </div>
-
-                            <div class="flex-1">
-
-                                <p class="font-bold text-white">
-                                    ¡Éxito!
-                                </p>
-
-                                <p class="mt-1 text-sm text-slate-400">
-                                    {{ session('success') }}
-                                </p>
-
-                            </div>
-
-                            <button type="button" onclick="document.getElementById('successMessage')?.remove()"
-                                class="text-slate-500 hover:text-white transition">
-
-                                ✕
-
-                            </button>
-
-                        </div>
-
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div id="errorMessage"
-                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-red-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(239,68,68,0.20)]">
-
-                        <div class="flex items-start gap-3">
-
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-400">
-
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-
-                                </svg>
-
-                            </div>
-
-                            <div class="flex-1">
-
-                                <p class="font-bold text-white">
-                                    ¡Error!
-                                </p>
-
-                                <p class="mt-1 text-sm text-slate-400">
-                                    {{ session('error') }}
-                                </p>
-
-                            </div>
-
-                            <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
-                                class="text-slate-500 hover:text-white transition">
-
-                                ✕
-
-                            </button>
-
-                        </div>
-
-                    </div>
-                @endif
-
                 <div class="lg:col-span-2 space-y-6">
+
+                    @php
+                        $usuario = auth()->user();
+
+                        /*
+    |--------------------------------------------------------------------------
+    | Permisos para editar información
+    |--------------------------------------------------------------------------
+    | Debe cumplir AMBAS condiciones:
+    | 1. role = Gerente TI
+    | 2. priv_admin = Y
+    |--------------------------------------------------------------------------
+    */
+                        $puedeEditarPerfil =
+                            strtoupper(trim($usuario->role ?? '')) === 'GERENTE TI' &&
+                            strtoupper(trim($usuario->priv_admin ?? '')) === 'Y';
+                    @endphp
 
                     <div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-6 shadow-xl backdrop-blur-md">
 
+                        {{-- HEADER --}}
                         <div
                             class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-800/80">
 
                             <div class="flex items-center gap-3">
 
                                 <div class="p-2.5 rounded-xl bg-blue-600/20 text-blue-400 shrink-0">
-
                                     <i data-lucide="user-check" class="w-5 h-5"></i>
-
                                 </div>
 
                                 <div>
-
                                     <h2 class="text-base font-bold text-white">
                                         Información personal y laboral
                                     </h2>
 
                                     <p class="text-xs text-slate-400 mt-0.5">
-                                        Como Administrador de TI puedes modificar tus datos de contacto directamente.
+                                        {{ $puedeEditarPerfil
+                                            ? 'Como Gerente TI con permisos de administrador puedes modificar tus datos.'
+                                            : 'Tu información se encuentra protegida y solo puede ser modificada por un administrador autorizado.' }}
                                     </p>
-
                                 </div>
 
                             </div>
 
                             <span
-                                class="self-start sm:self-auto px-3 py-1 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30 whitespace-nowrap">
+                                class="self-start sm:self-auto px-3 py-1 rounded-full text-[10px] font-semibold
+            {{ $puedeEditarPerfil
+                ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                : 'bg-slate-500/10 text-slate-400 border-slate-500/30' }}
+            border whitespace-nowrap">
 
-                                Modo Administrador
+                                <i data-lucide="{{ $puedeEditarPerfil ? 'shield-check' : 'lock' }}"
+                                    class="w-3 h-3 inline-block mr-1"></i>
+
+                                {{ $puedeEditarPerfil ? 'Modo Administrador' : 'Solo lectura' }}
 
                             </span>
 
                         </div>
 
-                        <form action="{{ route('tecnologias.perfil.update') }}" method="POST" class="space-y-5"
+
+                        {{-- FORMULARIO --}}
+                        <form action="{{ route('tecnologias.perfil.update') }}" method="POST" class="space-y-6"
                             x-data="{ confirmar: false }" @submit.prevent="confirmar = true">
 
                             @csrf
                             @method('PUT')
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                                <div class="space-y-1.5">
+                            {{-- ========================================================= --}}
+                            {{-- CONTENEDOR PRINCIPAL: IZQUIERDA PERSONAL / DERECHA LABORAL --}}
+                            {{-- ========================================================= --}}
 
-                                    <label
-                                        class="flex items-center justify-between text-xs font-semibold text-slate-300">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                                        <span class="flex items-center gap-1.5">
 
-                                            <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i>
+                                {{-- ========================================================= --}}
+                                {{-- COLUMNA IZQUIERDA - DATOS PERSONALES --}}
+                                {{-- ========================================================= --}}
 
-                                            Nombre completo
+                                <div class="bg-[#030712]/40 border border-slate-800/80 rounded-2xl p-5">
 
-                                        </span>
+                                    {{-- TÍTULO --}}
+                                    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-800/80">
 
-                                        <span class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
-
-                                            <i data-lucide="pen" class="w-3 h-3"></i>
-
-                                            Editable
-
-                                        </span>
-
-                                    </label>
-
-                                    <input type="text" name="name" value="{{ auth()->user()->name }}"
-                                        class="w-full bg-[#030712] border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
-
-                                </div>
-
-                                <div class="space-y-1.5">
-
-                                    <label
-                                        class="flex items-center justify-between text-xs font-semibold text-slate-400">
-
-                                        <span class="flex items-center gap-1.5">
-
-                                            <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                            Empresa
-
-                                        </span>
-
-                                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                    </label>
-
-                                    <div
-                                        class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
-
-                                        <span class="truncate">
-                                            Cymez
-                                        </span>
-
-                                        <span
-                                            class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
-
-                                            Fijo
-
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                                <div class="space-y-1.5">
-
-                                    <label
-                                        class="flex items-center justify-between text-xs font-semibold text-slate-300">
-
-                                        <span class="flex items-center gap-1.5">
-
-                                            <i data-lucide="mail" class="w-3.5 h-3.5 text-blue-400"></i>
-
-                                            Correo electrónico
-
-                                        </span>
-
-                                        <span class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
-
-                                            <i data-lucide="pen" class="w-3 h-3"></i>
-
-                                            Editable
-
-                                        </span>
-
-                                    </label>
-
-                                    <input type="email" name="email" value="{{ auth()->user()->email }}"
-                                        class="w-full bg-[#030712] border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
-
-                                </div>
-
-                                <div class="space-y-1.5">
-
-                                    <label
-                                        class="flex items-center justify-between text-xs font-semibold text-slate-400">
-
-                                        <span class="flex items-center gap-1.5">
-
-                                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                            Oficina / Sucursal
-
-                                        </span>
-
-                                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                    </label>
-
-                                    <div
-                                        class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
-
-                                        <span class="truncate">
-                                            Reynosa, Centro
-                                        </span>
-
-                                        <span
-                                            class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
-
-                                            Fijo
-
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                                <div class="space-y-1.5">
-
-                                    <label
-                                        class="flex items-center justify-between text-xs font-semibold text-slate-300">
-
-                                        <span class="flex items-center gap-1.5">
-
-                                            <i data-lucide="briefcase-business" class="w-3.5 h-3.5 text-blue-400"></i>
-
-                                            Departamento
-
-                                        </span>
-
-                                        <span class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
-
-                                            <i data-lucide="pen" class="w-3 h-3"></i>
-
-                                            Editable
-
-                                        </span>
-
-                                    </label>
-
-                                    <input type="text" name="departamento"
-                                        value="{{ auth()->user()->departamento->nombre ?? '' }}"
-                                        class="w-full bg-[#030712] border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
-
-                                </div>
-
-                                <div class="space-y-1.5">
-
-                                    <label
-                                        class="flex items-center justify-between text-xs font-semibold text-slate-400">
-
-                                        <span class="flex items-center gap-1.5">
-
-                                            <i data-lucide="building" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                            Ubicación física
-
-                                        </span>
-
-                                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                    </label>
-
-                                    <div
-                                        class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
-
-                                        <span class="truncate">
-                                            Edificio A, piso 2
-                                        </span>
-
-                                        <span
-                                            class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
-
-                                            Fijo
-
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                            <div class="pt-4 flex justify-end">
-
-                                <button type="submit"
-                                    class="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30 hover:opacity-90 transition">
-
-                                    <i data-lucide="save" class="w-4 h-4"></i>
-
-                                    Guardar cambios
-
-                                </button>
-
-                            </div>
-
-                            <div x-cloak x-show="confirmar" x-transition.opacity
-                                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-                                @keydown.escape.window="confirmar = false">
-
-                                <div x-show="confirmar" x-transition @click.outside="confirmar = false"
-                                    class="w-full max-w-md bg-[#0b1026] border border-blue-900/50 rounded-2xl shadow-2xl shadow-black/50 p-6">
-
-                                    <div class="flex items-start gap-4">
-
-                                        <div
-                                            class="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-500/10 text-blue-400 shrink-0">
-
-                                            <i data-lucide="triangle-alert" class="w-5 h-5"></i>
-
+                                        <div class="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                            <i data-lucide="user" class="w-4 h-4"></i>
                                         </div>
 
                                         <div>
-
-                                            <h3 class="text-base font-bold text-white">
-                                                Confirmar cambios
+                                            <h3 class="text-sm font-bold text-white">
+                                                Datos personales
                                             </h3>
 
-                                            <p class="text-sm text-slate-400 mt-1.5 leading-relaxed">
-                                                ¿Estás seguro de que quieres cambiar esta información?
+                                            <p class="text-[10px] text-slate-500 mt-0.5">
+                                                Información de contacto y acceso
                                             </p>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="space-y-5">
+
+
+                                        {{-- NOMBRE --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+                            {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="user"
+                                                        class="w-3.5 h-3.5
+                                    {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Nombre completo
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+                                                @endif
+
+                                            </label>
+
+
+                                            <input type="text" name="name" value="{{ $usuario->name }}"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+                            {{ $puedeEditarPerfil
+                                ? 'bg-[#030712] border border-slate-700/80 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                        </div>
+
+
+                                        {{-- USUARIO / LOGIN --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+                            {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="at-sign"
+                                                        class="w-3.5 h-3.5
+                                    {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Usuario
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+                                                @endif
+
+                                            </label>
+
+
+                                            <input type="text" name="login" value="{{ $usuario->login }}"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+                            {{ $puedeEditarPerfil
+                                ? 'bg-[#030712] border border-slate-700/80 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                        </div>
+
+
+                                        {{-- CORREO --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+                            {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="mail"
+                                                        class="w-3.5 h-3.5
+                                    {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Correo electrónico
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+                                                @endif
+
+                                            </label>
+
+
+                                            <input type="email" name="email" value="{{ $usuario->email }}"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+                            {{ $puedeEditarPerfil
+                                ? 'bg-[#030712] border border-slate-700/80 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                        </div>
+
+
+                                        {{-- TELÉFONO --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+                            {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="phone"
+                                                        class="w-3.5 h-3.5
+                                    {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Teléfono
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+                                                @endif
+
+                                            </label>
+
+
+                                            <input type="tel" name="telefono"
+                                                value="{{ $usuario->phone ?? '' }}"
+                                                placeholder="Sin teléfono registrado"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+                            {{ $puedeEditarPerfil
+                                ? 'bg-[#030712] border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
 
                                         </div>
 
                                     </div>
 
-                                    <div class="flex justify-end gap-3 mt-6">
+                                </div>
 
-                                        <button type="button" @click="confirmar = false"
-                                            class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
 
-                                            Cancelar
 
-                                        </button>
+                                {{-- ========================================================= --}}
+                                {{-- COLUMNA DERECHA - DATOS LABORALES --}}
+                                {{-- ========================================================= --}}
 
-                                        <button type="button" @click="$el.closest('form').submit()"
-                                            class="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition shadow-lg shadow-blue-600/20">
+                                <div class="bg-[#030712]/40 border border-slate-800/80 rounded-2xl p-5">
 
-                                            Sí, guardar cambios
+                                    {{-- TÍTULO --}}
+                                    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-800/80">
 
-                                        </button>
+                                        <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                                            <i data-lucide="briefcase-business" class="w-4 h-4"></i>
+                                        </div>
+
+                                        <div>
+                                            <h3 class="text-sm font-bold text-white">
+                                                Datos laborales
+                                            </h3>
+
+                                            <p class="text-[10px] text-slate-500 mt-0.5">
+                                                Información correspondiente a tu puesto
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="space-y-5">
+
+
+                                        {{-- EMPRESA - FIJO --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+
+                                                    Empresa
+
+                                                </span>
+
+                                                <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                </i>
+
+                                            </label>
+
+
+                                            <div
+                                                class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                                <span class="truncate">
+                                                    Cymez
+                                                </span>
+
+                                                <span
+                                                    class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                    Fijo
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {{-- DEPARTAMENTO --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+                            {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="briefcase-business"
+                                                        class="w-3.5 h-3.5
+                                    {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Departamento
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+                                                @endif
+
+                                            </label>
+
+
+                                            <input type="text" name="departamento"
+                                                value="{{ $usuario->departamento->nombre ?? '' }}"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+                            {{ $puedeEditarPerfil
+                                ? 'bg-[#030712] border border-slate-700/80 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                        </div>
+
+
+                                        {{-- ROL --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+                            {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="shield"
+                                                        class="w-3.5 h-3.5
+                                    {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Rol
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+                                                @endif
+
+                                            </label>
+
+
+                                            <input type="text" name="role" value="{{ $usuario->role }}"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+                            {{ $puedeEditarPerfil
+                                ? 'bg-[#030712] border border-slate-700/80 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                                : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                        </div>
+
+
+                                        {{-- OFICINA - FIJO --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+
+                                                    Oficina / Sucursal
+
+                                                </span>
+
+                                                <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                </i>
+
+                                            </label>
+
+
+                                            <div
+                                                class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                                <span class="truncate">
+                                                    Reynosa, Centro
+                                                </span>
+
+                                                <span
+                                                    class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                    Fijo
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {{-- UBICACIÓN - FIJO --}}
+                                        <div class="space-y-1.5">
+
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold text-slate-500">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="building" class="w-3.5 h-3.5 text-slate-500">
+                                                    </i>
+
+                                                    Ubicación física
+
+                                                </span>
+
+                                                <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500">
+                                                </i>
+
+                                            </label>
+
+
+                                            <div
+                                                class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
+
+                                                <span class="truncate">
+                                                    Edificio A, piso 2
+                                                </span>
+
+                                                <span
+                                                    class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
+
+                                                    Fijo
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
 
                                     </div>
 
                                 </div>
 
                             </div>
+
+
+                            {{-- ========================================================= --}}
+                            {{-- BOTÓN GUARDAR --}}
+                            {{-- ========================================================= --}}
+
+                            @if ($puedeEditarPerfil)
+                                <div class="pt-2 flex justify-end">
+
+                                    <button type="submit"
+                                        class="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30 hover:opacity-90 transition">
+
+                                        <i data-lucide="save" class="w-4 h-4"></i>
+
+                                        Guardar cambios
+
+                                    </button>
+
+                                </div>
+                            @endif
+
+
+                            {{-- ========================================================= --}}
+                            {{-- MODAL DE CONFIRMACIÓN --}}
+                            {{-- ========================================================= --}}
+
+                            @if ($puedeEditarPerfil)
+                                <div x-cloak x-show="confirmar" x-transition.opacity
+                                    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+                                    @keydown.escape.window="confirmar = false">
+
+                                    <div x-show="confirmar" x-transition @click.outside="confirmar = false"
+                                        class="w-full max-w-md bg-[#0b1026] border border-blue-900/50 rounded-2xl shadow-2xl shadow-black/50 p-6">
+
+                                        <div class="flex items-start gap-4">
+
+                                            <div
+                                                class="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-500/10 text-blue-400 shrink-0">
+
+                                                <i data-lucide="triangle-alert" class="w-5 h-5"></i>
+
+                                            </div>
+
+                                            <div>
+
+                                                <h3 class="text-base font-bold text-white">
+                                                    Confirmar cambios
+                                                </h3>
+
+                                                <p class="text-sm text-slate-400 mt-1.5 leading-relaxed">
+                                                    ¿Estás seguro de que quieres cambiar esta información?
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="flex justify-end gap-3 mt-6">
+
+                                            <button type="button" @click="confirmar = false"
+                                                class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
+
+                                                Cancelar
+
+                                            </button>
+
+
+                                            <button type="button" @click="$el.closest('form').submit()"
+                                                class="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition shadow-lg shadow-blue-600/20">
+
+                                                Sí, guardar cambios
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            @endif
 
                         </form>
 
@@ -940,16 +1123,14 @@
 
                     <div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-6 shadow-xl backdrop-blur-md">
 
+                        {{-- ENCABEZADO --}}
                         <div class="flex items-center gap-3 mb-4">
 
                             <div class="p-2.5 rounded-xl bg-blue-600/20 text-blue-400 shrink-0">
-
                                 <i data-lucide="shield-check" class="w-5 h-5"></i>
-
                             </div>
 
                             <div>
-
                                 <h2 class="text-base font-bold text-white">
                                     Seguridad de tu cuenta
                                 </h2>
@@ -957,17 +1138,25 @@
                                 <p class="text-xs text-slate-400">
                                     Administra las credenciales de acceso a tu perfil administrativo
                                 </p>
-
                             </div>
 
                         </div>
 
+
+                        {{-- ================================================================ --}}
+                        {{-- CONTRASEÑA --}}
+                        {{-- ================================================================ --}}
+
                         <div
-                            class="bg-[#030712] border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            class="bg-[#030712] border border-slate-800 rounded-xl p-4
+               flex flex-col sm:flex-row items-start sm:items-center
+               justify-between gap-4">
 
                             <div class="flex items-center gap-3">
 
-                                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
+                                <div
+                                    class="p-2.5 rounded-lg bg-slate-900
+                       border border-slate-800 text-slate-400">
 
                                     <i data-lucide="key-round" class="w-5 h-5"></i>
 
@@ -983,8 +1172,8 @@
 
                                         Última actualización:
 
-                                        {{ Auth::user()->password_updated_at
-                                            ? Auth::user()->password_updated_at->locale('es')->translatedFormat('d M Y')
+                                        {{ Auth::user()->pswd_last_updated
+                                            ? Auth::user()->pswd_last_updated->locale('es')->translatedFormat('d M Y')
                                             : 'No registrada' }}
 
                                     </p>
@@ -992,6 +1181,99 @@
                                 </div>
 
                             </div>
+
+
+                            <button type="button" @click="modalPassword = true"
+                                class="flex items-center gap-1.5 px-4 py-2
+                   rounded-xl text-xs font-semibold
+                   bg-slate-900 text-slate-200
+                   border border-slate-700
+                   hover:bg-slate-800 transition shrink-0">
+
+                                <i data-lucide="shield" class="w-4 h-4 text-blue-400">
+                                </i>
+
+                                Actualizar contraseña
+
+                            </button>
+
+                        </div>
+
+
+                        {{-- ================================================================ --}}
+                        {{-- MFA / GOOGLE AUTHENTICATOR --}}
+                        {{-- ================================================================ --}}
+
+                        <div
+                            class="mt-3 bg-[#030712] border border-slate-800 rounded-xl p-4
+               flex flex-col sm:flex-row items-start sm:items-center
+               justify-between gap-4">
+
+                            {{-- INFORMACIÓN MFA --}}
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="p-2.5 rounded-lg bg-slate-900
+                       border border-slate-800 text-slate-400">
+
+                                    <i data-lucide="shield-check" class="w-5 h-5">
+                                    </i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <h4 class="text-xs font-bold text-white">
+                                        Verificación en dos pasos
+                                    </h4>
+
+                                    <p class="text-xs text-gray-400 mt-0.5">
+                                        Agrega una capa adicional de seguridad a tu cuenta.
+                                    </p>
+
+
+                                    {{-- ESTADO MFA --}}
+
+                                    <div class="mt-1">
+
+                                        @if (Auth::user()->mfa === 'Y')
+                                            <span class="text-[11px] text-emerald-400">
+                                                ● Activada
+                                            </span>
+                                        @else
+                                            <span class="text-[11px] text-slate-500">
+                                                ● Desactivada
+                                            </span>
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- BOTÓN MFA --}}
+
+                            <button type="button" @click="abrirMFA()"
+                                class="flex items-center gap-1.5 px-4 py-2
+           rounded-xl text-xs font-semibold
+           bg-blue-600/10 text-blue-400
+           border border-blue-500/30
+           hover:bg-blue-600/20
+           transition shrink-0">
+
+                                @if (Auth::user()->mfa === 'Y')
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                    Configurar
+                                @else
+                                    <i data-lucide="shield-plus" class="w-4 h-4"></i>
+                                    Activar
+                                @endif
+
+                            </button>
 
                         </div>
 
@@ -1026,11 +1308,11 @@
                             <div class="relative w-36 h-36 mx-auto mb-4 group">
 
                                 <img id="profileImage"
-                                    src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('images/default-avatar.png') }}"
+                                    src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
                                     alt="{{ auth()->user()->name }}"
                                     class="w-full h-full rounded-full object-cover ring-4 ring-blue-500/30 group-hover:ring-blue-500/60 transition duration-300">
 
-                                <input type="file" name="foto" id="photoInput" accept="image/jpeg,image/png"
+                                <input type="file" name="picture" id="photoInput" accept="image/jpeg,image/png"
                                     class="hidden">
 
                                 <button type="button" id="cameraButton"
@@ -1061,7 +1343,7 @@
 
                                 </button>
 
-                                @if (auth()->user()->foto)
+                                @if (auth()->user()->picture)
                                     <button type="button" id="deletePhotoButton" @click="confirmarEliminar = true"
                                         class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-rose-400 hover:bg-rose-500/10 transition">
 
@@ -1073,8 +1355,88 @@
                                 @endif
 
                             </div>
+                            <div class="bg-[#0f1535] rounded-2xl border border-[#1e295d] p-6 shadow-lg space-y-5">
 
-                            @error('foto')
+                        <div class="flex items-center gap-2">
+
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+
+                            </svg>
+
+                            <h2 class="text-base font-bold text-white">
+                                Información de la cuenta
+                            </h2>
+
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400 mb-1.5">
+                                Estado de la cuenta
+                            </p>
+
+                            @if (Auth::user()->active === 'Y')
+                                <span
+                                    class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-[#06331e] border border-emerald-600 text-emerald-400">
+                                    Activa
+                                </span>
+                            @else
+                                <span
+                                    class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-red-950/40 border border-red-600 text-red-400">
+                                    Inactiva
+                                </span>
+                            @endif
+
+                            </div>
+
+                            <div>
+
+                                <p class="text-xs font-medium text-gray-400">
+                                    Rol en el sistema
+                                </p>
+
+                                <p class="text-sm font-bold text-white mt-1">
+                                    {{ Auth::user()->role ?? 'Desconocido' }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="bg-[#0b102b] border border-[#1e295d] rounded-xl p-4 flex items-start gap-3">
+
+                            <svg class="w-6 h-6 text-gray-300 shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+
+                            </svg>
+
+                            <div>
+
+                                <p class="text-xs font-bold text-white">
+                                    Mantén tu información actualizada
+                                </p>
+
+                                <p class="text-[11px] text-gray-400 leading-relaxed mt-1">
+                                    Una información correcta nos ayuda a darte un mejor soporte y atención.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                            @error('picture')
                                 <p class="text-[10px] text-rose-400 mt-3">
                                     {{ $message }}
                                 </p>
@@ -1090,7 +1452,7 @@
 
                     </form>
 
-                    @if (auth()->user()->foto)
+                    @if (auth()->user()->picture)
                         <form id="deletePhotoForm" action="{{ route('perfil.delete') }}" method="POST">
 
                             @csrf
@@ -1175,8 +1537,11 @@
                                     </h3>
 
                                     <p class="text-sm text-slate-400 mt-1.5 leading-relaxed">
+
                                         ¿Estás seguro de que quieres eliminar tu foto de perfil?
+
                                         Esta acción reemplazará tu foto actual por la imagen predeterminada.
+
                                     </p>
 
                                 </div>
@@ -1205,6 +1570,435 @@
 
                     </div>
 
+                    <div x-show="modalPassword" x-cloak x-transition.opacity
+                        class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+
+                        <!-- Fondo oscuro -->
+                        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="modalPassword = false">
+                        </div>
+
+
+                        <!-- Contenido -->
+                        <div x-show="modalPassword" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95" @click.stop
+                            class="relative w-full max-w-md bg-[#0b1026] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+
+                            <!-- Header -->
+                            <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+
+                                <div class="flex items-center gap-3">
+
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                                        <i data-lucide="shield" class="w-5 h-5 text-blue-400"></i>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-white font-semibold">
+                                            Actualizar contraseña
+                                        </h3>
+
+                                        <p class="text-xs text-slate-400">
+                                            Cambia tu contraseña de acceso
+                                        </p>
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Cerrar -->
+                                <button type="button" @click="modalPassword = false"
+                                    class="text-slate-400 hover:text-white transition">
+                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                </button>
+
+                            </div>
+
+
+                            <!-- Body -->
+                            <div class="p-6">
+
+                                <form action="{{ route('perfil.password.update') }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <!-- Contraseña actual -->
+                                    <!-- Contraseña actual -->
+                                    <div class="mb-4">
+
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                                            Contraseña actual
+                                        </label>
+
+                                        <input type="password" name="password_actual" required
+                                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                            placeholder="Ingresa tu contraseña actual">
+
+                                        @error('password_actual')
+                                            <p class="text-xs text-red-400 mt-2">
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
+
+                                    </div>
+
+
+                                    <!-- Nueva contraseña -->
+                                    <div class="mb-4">
+
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                                            Nueva contraseña
+                                        </label>
+
+                                        <input type="password" name="password" required minlength="8"
+                                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                            placeholder="Ingresa tu nueva contraseña">
+
+                                        @error('password')
+                                            <p class="text-xs text-red-400 mt-2">
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
+
+                                    </div>
+
+
+                                    <!-- Confirmar contraseña -->
+                                    <div class="mb-6">
+
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                                            Confirmar nueva contraseña
+                                        </label>
+
+                                        <input type="password" name="password_confirmation" required minlength="8"
+                                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                            placeholder="Confirma tu nueva contraseña">
+
+                                    </div>
+
+
+                                    <!-- Botones -->
+                                    <div class="flex items-center justify-end gap-3">
+
+                                        <button type="button" @click="modalPassword = false"
+                                            class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
+                                            Cancelar
+                                        </button>
+
+                                        <button type="submit"
+                                            class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition">
+                                            Actualizar contraseña
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                    {{-- ================================================================ --}}
+                    {{-- MODAL MFA - GOOGLE AUTHENTICATOR --}}
+                    {{-- ================================================================ --}}
+
+                    <div x-show="modalMFA" x-cloak x-transition.opacity
+                        class="fixed inset-0 z-50 flex items-center justify-center
+           bg-black/70 backdrop-blur-sm px-4">
+                        <div @click.outside="modalMFA = false" x-transition
+                            class="relative w-full max-w-md
+               bg-[#0b1026]
+               border border-blue-900/40
+               rounded-2xl
+               shadow-[0_0_40px_rgba(37,99,235,0.20)]
+               p-6">
+
+                            {{-- ======================================================== --}}
+                            {{-- BOTÓN CERRAR --}}
+                            {{-- ======================================================== --}}
+
+                            <button type="button" @click="cerrarMFA()"
+                                class="flex items-center gap-1.5 px-4 py-2
+           rounded-xl text-xs font-semibold
+           bg-blue-600/10 text-blue-400
+           border border-blue-500/30
+           hover:bg-blue-600/20
+           transition shrink-0">
+
+                                @if (Auth::user()->mfa === 'Y')
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                    Configurar
+                                @else
+                                    <i data-lucide="shield-plus" class="w-4 h-4"></i>
+                                    Activar
+                                @endif
+
+                            </button>
+
+
+                            {{-- ======================================================== --}}
+                            {{-- ENCABEZADO --}}
+                            {{-- ======================================================== --}}
+
+                            <div class="text-center">
+
+                                <div
+                                    class="mx-auto flex items-center justify-center
+                       w-14 h-14
+                       rounded-2xl
+                       bg-blue-600/10
+                       border border-blue-500/20">
+                                    <i data-lucide="shield-check" class="w-7 h-7 text-blue-400"></i>
+                                </div>
+
+                                <h3 class="mt-4 text-lg font-bold text-white">
+                                    Verificación en dos pasos
+                                </h3>
+
+                                <p class="mt-1.5 text-sm text-slate-400 leading-relaxed">
+                                    Protege tu cuenta utilizando
+                                    <span class="text-white font-medium">
+                                        Google Authenticator
+                                    </span>.
+                                </p>
+
+                            </div>
+
+
+                            {{-- ======================================================== --}}
+                            {{-- PASO 1 --}}
+                            {{-- ======================================================== --}}
+
+                            <div class="mt-6">
+
+                                <div class="flex items-center gap-3">
+
+                                    <div
+                                        class="flex items-center justify-center
+                           w-7 h-7
+                           rounded-full
+                           bg-blue-600
+                           text-white
+                           text-xs
+                           font-bold
+                           shrink-0">
+                                        1
+                                    </div>
+
+                                    <div>
+
+                                        <p class="text-sm font-semibold text-white">
+                                            Instala Google Authenticator
+                                        </p>
+
+                                        <p class="text-xs text-slate-500 mt-0.5">
+                                            Abre la aplicación en tu teléfono.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- ======================================================== --}}
+                            {{-- PASO 2 --}}
+                            {{-- ======================================================== --}}
+
+                            <div class="mt-5">
+
+                                <div class="flex items-center gap-3">
+
+                                    <div
+                                        class="flex items-center justify-center
+                           w-7 h-7
+                           rounded-full
+                           bg-blue-600
+                           text-white
+                           text-xs
+                           font-bold
+                           shrink-0">
+                                        2
+                                    </div>
+
+                                    <div>
+
+                                        <p class="text-sm font-semibold text-white">
+                                            Escanea el código QR
+                                        </p>
+
+                                        <p class="text-xs text-slate-500 mt-0.5">
+                                            Utiliza Google Authenticator para escanearlo.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- ==================================================== --}}
+                                {{-- QR --}}
+                                {{-- ==================================================== --}}
+                                <div
+                                    class="mt-4 flex items-center justify-center
+           min-h-[220px]
+           rounded-xl
+           bg-white
+           border border-slate-700
+           p-4">
+
+                                    <div id="mfaQr" class="w-[220px] h-[220px] flex items-center justify-center">
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- ======================================================== --}}
+                            {{-- PASO 3 --}}
+                            {{-- ======================================================== --}}
+
+                            <div class="mt-5">
+
+                                <div class="flex items-center gap-3">
+
+                                    <div
+                                        class="flex items-center justify-center
+                           w-7 h-7
+                           rounded-full
+                           bg-blue-600
+                           text-white
+                           text-xs
+                           font-bold
+                           shrink-0">
+                                        3
+                                    </div>
+
+                                    <div>
+
+                                        <p class="text-sm font-semibold text-white">
+                                            Introduce el código
+                                        </p>
+
+                                        <p class="text-xs text-slate-500 mt-0.5">
+                                            Escribe el código de 6 dígitos que aparece
+                                            en Google Authenticator.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- ==================================================== --}}
+                                {{-- FORMULARIO DE VERIFICACIÓN --}}
+                                {{-- ==================================================== --}}
+
+                                <form @submit.prevent="confirmarMFA()" class="mt-4">
+
+                                    @csrf
+
+                                    <label for="codigo_mfa" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Código de verificación
+                                    </label>
+                                    <input id="codigo_mfa" name="codigo" type="text" x-model="mfaCodigo"
+                                        inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                                        pattern="[0-9]{6}" placeholder="000000" required>
+
+                                    <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
+                                    </p>
+
+                                    <div class="flex items-center gap-3 mt-5">
+
+                                        <button type="button" @click="cerrarMFA()"
+                                            class="flex-1
+                   py-2.5
+                   rounded-xl
+                   text-xs
+                   font-semibold
+                   text-slate-300
+                   bg-slate-900
+                   border border-slate-700
+                   hover:bg-slate-800
+                   transition">
+
+                                            Cancelar
+
+                                        </button>
+
+                                        <button type="submit" :disabled="cargandoMFA"
+                                            class="flex-1
+                   flex items-center justify-center gap-2
+                   py-2.5
+                   rounded-xl
+                   text-xs
+                   font-semibold
+                   text-white
+                   bg-blue-600
+                   hover:bg-blue-500
+                   disabled:opacity-50
+                   disabled:cursor-not-allowed
+                   shadow-[0_4px_14px_rgba(37,99,235,0.35)]
+                   transition">
+
+                                            <i x-show="!cargandoMFA" data-lucide="shield-check" class="w-4 h-4">
+                                            </i>
+
+                                            <svg x-show="cargandoMFA" class="animate-spin w-4 h-4"
+                                                viewBox="0 0 24 24" fill="none">
+
+                                                <circle cx="12" cy="12" r="10" stroke="currentColor"
+                                                    stroke-width="4" class="opacity-25">
+                                                </circle>
+
+                                                <path fill="currentColor" class="opacity-75"
+                                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                                </path>
+
+                                            </svg>
+
+                                            <span
+                                                x-text="cargandoMFA ? 'Verificando...' : 'Verificar y activar'"></span>
+
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+
+                            {{-- ======================================================== --}}
+                            {{-- INFORMACIÓN --}}
+                            {{-- ======================================================== --}}
+
+                            <div
+                                class="mt-5
+                   flex items-start gap-2
+                   rounded-xl
+                   bg-blue-500/5
+                   border border-blue-500/10
+                   p-3">
+
+                                <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+
+                                <p class="text-[11px] text-slate-500 leading-relaxed">
+                                    Después de activar la verificación en dos pasos,
+                                    necesitarás el código de Google Authenticator cada vez
+                                    que inicies sesión en TicketPro.
+                                </p>
+
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
@@ -1212,6 +2006,533 @@
         </div>
 
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+
+        Alpine.data('perfilSeguridad', () => ({
+
+            /*
+            |--------------------------------------------------------------------------
+            | ESTADOS
+            |--------------------------------------------------------------------------
+            */
+
+            modalPassword: false,
+
+            modalMFA: false,
+
+            cargandoMFA: false,
+
+            mfaCodigo: '',
+
+            mfaMensaje: '',
+
+            qrCodeUrl: '',
+
+            secretKey: '',
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | INICIALIZACIÓN
+            |--------------------------------------------------------------------------
+            */
+
+            init() {
+
+                console.log('perfilSeguridad inicializado');
+
+            },
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ABRIR MODAL MFA Y GENERAR CONFIGURACIÓN
+            |--------------------------------------------------------------------------
+            */
+
+            async abrirMFA() {
+
+                this.modalMFA = true;
+
+                this.cargandoMFA = true;
+
+                this.mfaMensaje = '';
+
+                this.mfaCodigo = '';
+
+                try {
+
+                    const response = await fetch(
+                        "{{ route('mfa.configurar') }}",
+                        {
+                            method: 'GET',
+
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Verificar respuesta HTTP
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            `HTTP ${response.status}`
+                        );
+
+                    }
+
+
+                    const data = await response.json();
+
+
+                    console.log(
+                        'RESPUESTA MFA:',
+                        data
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Validar respuesta
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!data.success) {
+
+                        this.mfaMensaje =
+                            data.message ||
+                            'No se pudo configurar la verificación MFA.';
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Guardar datos
+                    |--------------------------------------------------------------------------
+                    */
+
+                    this.qrCodeUrl = data.qrCodeUrl || '';
+
+                    this.secretKey = data.secretKey || '';
+
+
+                    console.log(
+                        'QR URL:',
+                        this.qrCodeUrl
+                    );
+
+                    console.log(
+                        'SECRET:',
+                        this.secretKey
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Generar QR
+                    |--------------------------------------------------------------------------
+                    */
+
+                    this.$nextTick(() => {
+
+                        const contenedor =
+                            document.getElementById('mfaQr');
+
+
+                        if (!contenedor) {
+
+                            console.error(
+                                'No existe el contenedor #mfaQr'
+                            );
+
+                            return;
+
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Limpiar QR anterior
+                        |--------------------------------------------------------------------------
+                        */
+
+                        contenedor.innerHTML = '';
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Verificar librería QRCode
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (typeof QRCode === 'undefined') {
+
+                            console.error(
+                                'QRCode no está cargado'
+                            );
+
+                            this.mfaMensaje =
+                                'No se pudo cargar el generador del código QR.';
+
+                            return;
+
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Crear QR
+                        |--------------------------------------------------------------------------
+                        */
+
+                        new QRCode(
+                            contenedor,
+                            {
+                                text: this.qrCodeUrl,
+
+                                width: 220,
+
+                                height: 220,
+
+                                colorDark: '#000000',
+
+                                colorLight: '#ffffff',
+
+                                correctLevel: QRCode.CorrectLevel.H
+                            }
+                        );
+
+
+                        console.log(
+                            'QR GENERADO CORRECTAMENTE'
+                        );
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Error generando MFA:',
+                        error
+                    );
+
+
+                    this.mfaMensaje =
+                        'Ocurrió un error al preparar la configuración MFA.';
+
+                } finally {
+
+                    this.cargandoMFA = false;
+
+                }
+
+            },
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CERRAR MODAL MFA
+            |--------------------------------------------------------------------------
+            */
+
+            cerrarMFA() {
+
+                this.modalMFA = false;
+
+                this.mfaCodigo = '';
+
+                this.mfaMensaje = '';
+
+                this.cargandoMFA = false;
+
+                this.qrCodeUrl = '';
+
+                this.secretKey = '';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Limpiar QR
+                |--------------------------------------------------------------------------
+                */
+
+                this.$nextTick(() => {
+
+                    const contenedor =
+                        document.getElementById('mfaQr');
+
+                    if (contenedor) {
+
+                        contenedor.innerHTML = '';
+
+                    }
+
+                });
+
+            },
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CONFIRMAR Y ACTIVAR MFA
+            |--------------------------------------------------------------------------
+            */
+
+            async confirmarMFA() {
+
+                console.log(
+                    'Código MFA:',
+                    this.mfaCodigo
+                );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validar código
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    !this.mfaCodigo ||
+                    this.mfaCodigo.length !== 6
+                ) {
+
+                    this.mfaMensaje =
+                        'Ingresa un código de 6 dígitos.';
+
+                    return;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validar solamente números
+                |--------------------------------------------------------------------------
+                */
+
+                if (!/^\d{6}$/.test(this.mfaCodigo)) {
+
+                    this.mfaMensaje =
+                        'El código debe contener únicamente 6 números.';
+
+                    return;
+
+                }
+
+
+                this.cargandoMFA = true;
+
+                this.mfaMensaje = '';
+
+
+                try {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CSRF
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const csrfToken =
+                        document
+                            .querySelector(
+                                'meta[name="csrf-token"]'
+                            )
+                            ?.getAttribute('content');
+
+
+                    if (!csrfToken) {
+
+                        throw new Error(
+                            'No se encontró el token CSRF.'
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Verificar MFA
+                    |--------------------------------------------------------------------------
+                    |
+                    | ESTA ES TU RUTA REAL:
+                    |
+                    | usuario.mfa.verificar.activacion
+                    |
+                    */
+
+                    const response = await fetch(
+                        "{{ route('usuario.mfa.verificar.activacion') }}",
+                        {
+
+                            method: 'POST',
+
+                            headers: {
+
+                                'Content-Type':
+                                    'application/json',
+
+                                'X-CSRF-TOKEN':
+                                    csrfToken,
+
+                                'Accept':
+                                    'application/json',
+
+                                'X-Requested-With':
+                                    'XMLHttpRequest'
+
+                            },
+
+                            body: JSON.stringify({
+
+                                codigo:
+                                    this.mfaCodigo
+
+                            })
+
+                        }
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Verificar HTTP
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!response.ok) {
+
+                        const texto =
+                            await response.text();
+
+                        console.error(
+                            'RESPUESTA HTTP MFA:',
+                            response.status,
+                            texto
+                        );
+
+                        throw new Error(
+                            `HTTP ${response.status}`
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Convertir respuesta JSON
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const data =
+                        await response.json();
+
+
+                    console.log(
+                        'RESPUESTA VERIFICACIÓN MFA:',
+                        data
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | MFA NO ACTIVADO
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!data.success) {
+
+                        this.mfaMensaje =
+                            data.message ||
+                            'El código MFA no es válido.';
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | MFA ACTIVADO CORRECTAMENTE
+                    |--------------------------------------------------------------------------
+                    */
+
+                    console.log(
+                        'MFA ACTIVADO CORRECTAMENTE'
+                    );
+
+
+                    this.mfaCodigo = '';
+
+                    this.mfaMensaje = '';
+
+                    this.modalMFA = false;
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | IMPORTANTE
+                    |--------------------------------------------------------------------------
+                    |
+                    | No necesitamos inventar una ruta de redirección.
+                    |
+                    | Como estás en:
+                    |
+                    | /tecnologias/perfil/
+                    |
+                    | simplemente recargamos la página.
+                    |
+                    | Así Blade volverá a consultar:
+                    |
+                    | Auth::user()->mfa
+                    |
+                    | y mostrará "Activada".
+                    |
+                    */
+
+                    window.location.reload();
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Error verificando MFA:',
+                        error
+                    );
+
+
+                    this.mfaMensaje =
+                        'No fue posible verificar el código MFA.';
+
+
+                } finally {
+
+                    this.cargandoMFA = false;
+
+                }
+
+            }
+
+        }));
+
+    });
+</script>
 </body>
 
 </html>

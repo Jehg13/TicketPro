@@ -22,6 +22,12 @@ class AvisosController extends Controller
     {
         $usuario = Auth::user();
 
+        /*
+        |--------------------------------------------------------------------------
+        | EMPRESA DEL USUARIO
+        |--------------------------------------------------------------------------
+        */
+
         $empresaId = $usuario->departamento?->oficina?->empresa_id;
 
         if (!$empresaId) {
@@ -85,19 +91,11 @@ class AvisosController extends Controller
         |--------------------------------------------------------------------------
         | NOTIFICACIONES
         |--------------------------------------------------------------------------
-        |
-        | IMPORTANTE:
-        |
-        | En esta vista NO mostramos notificaciones de tipo "aviso".
-        |
-        | Esto evita que una notificación antigua de aviso que ya exista
-        | en la base de datos siga apareciendo.
-        |
         */
 
         $notificaciones = Notificacion::where(
-            'user_id',
-            $usuario->id
+            'login',
+            $usuario->login
         )
             ->where(
                 'tipo',
@@ -113,14 +111,11 @@ class AvisosController extends Controller
         |--------------------------------------------------------------------------
         | NOTIFICACIONES NO LEÍDAS
         |--------------------------------------------------------------------------
-        |
-        | Los avisos tampoco cuentan como notificaciones pendientes.
-        |
         */
 
         $notificacionesNoLeidas = Notificacion::where(
-            'user_id',
-            $usuario->id
+            'login',
+            $usuario->login
         )
             ->where(
                 'tipo',
@@ -339,9 +334,13 @@ class AvisosController extends Controller
         |--------------------------------------------------------------------------
         | USUARIO QUE PUBLICÓ
         |--------------------------------------------------------------------------
+        |
+        | Ahora se guarda LOGIN en lugar de ID.
+        |
         */
 
-        $validated['publicado_por'] = Auth::id();
+        $validated['publicado_por'] =
+            $usuario->login;
 
 
         /*
@@ -375,10 +374,12 @@ class AvisosController extends Controller
             */
 
             $usuariosAfectados =
-                $usuariosAfectados->where(
-                    'id',
-                    '!=',
-                    Auth::id()
+                $usuariosAfectados->filter(
+                    function ($usuarioAfectado) use ($usuario) {
+
+                        return $usuarioAfectado->login !==
+                            $usuario->login;
+                    }
                 );
 
 
@@ -386,11 +387,6 @@ class AvisosController extends Controller
             |--------------------------------------------------------------------------
             | EXCLUIR TECNOLOGÍAS
             |--------------------------------------------------------------------------
-            |
-            | No usamos hasRole().
-            |
-            | Se identifica al usuario mediante su departamento.
-            |
             */
 
             $usuariosAfectados =
@@ -415,14 +411,18 @@ class AvisosController extends Controller
             $ahora = now();
 
 
-            foreach (
-                $usuariosAfectados as $usuarioAfectado
-            ) {
+            foreach ($usuariosAfectados as $usuarioAfectado) {
 
                 $notificaciones[] = [
 
-                    'user_id' =>
-                        $usuarioAfectado->id,
+                    /*
+                    |--------------------------------------------------------------------------
+                    | AHORA USAMOS LOGIN
+                    |--------------------------------------------------------------------------
+                    */
+
+                    'login' =>
+                        $usuarioAfectado->login,
 
                     'tipo' =>
                         'aviso',
@@ -713,12 +713,6 @@ class AvisosController extends Controller
         Aviso $aviso
     ) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR ARCHIVO
-        |--------------------------------------------------------------------------
-        */
-
         if ($aviso->archivo) {
 
             Storage::disk('public')
@@ -728,20 +722,8 @@ class AvisosController extends Controller
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR AVISO
-        |--------------------------------------------------------------------------
-        */
-
         $aviso->delete();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | REDIRECCIÓN
-        |--------------------------------------------------------------------------
-        */
 
         return redirect()
             ->route('avisostecnologias')
@@ -880,31 +862,39 @@ class AvisosController extends Controller
 
         if ($request->aplica_a === 'usuarios') {
 
-            $usuarioIds =
+            /*
+            |--------------------------------------------------------------------------
+            | AHORA EL FORMULARIO DEBE ENVIAR LOGIN
+            |--------------------------------------------------------------------------
+            */
+
+            $logins =
                 $request->input(
                     'afecta_a',
                     []
                 );
 
 
-            if (!is_array($usuarioIds)) {
+            if (!is_array($logins)) {
 
-                $usuarioIds = [];
+                $logins = [];
             }
 
 
-            $usuarioIds =
+            $logins =
                 array_values(
                     array_unique(
-                        array_map(
-                            'intval',
-                            $usuarioIds
+                        array_filter(
+                            array_map(
+                                'trim',
+                                $logins
+                            )
                         )
                     )
                 );
 
 
-            if (empty($usuarioIds)) {
+            if (empty($logins)) {
 
                 abort(
                     back()
@@ -917,10 +907,16 @@ class AvisosController extends Controller
             }
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDAR QUE LOS LOGIN PERTENEZCAN A LA EMPRESA
+            |--------------------------------------------------------------------------
+            */
+
             $cantidadValidos =
                 User::whereIn(
-                    'id',
-                    $usuarioIds
+                    'login',
+                    $logins
                 )
                     ->whereHas(
                         'departamento.oficina',
@@ -937,7 +933,7 @@ class AvisosController extends Controller
 
             if (
                 $cantidadValidos !==
-                count($usuarioIds)
+                count($logins)
             ) {
 
                 abort(
@@ -956,8 +952,8 @@ class AvisosController extends Controller
                 'tipo' =>
                     'usuarios',
 
-                'ids' =>
-                    $usuarioIds,
+                'logins' =>
+                    $logins,
             ];
         }
 
@@ -1058,8 +1054,8 @@ class AvisosController extends Controller
                 'departamento'
             )
                 ->whereIn(
-                    'id',
-                    $afectaA['ids']
+                    'login',
+                    $afectaA['logins']
                 )
                 ->whereHas(
                     'departamento.oficina',

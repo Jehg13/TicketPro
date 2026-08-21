@@ -10,47 +10,27 @@ use Illuminate\Support\Facades\Auth;
 
 class ticketController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR FORMULARIO DE TICKET
-    |--------------------------------------------------------------------------
-    */
-
     public function create()
     {
         $usuario = Auth::user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES
-        |--------------------------------------------------------------------------
-        */
-
         $notificaciones = Notificacion::where(
-            'user_id',
-            $usuario->id
+            'login',
+            $usuario->login
         )
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES NO LEÍDAS
-        |--------------------------------------------------------------------------
-        */
-
         $notificacionesNoLeidas = Notificacion::where(
-            'user_id',
-            $usuario->id
+            'login',
+            $usuario->login
         )
             ->where(
                 'leida',
                 false
             )
             ->count();
-
 
         return view(
             'user.ticket',
@@ -61,23 +41,9 @@ class ticketController extends Controller
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | CREAR TICKET
-    |--------------------------------------------------------------------------
-    */
-
     public function store(Request $request)
     {
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDAR DATOS
-        |--------------------------------------------------------------------------
-        */
-
         $validated = $request->validate([
-
             'titulo' => [
                 'required',
                 'string',
@@ -129,94 +95,51 @@ class ticketController extends Controller
             ],
         ]);
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | USUARIO ACTUAL
-        |--------------------------------------------------------------------------
-        */
-
         $usuario = Auth::user();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | EMPRESA
-        |--------------------------------------------------------------------------
-        */
-
-        $empresaId =
-            $usuario
-                ->departamento
-                ?->oficina
-                ?->empresa_id;
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | EVIDENCIAS
-        |--------------------------------------------------------------------------
-        */
+        $empresaId = $usuario
+            ->departamento
+            ?->oficina
+            ?->empresa_id;
+            
 
         $filePaths = [];
 
-
         if ($request->hasFile('evidencia')) {
-
-            foreach (
-                $request->file('evidencia')
-                as $file
-            ) {
-
+            foreach ($request->file('evidencia') as $file) {
                 if (!$file->isValid()) {
                     continue;
                 }
 
-                $filePaths[] =
-                    $file->store(
-                        'evidencia_tickets',
-                        'public'
-                    );
+                $filePaths[] = $file->store(
+                    'evidencia_tickets',
+                    'public'
+                );
             }
         }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | GENERAR FOLIO
-        |--------------------------------------------------------------------------
-        */
 
         $año = date('Y');
 
         do {
-
-            $ultimoTicket =
-                TicketU::where(
-                    'folio',
-                    'like',
-                    "TKT-{$año}-%"
-                )
+            $ultimoTicket = TicketU::where(
+                'folio',
+                'like',
+                "TKT-{$año}-%"
+            )
                 ->orderByDesc('id')
                 ->first();
 
-
             if ($ultimoTicket) {
+                $ultimoNumero = (int) substr(
+                    $ultimoTicket->folio,
+                    -5
+                );
 
-                $ultimoNumero =
-                    (int) substr(
-                        $ultimoTicket->folio,
-                        -5
-                    );
-
-                $numero =
-                    $ultimoNumero + 1;
-
+                $numero = $ultimoNumero + 1;
             } else {
-
                 $numero = 1;
             }
-
 
             $folio =
                 'TKT-' .
@@ -236,74 +159,33 @@ class ticketController extends Controller
             )->exists()
         );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREAR TICKET
-        |--------------------------------------------------------------------------
-        */
-
         $ticket = TicketU::create([
-
-            'folio' =>
-                $folio,
-
-            'user_id' =>
-                $usuario->id,
-
-            'titulo' =>
-                $validated['titulo'],
-
-            'tipo_falla' =>
-                $validated['tipo_falla'],
-
-            'equipo' =>
-                $validated['equipo'] ?? null,
-
-            'prioridad' =>
-                $validated['prioridad'],
-
-            'descripcion' =>
-                $validated['descripcion'],
-
-            'afecta_otros' =>
-                $validated['afecta_otros'],
-
-            'es_recurrente' =>
-                $validated['es_recurrente'],
-
-            'comentarios' =>
-                $validated['comentarios'] ?? null,
-
-            'evidencia' =>
-                $filePaths,
+            'folio' => $folio,
+            'login' => $usuario->login,
+            'titulo' => $validated['titulo'],
+            'tipo_falla' => $validated['tipo_falla'],
+            'equipo' => $validated['equipo'] ?? null,
+            'prioridad' => $validated['prioridad'],
+            'descripcion' => $validated['descripcion'],
+            'afecta_otros' => $validated['afecta_otros'],
+            'es_recurrente' => $validated['es_recurrente'],
+            'comentarios' => $validated['comentarios'] ?? null,
+            'evidencia' => $filePaths,
         ]);
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICAR A TECNOLOGÍAS
-        |--------------------------------------------------------------------------
-        */
-
         if ($empresaId) {
-
-            $tecnicos =
-                User::where(
-                    'rol',
-                    'tecnologias'
-                )
+            $tecnicos = User::where(
+                'role',
+                'tecnologias'
+            )
                 ->where(
-                    'id',
+                    'login',
                     '!=',
-                    $usuario->id
+                    $usuario->login
                 )
                 ->whereHas(
                     'departamento.oficina',
-                    function ($query) use (
-                        $empresaId
-                    ) {
-
+                    function ($query) use ($empresaId) {
                         $query->where(
                             'empresa_id',
                             $empresaId
@@ -312,58 +194,28 @@ class ticketController extends Controller
                 )
                 ->get();
 
-
-            foreach (
-                $tecnicos
-                as $tecnico
-            ) {
-
+            foreach ($tecnicos as $tecnico) {
                 Notificacion::create([
-
-                    'user_id' =>
-                        $tecnico->id,
-
-                    'tipo' =>
-                        'ticket_nuevo',
-
-                    'titulo' =>
-                        'Nuevo ticket recibido',
-
+                    'login' => $tecnico->login,
+                    'tipo' => 'ticket_nuevo',
+                    'titulo' => 'Nuevo ticket recibido',
                     'mensaje' =>
                         "El usuario {$usuario->name} creó el ticket {$ticket->folio}: {$ticket->titulo}",
-
-                    'url' =>
-                        route(
-                            'tickettecnologias',
-                            [
-                                'ticket' =>
-                                    $ticket->id,
-                            ]
-                        ),
-
-                    'leida' =>
-                        false,
-
-                    'icono' =>
-                        'ticket',
-
-                    'color' =>
-                        'blue',
+                    'url' => route(
+                        'tickettecnologias',
+                        [
+                            'ticket' => $ticket->id,
+                        ]
+                    ),
+                    'leida' => false,
+                    'icono' => 'ticket',
+                    'color' => 'blue',
                 ]);
             }
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | REDIRECCIÓN
-        |--------------------------------------------------------------------------
-        */
-
         return redirect()
-            ->route(
-                'ticketusuario'
-            )
+            ->route('ticketusuario')
             ->with(
                 'success',
                 "Ticket {$folio} creado correctamente."

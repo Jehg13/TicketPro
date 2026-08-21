@@ -13,7 +13,7 @@ class TicketComentario extends Model
 
     protected $fillable = [
         'ticket_id',
-        'usuario_id',
+        'login',
         'mensaje',
         'archivo',
     ];
@@ -22,7 +22,8 @@ class TicketComentario extends Model
     {
         return $this->belongsTo(
             TicketU::class,
-            'ticket_id'
+            'ticket_id',
+            'id'
         );
     }
 
@@ -30,7 +31,8 @@ class TicketComentario extends Model
     {
         return $this->belongsTo(
             User::class,
-            'usuario_id'
+            'login',
+            'login'
         );
     }
 }

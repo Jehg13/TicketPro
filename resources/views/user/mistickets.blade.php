@@ -8,6 +8,10 @@
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+    window.usuarioActualId = @json(Auth::id());
+    window.usuarioActualLogin = @json(Auth::user()->login);
+</script>
 </head>
 
 <body x-data="ticketModal()" class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden">
@@ -536,7 +540,6 @@
 
                             @forelse ($tickets as $ticket)
                                 @php
-
                                     $ticket->load([
                                         'user',
                                         'user.departamento',
@@ -548,8 +551,11 @@
                                     ]);
 
                                     $ticketData = $ticket->toArray();
+
                                     $comentariosData = $ticket->historialComentarios
                                         ->map(function ($comentario) {
+                                            $usuarioComentario = $comentario->usuario;
+
                                             return [
                                                 'id' => $comentario->id,
 
@@ -570,12 +576,20 @@
                                                     : null,
 
                                                 'usuario' => [
-                                                    'id' => $comentario->usuario?->id,
-                                                    'name' => $comentario->usuario?->name ?? 'Usuario',
-                                                    'rol' => $comentario->usuario?->rol ?? 'Usuario',
+                                                    'id' => $usuarioComentario?->id,
 
-                                                    'foto' => $comentario->usuario?->foto
-                                                        ? Storage::url($comentario->usuario->foto)
+                                                    'login' => $usuarioComentario?->login,
+
+                                                    'name' => $usuarioComentario?->name ?? 'Usuario',
+
+                                                    /*
+                                                     * IMPORTANTE:
+                                                     * tu columna es role, no rol.
+                                                     */
+                                                    'role' => $usuarioComentario?->role ?? 'Usuario',
+
+                                                    'foto' => $usuarioComentario?->foto
+                                                        ? Storage::url($usuarioComentario->foto)
                                                         : null,
                                                 ],
 
@@ -585,28 +599,15 @@
                                             ];
                                         })
                                         ->values();
-                                @endphp
-
-
-                                @php
-
                                     $iconoFalla = match (strtolower($ticket->tipo_falla ?? '')) {
                                         'hardware' => 'cpu',
-
                                         'software' => 'code-2',
-
                                         'redes' => 'network',
-
                                         'impresora', 'impresión' => 'printer',
-
                                         'correo' => 'mail',
-
                                         'internet' => 'globe',
-
                                         'telefonía', 'telefonia' => 'phone',
-
                                         'sistema' => 'monitor-cog',
-
                                         default => 'ticket',
                                     };
 
@@ -615,101 +616,101 @@
                                     $configPrioridad = match ($prioridad) {
                                         'critica', 'crítica' => [
                                             'icono' => 'alert-octagon',
-
                                             'texto' => 'text-red-400',
-
                                             'fondo' => 'bg-red-500/10',
-
                                             'borde' => 'border-red-500/30',
                                         ],
-
                                         'alta' => [
                                             'icono' => 'chevrons-up',
-
                                             'texto' => 'text-orange-400',
-
                                             'fondo' => 'bg-orange-500/10',
-
                                             'borde' => 'border-orange-500/30',
                                         ],
-
                                         'media' => [
                                             'icono' => 'chevron-up',
-
                                             'texto' => 'text-yellow-400',
-
                                             'fondo' => 'bg-yellow-500/10',
-
                                             'borde' => 'border-yellow-500/30',
                                         ],
-
                                         'normal' => [
                                             'icono' => 'minus',
-
                                             'texto' => 'text-green-400',
-
                                             'fondo' => 'bg-green-500/10',
-
                                             'borde' => 'border-green-500/30',
                                         ],
-
                                         default => [
                                             'icono' => 'circle-help',
-
                                             'texto' => 'text-slate-400',
-
                                             'fondo' => 'bg-slate-500/10',
-
                                             'borde' => 'border-slate-500/30',
                                         ],
                                     };
-
                                 @endphp
 
-
-                                {{-- FILA --}}
-                                {{-- @php
-                                    dd($ticket->solucion->toArray());
-                                @endphp --}}
                                 <tr x-data="{
                                     ticket: {{ Js::from([
                                         'id' => $ticket->id,
+                                    
                                         'folio' => $ticket->folio,
+                                    
                                         'titulo' => $ticket->titulo,
+                                    
                                         'tipo_falla' => $ticket->tipo_falla,
+                                    
                                         'equipo' => $ticket->equipo,
+                                    
                                         'prioridad' => $ticket->prioridad,
+                                    
                                         'descripcion' => $ticket->descripcion,
+                                    
                                         'estado' => strtolower($ticket->estado ?? ''),
                                     
                                         'tomado_por' => $ticket->tomadoPor
                                             ? [
                                                 'id' => $ticket->tomadoPor->id,
+                                    
                                                 'name' => $ticket->tomadoPor->name,
-                                                'foto' => $ticket->tomadoPor->foto,
+                                    
+                                                'login' => $ticket->tomadoPor->login,
+                                    
+                                                'foto' => $ticket->tomadoPor->foto ? Storage::url($ticket->tomadoPor->foto) : null,
                                             ]
                                             : null,
                                     
                                         'user' => $ticket->user
                                             ? [
                                                 'id' => $ticket->user->id,
+                                    
                                                 'name' => $ticket->user->name,
+                                    
+                                                'login' => $ticket->user->login,
+                                    
                                                 'foto' => $ticket->user->foto ? Storage::url($ticket->user->foto) : null,
                                             ]
                                             : null,
+                                    
                                         'comentarios' => $comentariosData,
                                     
                                         'solucion' => $ticket->solucion
                                             ? [
                                                 'id' => $ticket->solucion->id,
+                                    
                                                 'ticket_id' => $ticket->solucion->ticket_id,
+                                    
                                                 'solucionado_por' => $ticket->solucion->solucionado_por,
+                                    
                                                 'solucion' => $ticket->solucion->solucion,
+                                    
                                                 'problema_solucionado' => (bool) $ticket->solucion->problema_solucionado,
+                                    
                                                 'firma' => $ticket->solucion->firma,
+                                    
                                                 'url_firma' => $ticket->solucion->firma ? Storage::url($ticket->solucion->firma) : null,
+                                    
                                                 'nombre_firmante' => $ticket->solucion->nombre_firmante,
+                                    
                                                 'fecha_solucion' => $ticket->solucion->fecha_solucion,
+                                    
                                                 'fecha_firma' => $ticket->solucion->fecha_firma,
                                     
                                                 'evidencia' => $ticket->solucion->evidencia,
@@ -782,32 +783,27 @@
 
                                     <td class="py-5 px-4 text-center whitespace-nowrap">
 
-                                        <button type="button"
-                                            @click="abrirTicket(
-                                                {{ Js::from($ticketData) }}
-                                                    )"
+                                        {{-- VER TICKET --}}
+                                        <button type="button" @click="abrirTicket({{ Js::from($ticketData) }})"
                                             class="text-slate-400 hover:text-blue-400 p-2 rounded-lg hover:bg-blue-500/10 transition"
                                             title="Ver ticket">
-
-                                            <i data-lucide="eye" class="w-4 h-4">
-                                            </i>
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
                                         </button>
+
+
+                                        {{-- VER SOLUCIÓN --}}
                                         <button type="button"
-                                            @click="
-        abrirModalSolucion(
+                                            @click="abrirModalSolucion(
             {{ Js::from($ticketData) }},
             {{ $ticket->estado === 'solucionado' ? 'true' : 'false' }}
-        )
-    "
+        )"
                                             @if ($ticket->estado !== 'solucionado') disabled @endif
                                             class="p-2 rounded-lg transition
-        {{ $ticket->estado !== 'solucionado'
-            ? 'opacity-40 cursor-not-allowed text-slate-500'
-            : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10' }}"
+            {{ $ticket->estado !== 'solucionado'
+                ? 'opacity-40 cursor-not-allowed text-slate-500'
+                : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10' }}"
                                             title="{{ $ticket->estado === 'solucionado' ? 'Ver solución' : 'El ticket aún no está solucionado' }}">
-
                                             <i data-lucide="hand" class="w-4 h-4"></i>
-
                                         </button>
 
                                     </td>
@@ -2134,19 +2130,6 @@
                         class="px-5 py-2.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all duration-200">
 
                         Cerrar
-
-                    </button>
-
-
-                    <button type="button" x-show="!tieneTomado(selectedTicket)" @click="tomarTicket()"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold border border-blue-500/40 shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
-
-                        <i data-lucide="hand" class="w-4 h-4">
-                        </i>
-
-                        <span>
-                            Tomar ticket
-                        </span>
 
                     </button>
 

@@ -163,6 +163,10 @@ Route::middleware(['guest'])->group(function () {
 
 });
 
+Route::patch('/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
+    ->middleware('auth')
+    ->name('notificaciones.marcarLeidas');
+
 
 /* RUTAS DE LOS USUARIOS QUE CREARAN TICKETS */
 
@@ -170,9 +174,6 @@ Route::middleware(['auth', 'role:usuario'])->group(function () {
 
    Route::get('/dashboard', [ UsuarioController::class,'index'])
    ->name('dashboard');
-
-       Route::patch('/dashboard/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
-    ->name('notificacionesusuario.marcarLeidas');
 
     Route::get('/dashboard/tickets', [TicketController::class, 'create'])
         ->name('ticketusuario');
@@ -210,8 +211,7 @@ Route::middleware(['auth', 'role:tecnologias'])->group(function () {
 
  Route::get('/tecnologias', [TecnologiasController::class, 'index'])
     ->name('tecnologias');
-    Route::patch('/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
-    ->name('notificaciones.marcarLeidas');
+
 Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
     ->name('tecnologias.evolucion');
 

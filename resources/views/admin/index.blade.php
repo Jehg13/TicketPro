@@ -31,7 +31,7 @@
                         {{ Auth::user()->name ?? 'Juan Pérez' }}
                     </h4>
                     <p class="text-xs text-slate-400 truncate">
-                        {{ Auth::user()->departamento->nombre ?? 'jperez@cymez.com' }}
+                        {{ Auth::user()->departamento->nombre ?? 'Sin departamento' }}
                     </p>
                 </div>
             </div>
@@ -1201,10 +1201,10 @@
     </main>
     <script>
         /*
-                |--------------------------------------------------------------------------
-                | EVOLUCIÓN DE TICKETS
-                |--------------------------------------------------------------------------
-                */
+                    |--------------------------------------------------------------------------
+                    | EVOLUCIÓN DE TICKETS
+                    |--------------------------------------------------------------------------
+                    */
 
         window.evolucionTickets = function() {
 

@@ -96,14 +96,10 @@
 
                 <!-- PERFIL -->
                 <a href="{{ route('perfiltecnologias') }}"
-                    class="flex items-center gap-3
-                           px-4 py-3
-                           text-sm text-slate-300
-                           hover:bg-[#151b3b]
-                           hover:text-white
-                           transition-colors">
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30 transition">
 
-                    <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400">
+
+                    <i data-lucide="circle-user-round" class="w-5 h-5">
                     </i>
 
                     <span>

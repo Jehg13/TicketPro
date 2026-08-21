@@ -13,7 +13,7 @@ class CheckRole
     {
         $usuario = Auth::user();
 
-        if (!$usuario || $usuario->rol !== $role) {
+        if (!$usuario || $usuario->role !== $role) {
             abort(403, 'No tienes los permisos requeridos para acceder a esta sección.');
         }
 

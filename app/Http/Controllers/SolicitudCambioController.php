@@ -25,6 +25,8 @@ class SolicitudCambioController extends Controller
 
         $usuario = Auth::user();
 
+        $login = $usuario->login;
+
 
         /*
         |--------------------------------------------------------------------------
@@ -100,6 +102,11 @@ class SolicitudCambioController extends Controller
                                         'email',
                                         'LIKE',
                                         "%{$buscar}%"
+                                    )
+                                    ->orWhere(
+                                        'login',
+                                        'LIKE',
+                                        "%{$buscar}%"
                                     );
                             }
                         );
@@ -171,24 +178,12 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         | NOTIFICACIONES - TECNOLOGÍAS
         |--------------------------------------------------------------------------
-        |
-        | IMPORTANTE:
-        |
-        | Esta vista pertenece al área de Tecnologías.
-        |
-        | Los avisos generales NO deben aparecer aquí.
-        |
-        | Por eso excluimos:
-        |
-        | tipo = aviso
-        |
-        |--------------------------------------------------------------------------
         */
 
         $notificaciones =
             Notificacion::where(
-                'user_id',
-                $usuario->id
+                'login',
+                $login
             )
                 ->where(
                     'tipo',
@@ -206,16 +201,12 @@ class SolicitudCambioController extends Controller
         |--------------------------------------------------------------------------
         | NOTIFICACIONES NO LEÍDAS
         |--------------------------------------------------------------------------
-        |
-        | El contador tampoco debe considerar los avisos.
-        |
-        |--------------------------------------------------------------------------
         */
 
         $notificacionesNoLeidas =
             Notificacion::where(
-                'user_id',
-                $usuario->id
+                'login',
+                $login
             )
                 ->where(
                     'tipo',
@@ -267,31 +258,13 @@ class SolicitudCambioController extends Controller
             'admin.cambios',
             compact(
 
-                /*
-                |------------------------------------------------------------------
-                | SOLICITUDES
-                |------------------------------------------------------------------
-                */
-
                 'solicitudes',
                 'seleccionada',
-
-                /*
-                |------------------------------------------------------------------
-                | ESTADÍSTICAS
-                |------------------------------------------------------------------
-                */
 
                 'total',
                 'pendientes',
                 'aprobadas',
                 'rechazadas',
-
-                /*
-                |------------------------------------------------------------------
-                | NOTIFICACIONES
-                |------------------------------------------------------------------
-                */
 
                 'notificaciones',
                 'notificacionesNoLeidas'
@@ -359,6 +332,15 @@ class SolicitudCambioController extends Controller
 
         $solicitud->comentario_admin =
             $request->comentario_admin;
+
+        /*
+        |----------------------------------------------------------------------
+        | REVISADO POR
+        |----------------------------------------------------------------------
+        |
+        | Si revisado_por todavía usa el ID numérico, deja Auth::id().
+        |
+        */
 
         $solicitud->revisado_por =
             Auth::id();
@@ -462,6 +444,12 @@ class SolicitudCambioController extends Controller
         $solicitud->comentario_admin =
             $request->comentario_admin;
 
+        /*
+        |----------------------------------------------------------------------
+        | REVISADO POR
+        |----------------------------------------------------------------------
+        */
+
         $solicitud->revisado_por =
             Auth::id();
 
@@ -517,14 +505,14 @@ class SolicitudCambioController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | OBTENER USUARIO
+        | OBTENER LOGIN DEL USUARIO
         |--------------------------------------------------------------------------
         */
 
-        $usuarioId =
-            $solicitud->user_id;
+        $login =
+            $solicitud->login;
 
-        if (!$usuarioId) {
+        if (!$login) {
 
             return;
         }
@@ -593,19 +581,14 @@ class SolicitudCambioController extends Controller
         | CREAR NOTIFICACIÓN
         |--------------------------------------------------------------------------
         |
-        | Esta notificación se manda al usuario que realizó
-        | la solicitud.
+        | Ahora la notificación se relaciona mediante login.
         |
-        | Tecnologías NO recibe esta notificación porque
-        | user_id pertenece al solicitante.
-        |
-        |--------------------------------------------------------------------------
         */
 
         Notificacion::create([
 
-            'user_id' =>
-                $usuarioId,
+            'login' =>
+                $login,
 
             'tipo' =>
                 'solicitud_cambio',

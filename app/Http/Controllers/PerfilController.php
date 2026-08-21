@@ -19,34 +19,36 @@ class PerfilController extends Controller
 
     public function create()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
 
         /*
         |--------------------------------------------------------------------------
         | NOTIFICACIONES
         |--------------------------------------------------------------------------
         |
-        | Tecnologías:
-        |   - NO recibe avisos
-        |   - SÍ recibe solicitudes de cambio
+        | Ahora se relacionan mediante:
         |
-        | Usuarios normales:
-        |   - Pueden recibir avisos y demás notificaciones
+        | notificaciones.login = users.login
         |
         */
 
         $queryNotificaciones = Notificacion::where(
-            'user_id',
-            $user->id
+            'login',
+            $user->login
         );
 
         /*
         |--------------------------------------------------------------------------
-        | TECNOLOGÍAS NO DEBE VER NOTIFICACIONES DE AVISOS
+        | TECNOLOGÍAS NO VE AVISOS
         |--------------------------------------------------------------------------
         */
 
-        if ($user->rol === 'tecnologias') {
+        if ($user->role === 'tecnologias') {
 
             $queryNotificaciones->where(
                 'tipo',
@@ -55,22 +57,21 @@ class PerfilController extends Controller
             );
         }
 
-        $notificaciones =
-            $queryNotificaciones
-                ->orderByDesc('created_at')
-                ->limit(10)
-                ->get();
+        $notificaciones = $queryNotificaciones
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
 
 
         /*
         |--------------------------------------------------------------------------
-        | CONTADOR DE NOTIFICACIONES NO LEÍDAS
+        | NOTIFICACIONES NO LEÍDAS
         |--------------------------------------------------------------------------
         */
 
         $queryNoLeidas = Notificacion::where(
-            'user_id',
-            $user->id
+            'login',
+            $user->login
         )
             ->where(
                 'leida',
@@ -83,7 +84,7 @@ class PerfilController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($user->rol === 'tecnologias') {
+        if ($user->role === 'tecnologias') {
 
             $queryNoLeidas->where(
                 'tipo',
@@ -98,11 +99,11 @@ class PerfilController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | VISTA
+        | MOSTRAR VISTA SEGÚN ROL
         |--------------------------------------------------------------------------
         */
 
-        if ($user->rol === 'tecnologias') {
+        if ($user->role === 'tecnologias') {
 
             return view(
                 'admin.perfil',
@@ -129,22 +130,25 @@ class PerfilController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function update(
-        Request $request
-    ) {
-
+    public function update(Request $request)
+    {
         $request->validate([
+
             'foto' => [
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png',
                 'max:2048',
             ],
+
         ]);
 
-
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
 
 
         /*
@@ -170,14 +174,12 @@ class PerfilController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $path =
-            $request
-                ->file('foto')
-                ->store(
-                    'profile-photos',
-                    'public'
-                );
-
+        $path = $request
+            ->file('foto')
+            ->store(
+                'profile-photos',
+                'public'
+            );
 
         $user->foto = $path;
 
@@ -200,7 +202,11 @@ class PerfilController extends Controller
     public function delete()
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
 
 
         /*
@@ -222,7 +228,7 @@ class PerfilController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | COLOCAR FOTO POR DEFECTO
+        | FOTO POR DEFECTO
         |--------------------------------------------------------------------------
         */
 
@@ -245,12 +251,14 @@ class PerfilController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function updateTecnologias(
-        Request $request
-    ) {
-
+    public function updateTecnologias(Request $request)
+    {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
 
 
         /*
@@ -259,10 +267,7 @@ class PerfilController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $user->rol !== 'tecnologias'
-        ) {
-
+        if ($user->role !== 'tecnologias') {
             abort(403);
         }
 
@@ -293,6 +298,7 @@ class PerfilController extends Controller
                 'string',
                 'max:255',
             ],
+
         ]);
 
 
@@ -340,10 +346,8 @@ class PerfilController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function solicitarCambio(
-        Request $request
-    ) {
-
+    public function solicitarCambio(Request $request)
+    {
         /*
         |--------------------------------------------------------------------------
         | VALIDACIÓN
@@ -369,17 +373,22 @@ class PerfilController extends Controller
                 'string',
                 'max:1000',
             ],
+
         ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | USUARIO ACTUAL
+        | USUARIO AUTENTICADO
         |--------------------------------------------------------------------------
         */
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if (!$user) {
+            abort(401);
+        }
 
 
         /*
@@ -452,52 +461,48 @@ class PerfilController extends Controller
         |--------------------------------------------------------------------------
         | CREAR SOLICITUD
         |--------------------------------------------------------------------------
+        |
+        | solicitud_cambios.login = users.login
+        |
         */
 
-        $solicitud =
-            SolicitudCambio::create([
+        $solicitud = SolicitudCambio::create([
 
-                'user_id' =>
-                    $user->id,
+            'login' =>
+                $user->login,
 
-                'campo' =>
-                    $request->campo,
+            'campo' =>
+                $request->campo,
 
-                'valor_actual' =>
-                    $valorActual,
+            'valor_actual' =>
+                $valorActual,
 
-                'nuevo_valor' =>
-                    $request->nuevo_valor,
+            'nuevo_valor' =>
+                $request->nuevo_valor,
 
-                'motivo' =>
-                    $request->motivo,
+            'motivo' =>
+                $request->motivo,
 
-                'estado' =>
-                    'pendiente',
-            ]);
+            'estado' =>
+                'pendiente',
+
+        ]);
 
 
         /*
         |--------------------------------------------------------------------------
         | OBTENER USUARIOS DE TECNOLOGÍAS
         |--------------------------------------------------------------------------
-        |
-        | Las solicitudes de cambio SÍ se notifican a Tecnologías.
-        |
-        | No se envían a:
-        | - El usuario que realizó la solicitud.
-        |
         */
 
-        $tecnologias =
-            User::where(
-                'rol',
-                'tecnologias'
-            )
+        $tecnologias = User::where(
+            'role',
+            'tecnologias'
+        )
             ->where(
-                'id',
+                'login',
                 '!=',
-                $user->id
+                $user->login
             )
             ->get();
 
@@ -524,8 +529,8 @@ class PerfilController extends Controller
 
             'ubicacion' =>
                 'ubicación',
-        ];
 
+        ];
 
         $nombreCampo =
             $nombresCampos[
@@ -535,26 +540,25 @@ class PerfilController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | CREAR NOTIFICACIÓN PARA TECNOLOGÍAS
+        | CREAR NOTIFICACIONES PARA TECNOLOGÍAS
         |--------------------------------------------------------------------------
         */
 
-        foreach (
-            $tecnologias
-            as $tecnico
-        ) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | ASEGURAR QUE SOLO SEA UNA NOTIFICACIÓN
-            | DE SOLICITUD DE CAMBIO
-            |--------------------------------------------------------------------------
-            */
+        foreach ($tecnologias as $tecnico) {
 
             Notificacion::create([
 
-                'user_id' =>
-                    $tecnico->id,
+                /*
+                |--------------------------------------------------------------------------
+                | DESTINATARIO
+                |--------------------------------------------------------------------------
+                |
+                | notificaciones.login = users.login
+                |
+                */
+
+                'login' =>
+                    $tecnico->login,
 
                 'tipo' =>
                     'solicitud_cambio',

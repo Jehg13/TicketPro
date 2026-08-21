@@ -31,16 +31,16 @@ class AvisosusuarioController extends Controller
         );
 
         $notificaciones = Notificacion::where(
-            'user_id',
-            $usuarioId
+            'login',
+            $usuario->login
         )
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
         $notificacionesNoLeidas = Notificacion::where(
-            'user_id',
-            $usuarioId
+            'login',
+            $usuario->login
         )
             ->where('leida', false)
             ->count();

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\TicketComentario;
 use App\Models\Solucion;
+use App\Models\Oficina;
 
 class TicketU extends Model
 {
@@ -14,7 +15,7 @@ class TicketU extends Model
 
     protected $fillable = [
         'folio',
-        'user_id',
+        'login',
         'titulo',
         'tipo_falla',
         'prioridad',
@@ -40,12 +41,18 @@ class TicketU extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(
+            User::class,
+            'login',
+            'login'
+        );
     }
 
     public function oficina()
     {
-        return $this->belongsTo(Oficina::class);
+        return $this->belongsTo(
+            Oficina::class
+        );
     }
 
     public function historialComentarios()
@@ -54,12 +61,19 @@ class TicketU extends Model
             TicketComentario::class,
             'ticket_id',
             'id'
-        )->orderBy('created_at', 'asc');
+        )->orderBy(
+            'created_at',
+            'asc'
+        );
     }
 
     public function tomadoPor()
     {
-        return $this->belongsTo(User::class, 'tomado_por');
+        return $this->belongsTo(
+            User::class,
+            'tomado_por',
+            'login'
+        );
     }
 
     public function solucion()

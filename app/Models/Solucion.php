@@ -11,6 +11,7 @@ class Solucion extends Model
 
     protected $fillable = [
         'ticket_id',
+        'login',
         'solucionado_por',
         'problema_solucionado',
         'solucion',
@@ -18,21 +19,22 @@ class Solucion extends Model
         'fecha_solucion',
         'nombre_firmante',
         'fecha_firma',
-        'evidencia'
+        'evidencia',
     ];
 
     protected $casts = [
         'problema_solucionado' => 'boolean',
         'fecha_solucion' => 'datetime',
         'fecha_firma' => 'datetime',
-            'evidencia' => 'array',
+        'evidencia' => 'array',
     ];
 
     public function solucionadoPor(): BelongsTo
     {
         return $this->belongsTo(
             User::class,
-            'solucionado_por'
+            'solucionado_por',
+            'login'
         );
     }
 
@@ -43,6 +45,4 @@ class Solucion extends Model
             'ticket_id'
         );
     }
-
-    
 }

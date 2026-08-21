@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notificacion extends Model
 {
-        protected $table = 'notificaciones';
+    protected $table = 'notificaciones';
+
     protected $fillable = [
-        'user_id',
+        'login',
         'tipo',
         'titulo',
         'mensaje',
@@ -26,6 +27,10 @@ class Notificacion extends Model
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(
+            User::class,
+            'login',
+            'login'
+        );
     }
 }

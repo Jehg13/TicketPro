@@ -23,6 +23,8 @@ document.addEventListener('alpine:init', () => {
 
         ticketsActualizados: {},
 
+        ticketsTomadosLocal: {},
+
         _comentariosAbortController: null,
         _comentariosRequestId: 0,
         _comentariosTicketId: null,
@@ -36,7 +38,7 @@ document.addEventListener('alpine:init', () => {
         _firmaAbortController: null,
         _firmaCanvas: null,
         _firmaContext: null,
-
+usuarioActualLogin: window.usuarioActualLogin || '',
         solucionForm: {
             solucion: '',
             solucionado: null,
@@ -46,6 +48,9 @@ document.addEventListener('alpine:init', () => {
         },
 
         init() {
+
+            console.log('USUARIO ACTUAL ID:', window.usuarioActualId);
+    console.log('USUARIO ACTUAL LOGIN:', window.usuarioActualLogin);
 
             if (
                 window.usuarioActualId !== undefined &&
@@ -63,9 +68,145 @@ document.addEventListener('alpine:init', () => {
             this.busqueda =
                 String(this.busqueda || '').trim();
 
+            this.cargarTicketsTomadosLocal();
+
             this.$nextTick(() => {
                 this.actualizarIconos();
             });
+        },
+
+        cargarTicketsTomadosLocal() {
+
+            if (
+                this.usuarioActualId === null ||
+                this.usuarioActualId === undefined
+            ) {
+                return;
+            }
+
+            try {
+
+                const clave =
+                    `ticketpro_tickets_tomados_${this.usuarioActualId}`;
+
+                const guardado =
+                    localStorage.getItem(clave);
+
+                if (!guardado) {
+                    this.ticketsTomadosLocal = {};
+                    return;
+                }
+
+                const datos =
+                    JSON.parse(guardado);
+
+                if (
+                    datos &&
+                    typeof datos === 'object'
+                ) {
+                    this.ticketsTomadosLocal = datos;
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando tickets tomados:',
+                    error
+                );
+
+                this.ticketsTomadosLocal = {};
+            }
+        },
+
+        guardarTicketsTomadosLocal() {
+
+            if (
+                this.usuarioActualId === null ||
+                this.usuarioActualId === undefined
+            ) {
+                return;
+            }
+
+            try {
+
+                const clave =
+                    `ticketpro_tickets_tomados_${this.usuarioActualId}`;
+
+                localStorage.setItem(
+                    clave,
+                    JSON.stringify(
+                        this.ticketsTomadosLocal
+                    )
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Error guardando tickets tomados:',
+                    error
+                );
+            }
+        },
+
+        registrarTicketTomadoLocal(
+            ticketId,
+            tecnico = null
+        ) {
+
+            if (!ticketId) {
+                return;
+            }
+
+            const id =
+                Number(ticketId);
+
+            this.ticketsTomadosLocal[id] = {
+                id: id,
+                usuario_id:
+                    this.usuarioActualId,
+                tomado_por:
+                    tecnico,
+                fecha:
+                    new Date().toISOString()
+            };
+
+            this.guardarTicketsTomadosLocal();
+        },
+
+        eliminarTicketTomadoLocal(ticketId) {
+
+            if (!ticketId) {
+                return;
+            }
+
+            const id =
+                Number(ticketId);
+
+            delete this.ticketsTomadosLocal[id];
+
+            this.guardarTicketsTomadosLocal();
+        },
+
+        ticketTomadoLocalmente(ticketId) {
+
+            if (!ticketId) {
+                return false;
+            }
+
+            const id =
+                Number(ticketId);
+
+            const registro =
+                this.ticketsTomadosLocal[id];
+
+            if (!registro) {
+                return false;
+            }
+
+            return (
+                Number(registro.usuario_id) ===
+                Number(this.usuarioActualId)
+            );
         },
 
         abrirTicket(ticket, comentariosIniciales = []) {
@@ -129,27 +270,6 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
-        mostrarTicket(estado, ticket) {
-
-            if (!ticket) {
-                return false;
-            }
-
-            const filtroActual =
-                String(this.filtro || 'todos')
-                    .trim()
-                    .toLowerCase();
-
-            if (filtroActual === 'mis tickets') {
-
-                const datos =
-                    this.obtenerDatosTicket(ticket);
-
-                return this.esMiTicket(datos);
-            }
-
-            return true;
-        },
         cerrarModal() {
 
             this.cancelarCargaComentarios();
@@ -176,221 +296,66 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
-        cancelarCargaComentarios() {
+        mostrarTicket(estado, ticket) {
 
-            if (this._comentariosAbortController) {
-
-                try {
-                    this._comentariosAbortController.abort();
-                } catch (error) { }
+            if (!ticket) {
+                return false;
             }
 
-            this._comentariosAbortController = null;
-            this._comentariosRequestId++;
+            const filtroActual =
+                String(this.filtro || 'todos')
+                    .trim()
+                    .toLowerCase();
+
+            if (filtroActual === 'mis tickets') {
+
+                return this.esMiTicket(ticket);
+            }
+
+            return true;
         },
 
-        eliminarComentariosDuplicados(comentarios) {
+        esMiTicket(ticket) {
 
-            if (!Array.isArray(comentarios)) {
-                return [];
-            }
+    if (!ticket) {
+        return false;
+    }
 
-            const mapa = new Map();
+    const datos =
+        this.obtenerDatosTicket(ticket);
 
-            comentarios.forEach(comentario => {
+    const loginActual =
+        String(this.usuarioActualLogin || '')
+            .trim()
+            .toLowerCase();
 
-                if (
-                    !comentario ||
-                    typeof comentario !== 'object'
-                ) {
-                    return;
-                }
+    if (!loginActual) {
+        return false;
+    }
 
-                if (
-                    comentario.id !== null &&
-                    comentario.id !== undefined
-                ) {
+    const tomadoPor =
+        datos?.tomado_por;
 
-                    mapa.set(
-                        `id-${comentario.id}`,
-                        comentario
-                    );
+    if (!tomadoPor) {
+        return false;
+    }
 
-                    return;
-                }
+    const loginTomador =
+        typeof tomadoPor === 'object'
+            ? String(
+                tomadoPor.login ||
+                ''
+            )
+                .trim()
+                .toLowerCase()
+            : '';
 
-                const claveTemporal = [
-                    comentario.mensaje || '',
-                    comentario.archivo || '',
-                    comentario.fecha || '',
-                    comentario.created_at || ''
-                ].join('|');
+    return (
+        loginTomador !== '' &&
+        loginTomador === loginActual
+    );
+},
 
-                if (!mapa.has(claveTemporal)) {
-
-                    mapa.set(
-                        claveTemporal,
-                        comentario
-                    );
-                }
-            });
-
-            return Array.from(mapa.values());
-        },
-
-        obtenerFechaComentario(comentario) {
-
-            if (!comentario) {
-                return 0;
-            }
-
-            const posiblesFechas = [
-                comentario.created_at,
-                comentario.updated_at,
-                comentario.fecha,
-                comentario.fecha_creacion,
-                comentario.createdAt
-            ];
-
-            for (const fecha of posiblesFechas) {
-
-                if (!fecha) {
-                    continue;
-                }
-
-                const tiempo =
-                    new Date(fecha).getTime();
-
-                if (Number.isFinite(tiempo)) {
-                    return tiempo;
-                }
-            }
-
-            return 0;
-        },
-
-        ordenarComentarios(comentarios) {
-
-            if (!Array.isArray(comentarios)) {
-                return [];
-            }
-
-            return [...comentarios].sort((a, b) => {
-
-                const fechaA =
-                    this.obtenerFechaComentario(a);
-
-                const fechaB =
-                    this.obtenerFechaComentario(b);
-
-                if (
-                    fechaA &&
-                    fechaB &&
-                    fechaA !== fechaB
-                ) {
-                    return fechaA - fechaB;
-                }
-
-                const idA = Number(a?.id);
-                const idB = Number(b?.id);
-
-                if (
-                    Number.isFinite(idA) &&
-                    Number.isFinite(idB)
-                ) {
-                    return idA - idB;
-                }
-
-                return 0;
-            });
-        },
-
-        normalizarComentario(comentario) {
-
-            if (
-                !comentario ||
-                typeof comentario !== 'object'
-            ) {
-                return null;
-            }
-
-            return {
-                ...comentario,
-
-                id:
-                    comentario.id !== undefined &&
-                        comentario.id !== null
-                        ? Number(comentario.id)
-                        : comentario.id,
-
-                mensaje:
-                    comentario.mensaje ??
-                    comentario.message ??
-                    '',
-
-                archivo:
-                    comentario.archivo ??
-                    comentario.archivo_url ??
-                    null,
-
-                created_at:
-                    comentario.created_at ??
-                    comentario.fecha ??
-                    null
-            };
-        },
-
-        agregarComentarioNuevo(comentario) {
-
-            const normalizado =
-                this.normalizarComentario(comentario);
-
-            if (!normalizado) {
-                return;
-            }
-
-            if (
-                normalizado.id !== null &&
-                normalizado.id !== undefined
-            ) {
-
-                this._ultimoComentarioEnviadoId =
-                    Number(normalizado.id);
-            }
-
-            this.comentarios =
-                this.ordenarComentarios(
-                    this.eliminarComentariosDuplicados([
-                        ...this.comentarios,
-                        normalizado
-                    ])
-                );
-
-            this.$nextTick(() => {
-
-                this.scrollComentariosAlFinal();
-                this.actualizarIconos();
-
-            });
-        },
-
-        scrollComentariosAlFinal() {
-
-            this.$nextTick(() => {
-
-                const lista =
-                    document.getElementById(
-                        'listaComentarios'
-                    );
-
-                if (!lista) {
-                    return;
-                }
-
-                lista.scrollTop =
-                    lista.scrollHeight;
-            });
-        },
 
         tomarTicket(ticket = null) {
 
@@ -481,7 +446,8 @@ document.addEventListener('alpine:init', () => {
                             'XMLHttpRequest'
                     },
 
-                    body: JSON.stringify({})
+                    body:
+                        JSON.stringify({})
                 }
             )
                 .then(async response => {
@@ -489,8 +455,10 @@ document.addEventListener('alpine:init', () => {
                     let data = {};
 
                     try {
+
                         data =
                             await response.json();
+
                     } catch (error) {
 
                         console.error(
@@ -541,6 +509,7 @@ document.addEventListener('alpine:init', () => {
                         );
 
                     this.selectedTicket = {
+
                         ...this.selectedTicket,
 
                         estado:
@@ -554,6 +523,7 @@ document.addEventListener('alpine:init', () => {
                     };
 
                     this.ticketsActualizados[ticketId] = {
+
                         ...(
                             this.ticketsActualizados[ticketId] ||
                             {}
@@ -569,9 +539,27 @@ document.addEventListener('alpine:init', () => {
                             fechaTomado
                     };
 
+                    this.registrarTicketTomadoLocal(
+                        ticketId,
+                        tecnicoNormalizado
+                    );
+
                     this.tomandoTicket = false;
 
                     this.actualizarIconos();
+
+                    this.$nextTick(() => {
+
+                        if (
+                            String(this.filtro)
+                                .trim()
+                                .toLowerCase() ===
+                            'mis tickets'
+                        ) {
+                            this.filtro =
+                                'mis tickets';
+                        }
+                    });
 
                 })
                 .catch(error => {
@@ -601,8 +589,11 @@ document.addEventListener('alpine:init', () => {
             ) {
 
                 return {
-                    id: Number(tecnico),
-                    name: 'Técnico'
+                    id:
+                        Number(tecnico),
+
+                    name:
+                        'Técnico'
                 };
             }
 
@@ -630,17 +621,466 @@ document.addEventListener('alpine:init', () => {
 
             return resultado;
         },
-limpiarBusqueda() {
 
-    this.busqueda = '';
+        ticketActualizado(id) {
 
-    const url = new URL(window.location.href);
+            if (
+                id === null ||
+                id === undefined
+            ) {
+                return null;
+            }
 
-    url.searchParams.delete('buscar');
-    url.searchParams.delete('page');
+            return (
+                this.ticketsActualizados[id] ||
+                this.ticketsActualizados[String(id)] ||
+                null
+            );
+        },
 
-    window.location.href = url.toString();
-},
+        obtenerDatosTicket(ticket) {
+
+            if (!ticket) {
+                return {};
+            }
+
+            const actualizado =
+                this.ticketActualizado(
+                    ticket.id
+                );
+
+            let datos = {
+                ...ticket
+            };
+
+            if (actualizado) {
+
+                let tomadoPor =
+                    actualizado.tomado_por !== undefined
+                        ? actualizado.tomado_por
+                        : ticket.tomado_por;
+
+                if (tomadoPor) {
+
+                    tomadoPor =
+                        this.normalizarTecnico(
+                            tomadoPor
+                        );
+                }
+
+                datos = {
+
+                    ...ticket,
+
+                    estado:
+                        actualizado.estado ??
+                        ticket.estado,
+
+                    tomado_por:
+                        tomadoPor,
+
+                    fecha_tomado:
+                        actualizado.fecha_tomado ??
+                        ticket.fecha_tomado,
+
+                    solucion:
+                        actualizado.solucion ??
+                        ticket.solucion
+                };
+            }
+
+            if (
+                !datos.tomado_por &&
+                this.ticketTomadoLocalmente(datos.id)
+            ) {
+
+                const local =
+                    this.ticketsTomadosLocal[
+                        Number(datos.id)
+                    ];
+
+                if (local) {
+
+                    datos.tomado_por =
+                        local.tomado_por || {
+                            id:
+                                this.usuarioActualId,
+
+                            name:
+                                'Técnico'
+                        };
+
+                    datos.estado =
+                        datos.estado ||
+                        'en proceso';
+
+                    datos.fecha_tomado =
+                        datos.fecha_tomado ||
+                        local.fecha;
+                }
+            }
+
+            return datos;
+        },
+
+        obtenerEstado(ticket) {
+
+            const datos =
+                this.obtenerDatosTicket(ticket);
+
+            const estado =
+                String(
+                    datos?.estado ?? ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+            if (
+                !estado &&
+                datos?.tomado_por
+            ) {
+                return 'en proceso';
+            }
+
+            return estado;
+        },
+
+        obtenerTecnico(ticket) {
+
+            const datos =
+                this.obtenerDatosTicket(ticket);
+
+            if (
+                !datos ||
+                !datos.tomado_por
+            ) {
+                return null;
+            }
+
+            if (
+                typeof datos.tomado_por === 'object'
+            ) {
+
+                return datos.tomado_por;
+            }
+
+            return {
+
+                id:
+                    datos.tomado_por,
+
+                name:
+                    'Técnico'
+            };
+        },
+
+        nombreTecnico(ticket) {
+
+            const tecnico =
+                this.obtenerTecnico(ticket);
+
+            if (!tecnico) {
+                return 'Sin asignar';
+            }
+
+            return (
+                tecnico.name ||
+                tecnico.nombre ||
+                'Técnico'
+            );
+        },
+
+        nombreTomadoPor(ticket) {
+
+            const tecnico =
+                this.obtenerTecnico(ticket);
+
+            if (!tecnico) {
+                return 'Sin asignar';
+            }
+
+            return (
+                tecnico.name ||
+                tecnico.nombre ||
+                'Técnico'
+            );
+        },
+
+        tieneTomado(ticket) {
+
+            const tecnico =
+                this.obtenerTecnico(ticket);
+
+            return Boolean(tecnico);
+        },
+
+        puedeTomarTicket(ticket) {
+
+            if (!ticket) {
+                return false;
+            }
+
+            const datos =
+                this.obtenerDatosTicket(ticket);
+
+            const estado =
+                this.obtenerEstado(datos);
+
+            if (
+                estado === 'solucionado' ||
+                estado === 'cancelado'
+            ) {
+                return false;
+            }
+
+            if (
+                this.tieneTomado(datos)
+            ) {
+                return false;
+            }
+
+            if (this.tomandoTicket) {
+                return false;
+            }
+
+            return true;
+        },
+
+        cancelarCargaComentarios() {
+
+            if (this._comentariosAbortController) {
+
+                try {
+
+                    this._comentariosAbortController.abort();
+
+                } catch (error) { }
+            }
+
+            this._comentariosAbortController = null;
+            this._comentariosRequestId++;
+        },
+
+        eliminarComentariosDuplicados(comentarios) {
+
+            if (!Array.isArray(comentarios)) {
+                return [];
+            }
+
+            const mapa = new Map();
+
+            comentarios.forEach(comentario => {
+
+                if (
+                    !comentario ||
+                    typeof comentario !== 'object'
+                ) {
+                    return;
+                }
+
+                if (
+                    comentario.id !== null &&
+                    comentario.id !== undefined
+                ) {
+
+                    mapa.set(
+                        `id-${comentario.id}`,
+                        comentario
+                    );
+
+                    return;
+                }
+
+                const claveTemporal = [
+
+                    comentario.mensaje || '',
+                    comentario.archivo || '',
+                    comentario.fecha || '',
+                    comentario.created_at || ''
+
+                ].join('|');
+
+                if (!mapa.has(claveTemporal)) {
+
+                    mapa.set(
+                        claveTemporal,
+                        comentario
+                    );
+                }
+            });
+
+            return Array.from(
+                mapa.values()
+            );
+        },
+
+        obtenerFechaComentario(comentario) {
+
+            if (!comentario) {
+                return 0;
+            }
+
+            const posiblesFechas = [
+
+                comentario.created_at,
+                comentario.updated_at,
+                comentario.fecha,
+                comentario.fecha_creacion,
+                comentario.createdAt
+
+            ];
+
+            for (const fecha of posiblesFechas) {
+
+                if (!fecha) {
+                    continue;
+                }
+
+                const tiempo =
+                    new Date(fecha).getTime();
+
+                if (
+                    Number.isFinite(tiempo)
+                ) {
+                    return tiempo;
+                }
+            }
+
+            return 0;
+        },
+
+        ordenarComentarios(comentarios) {
+
+            if (!Array.isArray(comentarios)) {
+                return [];
+            }
+
+            return [...comentarios].sort(
+                (a, b) => {
+
+                    const fechaA =
+                        this.obtenerFechaComentario(a);
+
+                    const fechaB =
+                        this.obtenerFechaComentario(b);
+
+                    if (
+                        fechaA &&
+                        fechaB &&
+                        fechaA !== fechaB
+                    ) {
+
+                        return fechaA - fechaB;
+                    }
+
+                    const idA =
+                        Number(a?.id);
+
+                    const idB =
+                        Number(b?.id);
+
+                    if (
+                        Number.isFinite(idA) &&
+                        Number.isFinite(idB)
+                    ) {
+
+                        return idA - idB;
+                    }
+
+                    return 0;
+                }
+            );
+        },
+
+        normalizarComentario(comentario) {
+
+            if (
+                !comentario ||
+                typeof comentario !== 'object'
+            ) {
+                return null;
+            }
+
+            return {
+
+                ...comentario,
+
+                id:
+                    comentario.id !== undefined &&
+                    comentario.id !== null
+                        ? Number(comentario.id)
+                        : comentario.id,
+
+                mensaje:
+                    comentario.mensaje ??
+                    comentario.message ??
+                    '',
+
+                archivo:
+                    comentario.archivo ??
+                    comentario.archivo_url ??
+                    null,
+
+                created_at:
+                    comentario.created_at ??
+                    comentario.fecha ??
+                    null
+            };
+        },
+
+        agregarComentarioNuevo(comentario) {
+
+            const normalizado =
+                this.normalizarComentario(
+                    comentario
+                );
+
+            if (!normalizado) {
+                return;
+            }
+
+            if (
+                normalizado.id !== null &&
+                normalizado.id !== undefined
+            ) {
+
+                this._ultimoComentarioEnviadoId =
+                    Number(normalizado.id);
+            }
+
+            this.comentarios =
+                this.ordenarComentarios(
+                    this.eliminarComentariosDuplicados([
+                        ...this.comentarios,
+                        normalizado
+                    ])
+                );
+
+            this.$nextTick(() => {
+
+                this.scrollComentariosAlFinal();
+                this.actualizarIconos();
+
+            });
+        },
+
+        scrollComentariosAlFinal() {
+
+            this.$nextTick(() => {
+
+                const lista =
+                    document.getElementById(
+                        'listaComentarios'
+                    );
+
+                if (!lista) {
+                    return;
+                }
+
+                lista.scrollTop =
+                    lista.scrollHeight;
+            });
+        },
 
         enviarComentario(form = null) {
 
@@ -769,6 +1209,7 @@ limpiarBusqueda() {
                     method: 'POST',
 
                     headers: {
+
                         'X-CSRF-TOKEN':
                             csrfToken,
 
@@ -865,7 +1306,9 @@ limpiarBusqueda() {
                             data.archivo !== undefined
                         )
                     ) {
-                        comentarioNuevo = data;
+
+                        comentarioNuevo =
+                            data;
                     }
 
                     this.limpiarFormularioComentario(
@@ -1009,6 +1452,7 @@ limpiarBusqueda() {
                     cache: 'no-store',
 
                     headers: {
+
                         'Accept':
                             'application/json',
 
@@ -1306,234 +1750,23 @@ limpiarBusqueda() {
             );
         },
 
-        esMiTicket(ticket) {
+        limpiarBusqueda() {
 
-            if (
-                !ticket ||
-                this.usuarioActualId === null ||
-                this.usuarioActualId === undefined
-            ) {
-                return false;
-            }
+            this.busqueda = '';
 
-            const datos =
-                this.obtenerDatosTicket(ticket);
+            const url =
+                new URL(window.location.href);
 
-            const tomadoPor =
-                datos?.tomado_por;
-
-            if (!tomadoPor) {
-                return false;
-            }
-
-            if (
-                typeof tomadoPor === 'object'
-            ) {
-
-                return (
-                    Number(tomadoPor.id) ===
-                    Number(this.usuarioActualId)
-                );
-            }
-
-            return (
-                Number(tomadoPor) ===
-                Number(this.usuarioActualId)
+            url.searchParams.delete(
+                'buscar'
             );
-        },
 
-        ticketActualizado(id) {
-
-            if (
-                id === null ||
-                id === undefined
-            ) {
-                return null;
-            }
-
-            return (
-                this.ticketsActualizados[id] ||
-                this.ticketsActualizados[String(id)] ||
-                null
+            url.searchParams.delete(
+                'page'
             );
-        },
 
-        obtenerDatosTicket(ticket) {
-
-            if (!ticket) {
-                return {};
-            }
-
-            const actualizado =
-                this.ticketActualizado(
-                    ticket.id
-                );
-
-            if (!actualizado) {
-                return ticket;
-            }
-
-            let tomadoPor =
-                actualizado.tomado_por !== undefined
-                    ? actualizado.tomado_por
-                    : ticket.tomado_por;
-
-            if (tomadoPor) {
-
-                tomadoPor =
-                    this.normalizarTecnico(
-                        tomadoPor
-                    );
-            }
-
-            return {
-                ...ticket,
-
-                estado:
-                    actualizado.estado ??
-                    ticket.estado,
-
-                tomado_por:
-                    tomadoPor,
-
-                fecha_tomado:
-                    actualizado.fecha_tomado ??
-                    ticket.fecha_tomado,
-
-                solucion:
-                    actualizado.solucion ??
-                    ticket.solucion
-            };
-        },
-
-        obtenerEstado(ticket) {
-
-            const datos =
-                this.obtenerDatosTicket(ticket);
-
-            const estado =
-                String(
-                    datos?.estado ?? ''
-                )
-                    .trim()
-                    .toLowerCase();
-
-            if (
-                !estado &&
-                datos?.tomado_por
-            ) {
-                return 'en proceso';
-            }
-
-            return estado;
-        },
-
-        obtenerTecnico(ticket) {
-
-            const datos =
-                this.obtenerDatosTicket(ticket);
-
-            if (
-                !datos ||
-                !datos.tomado_por
-            ) {
-                return null;
-            }
-
-            if (
-                typeof datos.tomado_por === 'object'
-            ) {
-                return datos.tomado_por;
-            }
-
-            return {
-                id:
-                    datos.tomado_por,
-
-                name:
-                    'Técnico'
-            };
-        },
-
-        nombreTecnico(ticket) {
-
-            const tecnico =
-                this.obtenerTecnico(ticket);
-
-            if (!tecnico) {
-                return 'Sin asignar';
-            }
-
-            return (
-                tecnico.name ||
-                tecnico.nombre ||
-                'Técnico'
-            );
-        },
-
-        mostrarTicket(estado, ticket) {
-
-            if (!ticket) {
-                return false;
-            }
-
-            const filtroActual = String(
-                this.filtro || 'todos'
-            )
-                .trim()
-                .toLowerCase();
-
-            // MIS TICKETS
-            if (filtroActual === 'mis tickets') {
-
-                const datos = this.obtenerDatosTicket(ticket);
-
-                return this.esMiTicket(datos);
-            }
-
-            // Los demás filtros ya los hace Laravel.
-            return true;
-        },
-
-        puedeTomarTicket(ticket) {
-
-            if (!ticket) {
-                return false;
-            }
-
-            if (
-                String(this.filtro)
-                    .trim()
-                    .toLowerCase() !==
-                'mis tickets'
-            ) {
-                return false;
-            }
-
-            const datos =
-                this.obtenerDatosTicket(ticket);
-
-            const estado =
-                this.obtenerEstado(datos);
-
-            if (
-                estado === 'solucionado' ||
-                estado === 'cancelado'
-            ) {
-                return false;
-            }
-
-            if (
-                this.tieneTomado(datos)
-            ) {
-                return false;
-            }
-
-            if (this.tomandoTicket) {
-                return false;
-            }
-
-            return true;
+            window.location.href =
+                url.toString();
         },
 
         hayBusquedaYNoHayResultados() {
@@ -1589,14 +1822,22 @@ limpiarBusqueda() {
         limpiarFiltros() {
 
             const url =
-                new URL(window.location.href);
+                new URL(
+                    window.location.href
+                );
 
-            url.searchParams.delete('buscar');
+            url.searchParams.delete(
+                'buscar'
+            );
+
             url.searchParams.set(
                 'filtro',
                 'todos'
             );
-            url.searchParams.delete('page');
+
+            url.searchParams.delete(
+                'page'
+            );
 
             this.filtro = 'todos';
             this.busqueda = '';
@@ -1729,6 +1970,7 @@ limpiarBusqueda() {
                 }
 
                 return {
+
                     url:
                         this.archivoUrl(
                             valor
@@ -1778,6 +2020,7 @@ limpiarBusqueda() {
                     );
 
                 return {
+
                     ...evidencia,
 
                     url:
@@ -2028,35 +2271,30 @@ limpiarBusqueda() {
             ) {
 
                 if (archivo.url_archivo) {
-
                     return this.archivoUrl(
                         archivo.url_archivo
                     );
                 }
 
                 if (archivo.url) {
-
                     return this.archivoUrl(
                         archivo.url
                     );
                 }
 
                 if (archivo.ruta_url) {
-
                     return this.archivoUrl(
                         archivo.ruta_url
                     );
                 }
 
                 if (archivo.ruta) {
-
                     return this.archivoUrl(
                         archivo.ruta
                     );
                 }
 
                 if (archivo.path) {
-
                     return this.archivoUrl(
                         archivo.path
                     );
@@ -2537,30 +2775,6 @@ limpiarBusqueda() {
             });
         },
 
-        nombreTomadoPor(ticket) {
-
-            const tecnico =
-                this.obtenerTecnico(ticket);
-
-            if (!tecnico) {
-                return 'Sin asignar';
-            }
-
-            return (
-                tecnico.name ||
-                tecnico.nombre ||
-                'Técnico'
-            );
-        },
-
-        tieneTomado(ticket) {
-
-            const tecnico =
-                this.obtenerTecnico(ticket);
-
-            return Boolean(tecnico);
-        },
-
         inicializarFirma() {
 
             this.$nextTick(() => {
@@ -2966,23 +3180,6 @@ limpiarBusqueda() {
             return `/storage/${valor}`;
         },
 
-        cargarFirmaExistente(solucion) {
-
-            const url =
-                this.obtenerFirma(
-                    solucion
-                );
-
-            this.firmaExistente = url;
-
-            return url;
-        },
-
-        limpiarFirmaExistente() {
-
-            this.firmaExistente = '';
-        },
-
         seleccionarEvidencias(evento) {
 
             if (
@@ -3345,6 +3542,7 @@ limpiarBusqueda() {
                     method: 'POST',
 
                     headers: {
+
                         'X-CSRF-TOKEN':
                             csrfToken,
 
@@ -3418,6 +3616,7 @@ limpiarBusqueda() {
                         } catch (error) {
 
                             solucionGuardada = {
+
                                 solucion:
                                     this.solucionForm.solucion.trim()
                             };
@@ -3652,26 +3851,17 @@ limpiarBusqueda() {
                 .slice(0, 16);
         },
 
-        actualizarIconos() {
-
-            this.$nextTick(() => {
-
-                if (
-                    typeof lucide !== 'undefined' &&
-                    typeof lucide.createIcons === 'function'
-                ) {
-
-                    lucide.createIcons();
-                }
-            });
-        },
         buscarTickets() {
 
             const url =
-                new URL(window.location.href);
+                new URL(
+                    window.location.href
+                );
 
             const texto =
-                String(this.busqueda || '').trim();
+                String(
+                    this.busqueda || ''
+                ).trim();
 
             if (texto !== '') {
 
@@ -3687,11 +3877,10 @@ limpiarBusqueda() {
                 );
             }
 
-            // Cuando hacemos una búsqueda,
-            // siempre regresamos a la página 1
-            url.searchParams.delete('page');
+            url.searchParams.delete(
+                'page'
+            );
 
-            // Mantener el filtro actual
             url.searchParams.set(
                 'filtro',
                 this.filtro || 'todos'
@@ -3704,7 +3893,9 @@ limpiarBusqueda() {
         cambiarFiltro(nuevoFiltro) {
 
             const filtroNormalizado =
-                String(nuevoFiltro || 'todos')
+                String(
+                    nuevoFiltro || 'todos'
+                )
                     .trim()
                     .toLowerCase();
 
@@ -3712,7 +3903,9 @@ limpiarBusqueda() {
                 filtroNormalizado;
 
             const url =
-                new URL(window.location.href);
+                new URL(
+                    window.location.href
+                );
 
             url.searchParams.set(
                 'filtro',
@@ -3724,7 +3917,9 @@ limpiarBusqueda() {
             );
 
             const texto =
-                String(this.busqueda || '').trim();
+                String(
+                    this.busqueda || ''
+                ).trim();
 
             if (texto !== '') {
 
@@ -3742,6 +3937,20 @@ limpiarBusqueda() {
 
             window.location.href =
                 url.toString();
+        },
+
+        actualizarIconos() {
+
+            this.$nextTick(() => {
+
+                if (
+                    typeof lucide !== 'undefined' &&
+                    typeof lucide.createIcons === 'function'
+                ) {
+
+                    lucide.createIcons();
+                }
+            });
         }
 
     }));

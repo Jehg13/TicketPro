@@ -12,6 +12,12 @@ class TecnologiasController extends Controller
 {
     private string $timezone = 'America/Matamoros';
 
+    /*
+    |--------------------------------------------------------------------------
+    | INDEX
+    |--------------------------------------------------------------------------
+    */
+
     public function index(Request $request)
     {
         /*
@@ -26,17 +32,11 @@ class TecnologiasController extends Controller
         |--------------------------------------------------------------------------
         | NOTIFICACIONES
         |--------------------------------------------------------------------------
-        |
-        | Obtenemos únicamente las notificaciones pertenecientes
-        | al usuario de tecnologías.
-        |
-        | Se excluyen las notificaciones relacionadas con avisos.
-        |
         */
 
         $notificaciones = Notificacion::where(
-            'user_id',
-            $usuario->id
+            'login',
+            $usuario->login
         )
             ->where('tipo', '!=', 'aviso')
             ->orderByDesc('created_at')
@@ -44,8 +44,8 @@ class TecnologiasController extends Controller
             ->get();
 
         $notificacionesNoLeidas = Notificacion::where(
-            'user_id',
-            $usuario->id
+            'login',
+            $usuario->login
         )
             ->where('tipo', '!=', 'aviso')
             ->where('leida', false)
@@ -433,9 +433,7 @@ class TecnologiasController extends Controller
         */
 
         $ticketsAtendidosSemanaActual =
-            TicketU::whereNotNull(
-                'fecha_tomado'
-            )
+            TicketU::whereNotNull('fecha_tomado')
                 ->whereHas('solucion')
                 ->with('solucion')
                 ->when(
@@ -474,27 +472,23 @@ class TecnologiasController extends Controller
 
         $tiemposSemanaActual =
             $ticketsAtendidosSemanaActual
-                ->map(
-                    function ($ticket) {
+                ->map(function ($ticket) {
 
-                        if (
-                            !$ticket->solucion ||
-                            !$ticket->solucion->fecha_solucion
-                        ) {
-                            return null;
-                        }
-
-                        return Carbon::parse(
-                            $ticket->fecha_tomado
-                        )->diffInSeconds(
-                            Carbon::parse(
-                                $ticket
-                                    ->solucion
-                                    ->fecha_solucion
-                            )
-                        );
+                    if (
+                        !$ticket->solucion ||
+                        !$ticket->solucion->fecha_solucion
+                    ) {
+                        return null;
                     }
-                )
+
+                    return Carbon::parse(
+                        $ticket->fecha_tomado
+                    )->diffInSeconds(
+                        Carbon::parse(
+                            $ticket->solucion->fecha_solucion
+                        )
+                    );
+                })
                 ->filter();
 
         $promedioSemanaActual =
@@ -509,9 +503,7 @@ class TecnologiasController extends Controller
         */
 
         $ticketsAtendidosSemanaAnterior =
-            TicketU::whereNotNull(
-                'fecha_tomado'
-            )
+            TicketU::whereNotNull('fecha_tomado')
                 ->whereHas('solucion')
                 ->with('solucion')
                 ->when(
@@ -555,27 +547,23 @@ class TecnologiasController extends Controller
 
         $tiemposSemanaAnterior =
             $ticketsAtendidosSemanaAnterior
-                ->map(
-                    function ($ticket) {
+                ->map(function ($ticket) {
 
-                        if (
-                            !$ticket->solucion ||
-                            !$ticket->solucion->fecha_solucion
-                        ) {
-                            return null;
-                        }
-
-                        return Carbon::parse(
-                            $ticket->fecha_tomado
-                        )->diffInSeconds(
-                            Carbon::parse(
-                                $ticket
-                                    ->solucion
-                                    ->fecha_solucion
-                            )
-                        );
+                    if (
+                        !$ticket->solucion ||
+                        !$ticket->solucion->fecha_solucion
+                    ) {
+                        return null;
                     }
-                )
+
+                    return Carbon::parse(
+                        $ticket->fecha_tomado
+                    )->diffInSeconds(
+                        Carbon::parse(
+                            $ticket->solucion->fecha_solucion
+                        )
+                    );
+                })
                 ->filter();
 
         $promedioSemanaAnterior =
@@ -668,15 +656,9 @@ class TecnologiasController extends Controller
         $quejasRecurrentes =
             $baseQuery()
                 ->select('tipo_falla')
-                ->selectRaw(
-                    'COUNT(*) as total'
-                )
+                ->selectRaw('COUNT(*) as total')
                 ->whereNotNull('tipo_falla')
-                ->where(
-                    'tipo_falla',
-                    '!=',
-                    ''
-                )
+                ->where('tipo_falla', '!=', '')
                 ->groupBy('tipo_falla')
                 ->orderByDesc('total')
                 ->limit(5)
@@ -687,9 +669,7 @@ class TecnologiasController extends Controller
 
         $quejasRecurrentes =
             $quejasRecurrentes->map(
-                function ($queja) use (
-                    $maxQuejas
-                ) {
+                function ($queja) use ($maxQuejas) {
 
                     $queja->porcentaje =
                         $maxQuejas > 0
@@ -725,16 +705,10 @@ class TecnologiasController extends Controller
                     'MAX(ticket_u_s.created_at) as ultima_incidencia'
                 )
                 ->whereNotNull('equipo')
-                ->where(
-                    'equipo',
-                    '!=',
-                    ''
-                )
+                ->where('equipo', '!=', '')
                 ->groupBy('equipo')
                 ->orderByDesc('fallas')
-                ->orderBy(
-                    'primera_incidencia'
-                )
+                ->orderBy('primera_incidencia')
                 ->limit(5)
                 ->get();
 
@@ -756,11 +730,8 @@ class TecnologiasController extends Controller
                         )
                     ) {
 
-                        $equipo->tipo =
-                            'Desktop';
-
-                        $equipo->icono =
-                            'monitor';
+                        $equipo->tipo = 'Desktop';
+                        $equipo->icono = 'monitor';
 
                     } elseif (
                         str_starts_with(
@@ -769,11 +740,8 @@ class TecnologiasController extends Controller
                         )
                     ) {
 
-                        $equipo->tipo =
-                            'Laptop';
-
-                        $equipo->icono =
-                            'laptop';
+                        $equipo->tipo = 'Laptop';
+                        $equipo->icono = 'laptop';
 
                     } elseif (
                         str_starts_with(
@@ -782,29 +750,20 @@ class TecnologiasController extends Controller
                         )
                     ) {
 
-                        $equipo->tipo =
-                            'Impresora';
-
-                        $equipo->icono =
-                            'printer';
+                        $equipo->tipo = 'Impresora';
+                        $equipo->icono = 'printer';
 
                     } else {
 
-                        $equipo->tipo =
-                            'Equipo';
-
-                        $equipo->icono =
-                            'monitor';
+                        $equipo->tipo = 'Equipo';
+                        $equipo->icono = 'monitor';
                     }
 
-                    if (
-                        $equipo->ultima_incidencia
-                    ) {
+                    if ($equipo->ultima_incidencia) {
 
                         $equipo->ultima_incidencia =
                             Carbon::parse(
-                                $equipo
-                                    ->ultima_incidencia
+                                $equipo->ultima_incidencia
                             )->setTimezone(
                                 $this->timezone
                             );
@@ -821,21 +780,35 @@ class TecnologiasController extends Controller
         |--------------------------------------------------------------------------
         | UBICACIONES
         |--------------------------------------------------------------------------
+        |
+        | Estructura actual:
+        |
+        | ticket_u_s.login
+        |      ↓
+        | users.login
+        |      ↓
+        | departamentos.usuario_departamento
+        |      ↓
+        | departamentos.oficina_id
+        |      ↓
+        | oficinas.id
+        |
+        |--------------------------------------------------------------------------
         */
 
         $ubicaciones =
             $baseQuery()
                 ->join(
                     'users',
-                    'ticket_u_s.user_id',
+                    'ticket_u_s.login',
                     '=',
-                    'users.id'
+                    'users.login'
                 )
                 ->join(
                     'departamentos',
-                    'users.departamento_id',
+                    'users.login',
                     '=',
-                    'departamentos.id'
+                    'departamentos.usuario_departamento'
                 )
                 ->join(
                     'oficinas',
@@ -884,7 +857,7 @@ class TecnologiasController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | EVOLUCIÓN DE TICKETS
+        | EVOLUCIÓN
         |--------------------------------------------------------------------------
         */
 
@@ -905,23 +878,11 @@ class TecnologiasController extends Controller
             'admin.index',
             [
 
-                /*
-                |--------------------------------------------------------------------------
-                | NOTIFICACIONES
-                |--------------------------------------------------------------------------
-                */
-
                 'notificaciones' =>
                     $notificaciones,
 
                 'notificacionesNoLeidas' =>
                     $notificacionesNoLeidas,
-
-                /*
-                |--------------------------------------------------------------------------
-                | TICKETS
-                |--------------------------------------------------------------------------
-                */
 
                 'totalTickets' =>
                     $totalTickets,
@@ -935,12 +896,6 @@ class TecnologiasController extends Controller
                 'ticketsAbiertos' =>
                     $ticketsAbiertos,
 
-                /*
-                |--------------------------------------------------------------------------
-                | MES
-                |--------------------------------------------------------------------------
-                */
-
                 'ticketsMes' =>
                     $ticketsMes,
 
@@ -952,12 +907,6 @@ class TecnologiasController extends Controller
 
                 'porcentajeMes' =>
                     $porcentajeMes,
-
-                /*
-                |--------------------------------------------------------------------------
-                | SEMANA
-                |--------------------------------------------------------------------------
-                */
 
                 'ticketsSemana' =>
                     $ticketsSemana,
@@ -971,12 +920,6 @@ class TecnologiasController extends Controller
                 'porcentajeSemana' =>
                     $porcentajeSemana,
 
-                /*
-                |--------------------------------------------------------------------------
-                | TIEMPO
-                |--------------------------------------------------------------------------
-                */
-
                 'tiempoPromedio' =>
                     $tiempoPromedio,
 
@@ -989,20 +932,8 @@ class TecnologiasController extends Controller
                 'porcentajeTiempo' =>
                     $porcentajeTiempo,
 
-                /*
-                |--------------------------------------------------------------------------
-                | QUEJAS
-                |--------------------------------------------------------------------------
-                */
-
                 'quejasRecurrentes' =>
                     $quejasRecurrentes,
-
-                /*
-                |--------------------------------------------------------------------------
-                | EQUIPOS
-                |--------------------------------------------------------------------------
-                */
 
                 'equipos' =>
                     $equipos,
@@ -1010,20 +941,8 @@ class TecnologiasController extends Controller
                 'equipoMayorRecurrencia' =>
                     $equipoMayorRecurrencia,
 
-                /*
-                |--------------------------------------------------------------------------
-                | UBICACIONES
-                |--------------------------------------------------------------------------
-                */
-
                 'ubicaciones' =>
                     $ubicaciones,
-
-                /*
-                |--------------------------------------------------------------------------
-                | EVOLUCIÓN
-                |--------------------------------------------------------------------------
-                */
 
                 'evolucionTickets' =>
                     $datosEvolucion['datos'],
@@ -1039,6 +958,12 @@ class TecnologiasController extends Controller
             ]
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EVOLUCIÓN AJAX
+    |--------------------------------------------------------------------------
+    */
 
     public function evolucion(Request $request)
     {
@@ -1061,6 +986,7 @@ class TecnologiasController extends Controller
             );
 
         return response()->json([
+
             'evolucionTickets' =>
                 $datosEvolucion['datos'],
 
@@ -1077,6 +1003,12 @@ class TecnologiasController extends Controller
                 $datosEvolucion['minimo'],
         ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RANGO DE FECHAS
+    |--------------------------------------------------------------------------
+    */
 
     private function obtenerRangoFiltro(
         Request $request
@@ -1178,6 +1110,12 @@ class TecnologiasController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | OBTENER EVOLUCIÓN
+    |--------------------------------------------------------------------------
+    */
+
     private function obtenerEvolucion(
         string $periodo,
         ?Carbon $fechaInicio = null,
@@ -1221,9 +1159,7 @@ class TecnologiasController extends Controller
                     'ticket_u_s.created_at'
                 ]);
 
-            if (
-                $periodo === 'hoy'
-            ) {
+            if ($periodo === 'hoy') {
 
                 $datos =
                     $this->agruparPorHora(
@@ -1232,9 +1168,7 @@ class TecnologiasController extends Controller
                         $fin
                     );
 
-            } elseif (
-                $periodo === 'mes'
-            ) {
+            } elseif ($periodo === 'mes') {
 
                 $datos =
                     $this->agruparPorDia(
@@ -1243,9 +1177,7 @@ class TecnologiasController extends Controller
                         $fin
                     );
 
-            } elseif (
-                $periodo === 'año'
-            ) {
+            } elseif ($periodo === 'año') {
 
                 $datos =
                     $this->agruparPorMes(
@@ -1269,9 +1201,7 @@ class TecnologiasController extends Controller
             );
         }
 
-        if (
-            $periodo === 'hoy'
-        ) {
+        if ($periodo === 'hoy') {
 
             $inicio =
                 $ahora
@@ -1306,9 +1236,7 @@ class TecnologiasController extends Controller
                     $fin
                 );
 
-        } elseif (
-            $periodo === 'semana'
-        ) {
+        } elseif ($periodo === 'semana') {
 
             $inicio =
                 $ahora
@@ -1344,9 +1272,7 @@ class TecnologiasController extends Controller
                     $fin
                 );
 
-        } elseif (
-            $periodo === 'mes'
-        ) {
+        } elseif ($periodo === 'mes') {
 
             $inicio =
                 $ahora
@@ -1422,6 +1348,12 @@ class TecnologiasController extends Controller
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | AGRUPAR POR HORA
+    |--------------------------------------------------------------------------
+    */
+
     private function agruparPorHora(
         $tickets,
         Carbon $inicio,
@@ -1448,8 +1380,7 @@ class TecnologiasController extends Controller
                 ($totales[$clave] ?? 0) + 1;
         }
 
-        $datos =
-            collect();
+        $datos = collect();
 
         $cursor =
             $inicio
@@ -1473,6 +1404,7 @@ class TecnologiasController extends Controller
                 );
 
             $datos->push([
+
                 'fecha' =>
                     $cursor->format(
                         'H:00'
@@ -1492,6 +1424,12 @@ class TecnologiasController extends Controller
 
         return $datos;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AGRUPAR POR DÍA
+    |--------------------------------------------------------------------------
+    */
 
     private function agruparPorDia(
         $tickets,
@@ -1519,8 +1457,7 @@ class TecnologiasController extends Controller
                 ($totales[$clave] ?? 0) + 1;
         }
 
-        $datos =
-            collect();
+        $datos = collect();
 
         $cursor =
             $inicio
@@ -1544,6 +1481,7 @@ class TecnologiasController extends Controller
                 );
 
             $datos->push([
+
                 'fecha' =>
                     $cursor
                         ->locale('es')
@@ -1563,6 +1501,12 @@ class TecnologiasController extends Controller
 
         return $datos;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AGRUPAR POR MES
+    |--------------------------------------------------------------------------
+    */
 
     private function agruparPorMes(
         $tickets,
@@ -1590,8 +1534,7 @@ class TecnologiasController extends Controller
                 ($totales[$clave] ?? 0) + 1;
         }
 
-        $datos =
-            collect();
+        $datos = collect();
 
         $cursor =
             $inicio
@@ -1615,6 +1558,7 @@ class TecnologiasController extends Controller
                 );
 
             $datos->push([
+
                 'fecha' =>
                     $cursor
                         ->locale('es')
@@ -1634,6 +1578,12 @@ class TecnologiasController extends Controller
 
         return $datos;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CALCULAR MÉTRICAS
+    |--------------------------------------------------------------------------
+    */
 
     private function calcularMetricas(
         $datos

@@ -4,30 +4,31 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\User;
 
 class CheckUser
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
- public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
-        $id = session()->get('id');
-
-        if (!$id) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $usuario = User::find($id);
+        $usuario = Auth::user();
 
-        if (!$usuario) {
-            session()->forget('id');
+        if (!$usuario || $usuario->active !== 'Y') {
+            Auth::logout();
 
-            return redirect()->route('login');
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('login')
+                ->with('error', 'Tu usuario no tiene acceso al sistema.');
         }
 
         return $next($request);

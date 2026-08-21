@@ -1033,10 +1033,12 @@
 
                         </div>
 
-                        <a href="{{ route('ticketusuario.detalles', $ultimoTicket['id']) }}"
-                            class="rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700">
-                            Ver detalles
-                        </a>
+                        @if ($ultimoTicket)
+                            <a href="{{ route('ticketusuario.detalles', ['ticket' => $ultimoTicket['id']]) }}"
+                                class="rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700">
+                                Ver detalles
+                            </a>
+                        @endif
 
                     </div>
 
@@ -1116,22 +1118,10 @@
                         <div>
                             <p class="text-gray-400">¿Se solucionó?</p>
 
-                            @if (($ultimoTicket['estado'] ?? '') === 'pendiente')
-                                <span
-                                    class="mt-1 inline-block rounded-lg bg-yellow-500/10 px-2.5 py-1 text-xs font-bold text-yellow-400">
-                                    Pendiente de solución
-                                </span>
-                            @elseif ($ultimoTicket['problema_solucionado'] ?? false)
-                                <span
-                                    class="mt-1 inline-block rounded-lg bg-green-500/10 px-2.5 py-1 text-xs font-bold text-green-400">
-                                    Problema solucionado
-                                </span>
-                            @else
-                                <span
-                                    class="mt-1 inline-block rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-400">
-                                    Problema no solucionado
-                                </span>
-                            @endif
+                            <span
+                                class="mt-1 inline-block rounded-lg bg-[#4d1616] px-2.5 py-1 text-xs font-bold text-red-400">
+                                {{ $ultimoTicket['solucionado'] ?? 'No' }}
+                            </span>
                         </div>
 
                     </div>

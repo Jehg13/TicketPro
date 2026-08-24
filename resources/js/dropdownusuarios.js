@@ -4,6 +4,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const profileDropdown = document.getElementById('profile-dropdown');
     const profileArrow = document.getElementById('profile-arrow');
 
+    // Si alguno de los elementos no existe en esta página,
+    // no ejecutar el código.
+    if (!profileButton || !profileDropdown || !profileArrow) {
+        return;
+    }
+
+    // Abrir / cerrar dropdown
     profileButton.addEventListener('click', function (event) {
 
         event.stopPropagation();
@@ -13,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
+    // Cerrar al hacer clic fuera
     document.addEventListener('click', function (event) {
 
         if (
@@ -27,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
+    // Evitar que un clic dentro del dropdown lo cierre
     profileDropdown.addEventListener('click', function (event) {
 
         event.stopPropagation();

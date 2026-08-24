@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\SolicitudCambio;
 use App\Models\User;
@@ -280,93 +281,109 @@ class PerfilController extends Controller
         );
     }
 
-    public function updateTecnologias(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+   public function updateTecnologias(Request $request)
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        if (!$user) {
-            abort(401);
-        }
+    if (!$user) {
+        abort(401);
+    }
 
-        if (!$this->esAdministradorTI($user)) {
-            abort(
-                403,
-                'No tienes permisos administrativos para modificar esta información.'
-            );
-        }
+    if (!$this->esAdministradorTI($user)) {
+        abort(
+            403,
+            'No tienes permisos administrativos para modificar esta información.'
+        );
+    }
 
-        $loginActual = $user->login;
+    $loginActual = $user->login;
 
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
+    $request->validate([
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+        'login' => [
+            'required',
+            'string',
+            'max:100',
+            'unique:users,login,' . $loginActual . ',login',
+        ],
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            'unique:users,email,' . $loginActual . ',login',
+        ],
+        'phone' => [
+            'nullable',
+            'string',
+            'max:30',
+        ],
+        'departamento' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+        'role' => [
+            'required',
+            'string',
+            'in:Gerente Ti,Soporte Tecnico',
+        ],
+    ]);
 
-            'login' => [
-                'required',
-                'string',
-                'max:100',
-                'unique:users,login,' . $loginActual . ',login',
-            ],
+    DB::beginTransaction();
 
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                'unique:users,email,' . $loginActual . ',login',
-            ],
+    try {
+        $nuevoLogin = trim($request->login);
 
-            'phone' => [
-                'nullable',
-                'string',
-                'max:30',
-            ],
-
-            'departamento' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-
-            'role' => [
-                'required',
-                'string',
-                'in:Gerente Ti,Soporte Tecnico',
-            ],
-        ]);
-
-        $user->name = $request->name;
-        $user->login = $request->login;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
+        $user->name = trim($request->name);
+        $user->login = $nuevoLogin;
+        $user->email = trim($request->email);
+        $user->phone = $request->filled('phone')
+            ? trim($request->phone)
+            : null;
         $user->role = $request->role;
-
-        if ($user->departamento) {
-            $user->departamento->nombre =
-                $request->departamento;
-
-            $user->departamento->save();
-        }
 
         $user->save();
 
-        if ($loginActual !== $user->login) {
-            Notificacion::where(
-                'login',
-                $loginActual
-            )->update([
-                'login' => $user->login,
-            ]);
+        if ($user->departamento) {
+            $user->departamento->nombre = trim($request->departamento);
+            $user->departamento->save();
         }
+
+        if ($loginActual !== $nuevoLogin) {
+            DB::table('numeros_empleado')
+                ->where('login', $loginActual)
+                ->update([
+                    'login' => $nuevoLogin,
+                ]);
+
+            Notificacion::where('login', $loginActual)
+                ->update([
+                    'login' => $nuevoLogin,
+                ]);
+        }
+
+        DB::commit();
 
         return back()->with(
             'success',
             'Información personal y laboral actualizada correctamente.'
         );
+    } catch (\Throwable $e) {
+        DB::rollBack();
+
+        report($e);
+
+        return back()->withInput()->with(
+            'error',
+            'No se pudo actualizar la información.'
+        );
     }
+}
 
     public function solicitarCambio(Request $request)
     {
@@ -488,7 +505,7 @@ class PerfilController extends Controller
             'departamento' =>
                 'departamento',
 
-            'telefono' =>
+            'phone' =>
                 'teléfono',
 
             'usuario' =>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TicketU;
 use App\Models\User;
 use App\Models\Notificacion;
+use App\Models\Solucion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,12 @@ class ticketController extends Controller
     public function create()
     {
         $usuario = Auth::user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | NOTIFICACIONES
+        |--------------------------------------------------------------------------
+        */
 
         $notificaciones = Notificacion::where(
             'login',
@@ -33,11 +40,116 @@ class ticketController extends Controller
             )
             ->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | ÚLTIMO TICKET DEL USUARIO
+        |--------------------------------------------------------------------------
+        */
+
+        $ultimoTicketModel = TicketU::where(
+            'login',
+            $usuario->login
+        )
+            ->orderByDesc('id')
+            ->first();
+
+        $ultimoTicket = null;
+
+        if ($ultimoTicketModel) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | BUSCAR SOLUCIÓN DEL TICKET
+            |--------------------------------------------------------------------------
+            |
+            | Si no existe registro en soluciones:
+            | problema_solucionado = NULL
+            |
+            | Si existe:
+            | 1 = Sí
+            | 0 = No
+            |
+            */
+
+            $solucion = Solucion::where(
+                'ticket_id',
+                $ultimoTicketModel->id
+            )
+                ->latest('id')
+                ->first();
+
+            /*
+            |--------------------------------------------------------------------------
+            | ARMAR DATOS DEL ÚLTIMO TICKET
+            |--------------------------------------------------------------------------
+            */
+
+            $ultimoTicket = [
+                'id' =>
+                    $ultimoTicketModel->id,
+
+                'folio' =>
+                    $ultimoTicketModel->folio,
+
+                'titulo' =>
+                    $ultimoTicketModel->titulo,
+
+                'tipo_falla' =>
+                    $ultimoTicketModel->tipo_falla,
+
+                'fecha_reporte' =>
+                    $ultimoTicketModel->created_at
+                        ?->format('d/m/Y'),
+
+                'departamento' =>
+                    $ultimoTicketModel->departamento ?? null,
+
+                'asignado_a' =>
+                    $ultimoTicketModel->asignado_a ?? null,
+
+                'oficina' =>
+                    $ultimoTicketModel->oficina ?? null,
+
+                'tomado_por' =>
+                    $ultimoTicketModel->tomado_por ?? null,
+
+                'estado' =>
+                    $ultimoTicketModel->estado,
+
+                'fecha_asignacion' =>
+                    $ultimoTicketModel->fecha_asignacion ?? null,
+
+                'prioridad' =>
+                    $ultimoTicketModel->prioridad,
+
+                /*
+                |--------------------------------------------------------------------------
+                | SOLUCIÓN
+                |--------------------------------------------------------------------------
+                */
+
+                'solucion_id' =>
+                    $ultimoTicketModel->solucion_id,
+
+                'solucionado' =>
+                    $solucion
+                        ? $solucion->problema_solucionado
+                        : null,
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | VISTA
+        |--------------------------------------------------------------------------
+        */
+
         return view(
             'user.ticket',
             compact(
                 'notificaciones',
-                'notificacionesNoLeidas'
+                'notificacionesNoLeidas',
+                'ultimoTicket'
             )
         );
     }
@@ -134,6 +246,12 @@ class ticketController extends Controller
             ]
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | EVIDENCIAS DEL TICKET
+        |--------------------------------------------------------------------------
+        */
+
         $filePaths = [];
 
         if ($request->hasFile('evidencia')) {
@@ -153,6 +271,12 @@ class ticketController extends Controller
                 );
             }
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | GENERAR FOLIO
+        |--------------------------------------------------------------------------
+        */
 
         $año = date('Y');
 
@@ -197,6 +321,12 @@ class ticketController extends Controller
                 $folio
             )->exists()
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR TICKET
+        |--------------------------------------------------------------------------
+        */
 
         $ticket = TicketU::create([
             'folio' =>
@@ -246,6 +376,12 @@ class ticketController extends Controller
                     $loginUsuario,
             ]
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | DESTINATARIOS
+        |--------------------------------------------------------------------------
+        */
 
         $destinatarios = collect();
 
@@ -323,7 +459,7 @@ class ticketController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | GERENTE TI CON PRIV_ADMIN = Y
+        | GERENTE TI
         |--------------------------------------------------------------------------
         */
 
@@ -351,7 +487,7 @@ class ticketController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | SOPORTE TÉCNICO CON PRIV_ADMIN = Y
+        | SOPORTE TÉCNICO
         |--------------------------------------------------------------------------
         */
 
@@ -524,6 +660,12 @@ class ticketController extends Controller
                 );
             }
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FINALIZAR
+        |--------------------------------------------------------------------------
+        */
 
         Log::info(
             '========== FINALIZÓ CREACIÓN DEL TICKET =========='

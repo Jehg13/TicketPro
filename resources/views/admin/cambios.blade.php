@@ -55,7 +55,7 @@
 
                     <p class="text-xs text-slate-400 truncate">
 
-                        {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+                        {{ auth()->user()->role ?? 'Desconocido' }}
 
                     </p>
 
@@ -106,8 +106,8 @@
                 @endif
 
                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
-                    <a href="{{ route('usuariostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+                    <a href="{{ route('usuarios.tecnologias') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
 
                         <i data-lucide="users" class="w-5 h-5"></i>
 
@@ -519,7 +519,7 @@
                                     </p>
 
                                     <p class="text-[10px] text-blue-400 font-medium">
-                                        {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+                                        {{ auth()->user()->role ?? 'Desconocido' }}
                                     </p>
                                 </div>
 
@@ -1201,7 +1201,7 @@
 
                                         <p class="text-[10px] text-blue-400">
 
-                                            {{ optional($seleccionada->usuario?->departamento)->nombre ?? 'Sin departamento' }}
+                                            {{ auth()->user()->role ?? 'Desconocido' }}
 
                                         </p>
 

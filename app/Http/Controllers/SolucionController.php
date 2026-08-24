@@ -8,6 +8,7 @@ use App\Models\Notificacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class SolucionController extends Controller
 {
@@ -48,13 +49,14 @@ class SolucionController extends Controller
             'evidencias.*' => [
                 'file',
                 'max:10240',
-                'mimes:jpg,jpeg,png,gif,webp,pdf,mp4,mov,avi',
+                'mimes:jpg,jpeg,png,gif,webp,pdf,mp4,mov,avi,doc,docx,xls,xlsx,txt,zip,rar',
             ],
         ]);
 
         if ($ticket->solucion_id) {
             return response()->json([
                 'success' => false,
+                'type' => 'error',
                 'message' => 'Este ticket ya tiene una solución o cancelación registrada.',
             ], 422);
         }
@@ -64,6 +66,7 @@ class SolucionController extends Controller
         if (!$usuario) {
             return response()->json([
                 'success' => false,
+                'type' => 'error',
                 'message' => 'No hay un usuario autenticado.',
             ], 401);
         }
@@ -73,6 +76,7 @@ class SolucionController extends Controller
         if (!$login) {
             return response()->json([
                 'success' => false,
+                'type' => 'error',
                 'message' => 'El usuario autenticado no tiene login.',
             ], 422);
         }
@@ -85,6 +89,7 @@ class SolucionController extends Controller
         ) {
             return response()->json([
                 'success' => false,
+                'type' => 'error',
                 'message' => 'La firma no tiene un formato válido.',
             ], 422);
         }
@@ -100,18 +105,14 @@ class SolucionController extends Controller
         if ($firmaBinaria === false) {
             return response()->json([
                 'success' => false,
+                'type' => 'error',
                 'message' => 'No se pudo procesar la firma.',
             ], 422);
         }
 
-        $nombreArchivo =
-            'firma_' .
-            $ticket->id .
-            '_' .
-            uniqid() .
-            '.png';
+        $nombreFirma = 'firma_' . $ticket->id . '_' . uniqid() . '.png';
 
-        $rutaFirma = 'firmas/' . $nombreArchivo;
+        $rutaFirma = 'firmas/' . $nombreFirma;
 
         $firmaGuardada = Storage::disk('public')->put(
             $rutaFirma,
@@ -121,13 +122,12 @@ class SolucionController extends Controller
         if (!$firmaGuardada) {
             return response()->json([
                 'success' => false,
+                'type' => 'error',
                 'message' => 'No se pudo guardar la firma.',
             ], 500);
         }
 
-        $problemaSolucionado = $request->boolean(
-            'problema_solucionado'
-        );
+        $problemaSolucionado = $request->boolean('problema_solucionado');
 
         $estado = $problemaSolucionado
             ? 'solucionado'
@@ -137,19 +137,23 @@ class SolucionController extends Controller
 
         if ($request->hasFile('evidencias')) {
             foreach ($request->file('evidencias') as $archivo) {
-                if (!$archivo->isValid()) {
+                if (!$archivo || !$archivo->isValid()) {
                     continue;
                 }
 
                 $ruta = $archivo->store(
-                    'evidencias_soluciones',
+                    'evidencia_tickets',
                     'public'
                 );
+
+                if (!$ruta) {
+                    continue;
+                }
 
                 $evidencias[] = [
                     'nombre' => $archivo->getClientOriginalName(),
                     'ruta' => $ruta,
-                    'url' => asset('storage/' . $ruta),
+                    'url' => Storage::disk('public')->url($ruta),
                     'tipo' => $archivo->getClientMimeType(),
                     'extension' => strtolower(
                         $archivo->getClientOriginalExtension()
@@ -158,6 +162,12 @@ class SolucionController extends Controller
                 ];
             }
         }
+
+        Log::info('EVIDENCIAS SOLUCION', [
+            'ticket_id' => $ticket->id,
+            'cantidad' => count($evidencias),
+            'evidencias' => $evidencias,
+        ]);
 
         $solucion = Solucion::create([
             'ticket_id' => $ticket->id,
@@ -204,7 +214,9 @@ class SolucionController extends Controller
                 'mensaje' => $mensajeNotificacion,
                 'url' => $urlNotificacion,
                 'leida' => false,
-                'icono' => 'check-circle',
+                'icono' => $problemaSolucionado
+                    ? 'check-circle'
+                    : 'x-circle',
                 'color' => $problemaSolucionado
                     ? 'green'
                     : 'red',
@@ -214,12 +226,63 @@ class SolucionController extends Controller
         $ticket->refresh();
         $solucion->refresh();
 
-        $urlFirma = asset(
-            'storage/' . $rutaFirma
+        $evidenciasRespuesta = $solucion->evidencia;
+
+        if (is_string($evidenciasRespuesta)) {
+            $evidenciasRespuesta = json_decode(
+                $evidenciasRespuesta,
+                true
+            );
+        }
+
+        if (!is_array($evidenciasRespuesta)) {
+            $evidenciasRespuesta = [];
+        }
+
+        $evidenciasRespuesta = array_values(
+            array_filter(
+                $evidenciasRespuesta,
+                function ($evidencia) {
+                    return is_array($evidencia);
+                }
+            )
         );
+
+        $evidenciasRespuesta = array_map(
+            function ($evidencia) {
+                if (
+                    empty($evidencia['url']) &&
+                    !empty($evidencia['ruta'])
+                ) {
+                    $evidencia['url'] = Storage::disk('public')->url(
+                        $evidencia['ruta']
+                    );
+                }
+
+                if (
+                    empty($evidencia['nombre']) &&
+                    !empty($evidencia['ruta'])
+                ) {
+                    $evidencia['nombre'] = basename(
+                        $evidencia['ruta']
+                    );
+                }
+
+                return $evidencia;
+            },
+            $evidenciasRespuesta
+        );
+
+        Log::info('SOLUCION FINAL', [
+            'id' => $solucion->id,
+            'evidencias' => $evidenciasRespuesta,
+        ]);
+
+        $urlFirma = Storage::disk('public')->url($rutaFirma);
 
         return response()->json([
             'success' => true,
+            'type' => 'success',
             'message' => $problemaSolucionado
                 ? 'El ticket fue solucionado correctamente.'
                 : 'El ticket fue marcado como cancelado.',
@@ -236,12 +299,12 @@ class SolucionController extends Controller
                 'fecha_solucion' => $solucion->fecha_solucion,
                 'nombre_firmante' => $solucion->nombre_firmante,
                 'fecha_firma' => $solucion->fecha_firma,
-                'evidencia' => $solucion->evidencia ?? [],
-                'evidencias' => $solucion->evidencia ?? [],
+                'evidencia' => $evidenciasRespuesta,
+                'evidencias' => $evidenciasRespuesta,
                 'created_at' => $solucion->created_at,
                 'updated_at' => $solucion->updated_at,
             ],
-            'evidencias' => $solucion->evidencia ?? [],
+            'evidencias' => $evidenciasRespuesta,
             'ticket' => [
                 'id' => $ticket->id,
                 'folio' => $ticket->folio,

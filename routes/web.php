@@ -212,11 +212,6 @@ Route::middleware(['auth'])->group(function () {
         [MfaController::class, 'verificarActivacion']
     )->name('usuario.mfa.verificar.activacion');
 
-    Route::post(
-        '/dashboard/perfil/mfa/desactivar',
-        [MfaController::class, 'desactivar']
-    )->name('usuario.mfa.desactivar');
-
     Route::get(
     '/perfil/mfa/configurar',
     [MfaController::class, 'configurar']
@@ -316,4 +311,5 @@ Route::get('/tecnologias/oficinas/{empresaId}', [ObtenerusuariosController::clas
 
 Route::get('/tecnologias/departamentos/{oficinaId}', [ObtenerusuariosController::class, 'departamentosPorOficina'])
     ->name('tecnologias.departamentos');
+
 });

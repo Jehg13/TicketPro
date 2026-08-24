@@ -2,20 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Models\User;
 use PragmaRX\Google2FA\Google2FA;
 
 class MfaController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | CONFIGURAR MFA
-    |--------------------------------------------------------------------------
-    */
-
     public function configurar()
     {
         $user = Auth::user();
@@ -30,28 +24,9 @@ class MfaController extends Controller
         ]);
 
         $google2fa = new Google2FA();
-
-        /*
-        |--------------------------------------------------------------------------
-        | GENERAR SECRET
-        |--------------------------------------------------------------------------
-        */
-
         $secretKey = $google2fa->generateSecretKey();
 
-        /*
-        |--------------------------------------------------------------------------
-        | GUARDAR SECRET TEMPORALMENTE
-        |--------------------------------------------------------------------------
-        */
-
         session()->put('mfa_setup_secret', $secretKey);
-
-        /*
-        |--------------------------------------------------------------------------
-        | GENERAR QR
-        |--------------------------------------------------------------------------
-        */
 
         $qrCodeUrl = $google2fa->getQRCodeUrl(
             'TicketPro',
@@ -71,13 +46,6 @@ class MfaController extends Controller
         ]);
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | VERIFICAR ACTIVACIÓN MFA
-    |--------------------------------------------------------------------------
-    */
-
     public function verificarActivacion(Request $request)
     {
         $user = Auth::user();
@@ -88,14 +56,7 @@ class MfaController extends Controller
 
         Log::info('MFA: Verificando activación', [
             'login' => $user->login,
-            'codigo' => $request->input('codigo'),
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDAR CÓDIGO
-        |--------------------------------------------------------------------------
-        */
 
         $request->validate([
             'codigo' => [
@@ -103,39 +64,22 @@ class MfaController extends Controller
                 'digits:6',
             ],
         ], [
-            'codigo.required' =>
-                'Debes ingresar el código de Google Authenticator.',
-
-            'codigo.digits' =>
-                'El código debe contener 6 dígitos.',
+            'codigo.required' => 'Debes ingresar el código de Google Authenticator.',
+            'codigo.digits' => 'El código debe contener 6 dígitos.',
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | OBTENER SECRET TEMPORAL
-        |--------------------------------------------------------------------------
-        */
 
         $secretKey = session('mfa_setup_secret');
 
         if (!$secretKey) {
-
             Log::warning('MFA: No existe mfa_setup_secret.', [
                 'login' => $user->login,
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' =>
-                    'La configuración de MFA expiró. Intenta nuevamente.',
+                'message' => 'La configuración de MFA expiró. Intenta nuevamente.',
             ], 422);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | VERIFICAR GOOGLE AUTHENTICATOR
-        |--------------------------------------------------------------------------
-        */
 
         $google2fa = new Google2FA();
 
@@ -150,38 +94,16 @@ class MfaController extends Controller
         ]);
 
         if (!$valido) {
-
             return response()->json([
                 'success' => false,
-                'message' =>
-                    'El código de Google Authenticator no es correcto.',
+                'message' => 'El código de Google Authenticator no es correcto.',
             ], 422);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ACTIVAR MFA
-        |--------------------------------------------------------------------------
-        */
-
         $user->mfa = 'Y';
-
-        /*
-        | IMPORTANTE:
-        | Guardamos aquí el SECRET, NO el código de 6 dígitos.
-        */
-
         $user->activation_code = $secretKey;
-
         $user->mfa_last_updated = now();
-
         $user->save();
-
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR SECRET TEMPORAL
-        |--------------------------------------------------------------------------
-        */
 
         session()->forget('mfa_setup_secret');
 
@@ -191,28 +113,13 @@ class MfaController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'La verificación en dos pasos fue activada correctamente.',
+            'message' => 'La verificación en dos pasos fue activada correctamente.',
         ]);
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR VERIFICACIÓN MFA
-    |--------------------------------------------------------------------------
-    */
-
     public function mostrarVerificacion()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | AQUÍ YA NO BUSCAMOS mfa_pending_user_id
-        |--------------------------------------------------------------------------
-        */
-
         if (!session()->has('mfa_login')) {
-
             return redirect()
                 ->route('login')
                 ->with(
@@ -224,24 +131,11 @@ class MfaController extends Controller
         return view('auth.mfa-verificar');
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | VERIFICAR MFA DURANTE LOGIN
-    |--------------------------------------------------------------------------
-    */
-
     public function verificar(Request $request)
     {
         Log::info('==========================================');
         Log::info('MFA LOGIN: ENTRÓ A verificar()');
         Log::info('==========================================');
-
-        /*
-        |--------------------------------------------------------------------------
-        | DATOS RECIBIDOS
-        |--------------------------------------------------------------------------
-        */
 
         Log::info('MFA LOGIN: POST recibido', [
             'codigo' => $request->input('codigo'),
@@ -249,16 +143,8 @@ class MfaController extends Controller
             'session_id' => $request->session()->getId(),
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | DATOS DE SESIÓN
-        |--------------------------------------------------------------------------
-        */
-
         $mfaPending = session('mfa_pending');
-
         $mfaLogin = session('mfa_login');
-
         $mfaRemember = session('mfa_remember', false);
 
         Log::info('MFA LOGIN: Sesión', [
@@ -267,17 +153,8 @@ class MfaController extends Controller
             'mfa_remember' => $mfaRemember,
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | COMPROBAR LOGIN PENDIENTE
-        |--------------------------------------------------------------------------
-        */
-
         if (!$mfaPending || !$mfaLogin) {
-
-            Log::error(
-                'MFA LOGIN: No existe información de login MFA.'
-            );
+            Log::error('MFA LOGIN: No existe información de login MFA.');
 
             session()->forget([
                 'mfa_pending',
@@ -293,30 +170,15 @@ class MfaController extends Controller
                 );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDAR CÓDIGO
-        |--------------------------------------------------------------------------
-        */
-
         $request->validate([
             'codigo' => [
                 'required',
                 'digits:6',
             ],
         ], [
-            'codigo.required' =>
-                'Debes ingresar el código de Google Authenticator.',
-
-            'codigo.digits' =>
-                'El código debe contener 6 dígitos.',
+            'codigo.required' => 'Debes ingresar el código de Google Authenticator.',
+            'codigo.digits' => 'El código debe contener 6 dígitos.',
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | BUSCAR USUARIO POR LOGIN
-        |--------------------------------------------------------------------------
-        */
 
         $usuario = User::where('login', $mfaLogin)->first();
 
@@ -325,14 +187,7 @@ class MfaController extends Controller
             'usuario_encontrado' => $usuario ? true : false,
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | USUARIO NO ENCONTRADO
-        |--------------------------------------------------------------------------
-        */
-
         if (!$usuario) {
-
             Log::error('MFA LOGIN: Usuario no encontrado.', [
                 'login' => $mfaLogin,
             ]);
@@ -351,39 +206,21 @@ class MfaController extends Controller
                 );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | INFORMACIÓN DEL USUARIO
-        |--------------------------------------------------------------------------
-        */
-
         Log::info('MFA LOGIN: Usuario encontrado', [
             'login' => $usuario->login,
             'email' => $usuario->email,
             'mfa' => $usuario->mfa,
-            'tiene_activation_code' =>
-                !empty($usuario->activation_code),
-            'activation_code_length' =>
-                $usuario->activation_code
-                    ? strlen($usuario->activation_code)
-                    : 0,
+            'tiene_activation_code' => !empty($usuario->activation_code),
+            'activation_code_length' => $usuario->activation_code
+                ? strlen($usuario->activation_code)
+                : 0,
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | COMPROBAR MFA ACTIVO
-        |--------------------------------------------------------------------------
-        */
-
         if ($usuario->mfa !== 'Y') {
-
-            Log::warning(
-                'MFA LOGIN: MFA no está activo.',
-                [
-                    'login' => $usuario->login,
-                    'mfa' => $usuario->mfa,
-                ]
-            );
+            Log::warning('MFA LOGIN: MFA no está activo.', [
+                'login' => $usuario->login,
+                'mfa' => $usuario->mfa,
+            ]);
 
             session()->forget([
                 'mfa_pending',
@@ -399,20 +236,10 @@ class MfaController extends Controller
                 );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | COMPROBAR SECRET MFA
-        |--------------------------------------------------------------------------
-        */
-
         if (!$usuario->activation_code) {
-
-            Log::error(
-                'MFA LOGIN: activation_code vacío.',
-                [
-                    'login' => $usuario->login,
-                ]
-            );
+            Log::error('MFA LOGIN: activation_code vacío.', [
+                'login' => $usuario->login,
+            ]);
 
             session()->forget([
                 'mfa_pending',
@@ -428,24 +255,12 @@ class MfaController extends Controller
                 );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | CÓDIGO RECIBIDO
-        |--------------------------------------------------------------------------
-        */
-
         $codigo = $request->input('codigo');
 
         Log::info('MFA LOGIN: Código recibido', [
             'login' => $usuario->login,
             'longitud' => strlen($codigo),
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | VERIFICAR GOOGLE AUTHENTICATOR
-        |--------------------------------------------------------------------------
-        */
 
         $google2fa = new Google2FA();
 
@@ -454,28 +269,15 @@ class MfaController extends Controller
             $codigo
         );
 
-        Log::info(
-            'MFA LOGIN: Resultado Google Authenticator',
-            [
-                'login' => $usuario->login,
-                'valido' => $valido,
-            ]
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | CÓDIGO INCORRECTO
-        |--------------------------------------------------------------------------
-        */
+        Log::info('MFA LOGIN: Resultado Google Authenticator', [
+            'login' => $usuario->login,
+            'valido' => $valido,
+        ]);
 
         if (!$valido) {
-
-            Log::warning(
-                'MFA LOGIN: Código incorrecto.',
-                [
-                    'login' => $usuario->login,
-                ]
-            );
+            Log::warning('MFA LOGIN: Código incorrecto.', [
+                'login' => $usuario->login,
+            ]);
 
             return redirect()
                 ->route('login')
@@ -486,51 +288,21 @@ class MfaController extends Controller
                 );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | MFA CORRECTO
-        |--------------------------------------------------------------------------
-        */
-
-        Log::info(
-            'MFA LOGIN: Código correcto.',
-            [
-                'login' => $usuario->login,
-            ]
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | INICIAR SESIÓN REAL
-        |--------------------------------------------------------------------------
-        */
+        Log::info('MFA LOGIN: Código correcto.', [
+            'login' => $usuario->login,
+        ]);
 
         Auth::login(
             $usuario,
             $mfaRemember
         );
 
-        Log::info(
-            'MFA LOGIN: Auth::login ejecutado.',
-            [
-                'login' => $usuario->login,
-                'authenticated' => Auth::check(),
-            ]
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | REGENERAR SESIÓN
-        |--------------------------------------------------------------------------
-        */
+        Log::info('MFA LOGIN: Auth::login ejecutado.', [
+            'login' => $usuario->login,
+            'authenticated' => Auth::check(),
+        ]);
 
         $request->session()->regenerate();
-
-        /*
-        |--------------------------------------------------------------------------
-        | LIMPIAR DATOS TEMPORALES
-        |--------------------------------------------------------------------------
-        */
 
         $request->session()->forget([
             'mfa_pending',
@@ -538,15 +310,7 @@ class MfaController extends Controller
             'mfa_remember',
         ]);
 
-        Log::info(
-            'MFA LOGIN: Sesión MFA temporal eliminada.'
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | REDIRECCIÓN
-        |--------------------------------------------------------------------------
-        */
+        Log::info('MFA LOGIN: Sesión MFA temporal eliminada.');
 
         Log::info('MFA LOGIN: Redireccionando usuario', [
             'login' => $usuario->login,
@@ -558,75 +322,85 @@ class MfaController extends Controller
             in_array($usuario->role, [
                 'Gerente Ti',
                 'Soporte Tecnico',
-            ])
-            && $usuario->priv_admin === 'Y'
+            ]) &&
+            $usuario->priv_admin === 'Y'
         ) {
-
-            Log::info(
-                'MFA LOGIN: Redirección -> tecnologias'
-            );
+            Log::info('MFA LOGIN: Redirección -> tecnologias');
 
             return redirect()
                 ->route('tecnologias');
         }
 
-        Log::info(
-            'MFA LOGIN: Redirección -> dashboard'
-        );
+        Log::info('MFA LOGIN: Redirección -> dashboard');
 
         return redirect()
             ->route('dashboard');
     }
 
+    public function desactivar(Request $request)
+{
+    $user = Auth::user();
 
-    /*
-    |--------------------------------------------------------------------------
-    | DESACTIVAR MFA
-    |--------------------------------------------------------------------------
-    */
-
-    public function desactivar()
-    {
-        $user = Auth::user();
-
-        if (!$user) {
-            abort(401);
-        }
-
-        Log::info('MFA: Desactivando MFA', [
-            'login' => $user->login,
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | DESACTIVAR
-        |--------------------------------------------------------------------------
-        */
-
-        $user->mfa = 'N';
-
-        $user->activation_code = null;
-
-        $user->mfa_last_updated = now();
-
-        $user->save();
-
-        /*
-        |--------------------------------------------------------------------------
-        | LIMPIAR SESIÓN
-        |--------------------------------------------------------------------------
-        */
-
-        session()->forget('mfa_setup_secret');
-
-        Log::info('MFA: MFA desactivado correctamente', [
-            'login' => $user->login,
-        ]);
-
+    if (!$user) {
         return response()->json([
-            'success' => true,
-            'message' =>
-                'La verificación en dos pasos fue desactivada correctamente.',
-        ]);
+            'success' => false,
+            'message' => 'Usuario no autenticado.'
+        ], 401);
     }
+
+    $request->validate([
+        'codigo' => ['required', 'digits:6'],
+    ], [
+        'codigo.required' => 'Debes ingresar el código de Google Authenticator.',
+        'codigo.digits' => 'El código debe contener 6 dígitos.',
+    ]);
+
+    if ($user->mfa !== 'Y') {
+        return response()->json([
+            'success' => false,
+            'message' => 'La verificación en dos pasos ya está desactivada.'
+        ], 422);
+    }
+
+    if (!$user->activation_code) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No existe una configuración MFA válida.'
+        ], 422);
+    }
+
+    $google2fa = new Google2FA();
+
+    $valido = $google2fa->verifyKey(
+        $user->activation_code,
+        $request->input('codigo')
+    );
+
+    if (!$valido) {
+        return response()->json([
+            'success' => false,
+            'message' => 'El código de Google Authenticator no es correcto o ya expiró.'
+        ], 422);
+    }
+
+    $user->mfa = 'N';
+    $user->activation_code = null;
+    $user->mfa_last_updated = now();
+    $user->save();
+
+    session()->forget('mfa_setup_secret');
+
+    $redirect = (
+        in_array($user->role, ['Gerente Ti', 'Soporte Tecnico']) &&
+        $user->priv_admin === 'Y'
+    )
+        ? route('perfiltecnologias')
+        : route('perfilusuario');
+
+    return response()->json([
+        'success' => true,
+        'message' => 'La verificación en dos pasos fue desactivada correctamente.',
+        'redirect' => $redirect
+    ]);
+}
 }

@@ -377,94 +377,102 @@ class ObtenerusuariosController extends Controller
         }
     }
 
-    public function destroy(Request $request, $login)
-    {
-        if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No autenticado.'
-            ], 401);
-        }
+   public function destroy(Request $request, $login)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No autenticado.'
+        ], 401);
+    }
 
-        if (!$this->tienePermiso()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permiso para eliminar usuarios.'
-            ], 403);
-        }
+    if (!$this->tienePermiso()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No tienes permiso para eliminar usuarios.'
+        ], 403);
+    }
 
-        $login = trim((string) $login);
+    $login = trim((string) $login);
 
-        try {
-            $validated = $request->validate([
-                'password' => ['required', 'string']
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Debes proporcionar tu contraseña.'
-            ], 422);
-        }
+    try {
+        $validated = $request->validate([
+            'password' => ['required', 'string']
+        ]);
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Debes proporcionar tu contraseña.'
+        ], 422);
+    }
 
-        $usuarioActual = Auth::user();
+    $usuarioActual = Auth::user();
 
-        if (!Hash::check($validated['password'], $usuarioActual->password)) {
+    try {
+        if (!Hash::check($validated['password'], $usuarioActual->pswd)) {
             return response()->json([
                 'success' => false,
                 'message' => 'La contraseña es incorrecta.'
             ], 422);
         }
+    } catch (\Throwable $e) {
+        report($e);
 
-        $usuario = DB::table('users')
-            ->where('login', $login)
-            ->first();
-
-        if (!$usuario) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El usuario no existe.'
-            ], 404);
-        }
-
-        if (trim((string) $usuario->login) === trim((string) $usuarioActual->login)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No puedes eliminar tu propia cuenta.'
-            ], 422);
-        }
-
-        DB::beginTransaction();
-
-        try {
-            DB::table('numeros_empleado')
-                ->where('login', $login)
-                ->delete();
-
-            DB::table('departamentos')
-                ->where('usuario_departamento', $login)
-                ->delete();
-
-            DB::table('users')
-                ->where('login', $login)
-                ->delete();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'El usuario fue eliminado correctamente.'
-            ]);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            report($e);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo eliminar el usuario.'
-            ], 500);
-        }
+        return response()->json([
+            'success' => false,
+            'message' => 'La contraseña almacenada no tiene un formato válido.'
+        ], 422);
     }
 
+    $usuario = DB::table('users')
+        ->where('login', $login)
+        ->first();
+
+    if (!$usuario) {
+        return response()->json([
+            'success' => false,
+            'message' => 'El usuario no existe.'
+        ], 404);
+    }
+
+    if (trim((string) $usuario->login) === trim((string) $usuarioActual->login)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No puedes eliminar tu propia cuenta.'
+        ], 422);
+    }
+
+    DB::beginTransaction();
+
+    try {
+        DB::table('numeros_empleado')
+            ->where('login', $login)
+            ->delete();
+
+        DB::table('departamentos')
+            ->where('usuario_departamento', $login)
+            ->delete();
+
+        DB::table('users')
+            ->where('login', $login)
+            ->delete();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'El usuario fue eliminado correctamente.'
+        ]);
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        report($e);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se pudo eliminar el usuario.'
+        ], 500);
+    }
+}
     public function empresas()
     {
         if (!Auth::check() || !$this->tienePermiso()) {

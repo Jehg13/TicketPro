@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis tickets - TicketPro</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/filtrostecnologias.js', 'resources/js/modalticketusuario.js', 'resources/js/mensajes.js', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         window.usuarioActualId = @json(Auth::id());

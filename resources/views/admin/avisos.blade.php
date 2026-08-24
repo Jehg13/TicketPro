@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>TicketPro - Nuevo Aviso</title>
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+<script>
+    window.departamentos = @json($departamentos);
+    window.usuarios = @json($usuarios);
+</script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
@@ -32,7 +30,7 @@
                         {{ Auth::user()->name ?? 'Desconocido' }}
                     </h4>
                     <p class="text-xs text-slate-400 truncate">
-                        {{ Auth::user()->departamento->nombre ?? 'Desconocido' }}
+                        {{ Auth::user()->role ?? 'Desconocido' }}
                     </p>
                 </div>
             </div>
@@ -51,7 +49,7 @@
                         Tickets
                     </span>
                 </a>
-                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                              @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
                     <a href="{{ route('cambiostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
 
@@ -63,6 +61,20 @@
 
                     </a>
                 @endif
+
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('usuarios.tecnologias') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+
+                        <i data-lucide="users" class="w-5 h-5"></i>
+
+                        <span class="text-sm">
+                            Usuarios
+                        </span>
+
+                    </a>
+                @endif
+
                 <a href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30 transition">
                     <i data-lucide="megaphone" class="w-5 h-5"></i>
@@ -423,7 +435,7 @@
                                     </p>
 
                                     <p class="text-[10px] text-blue-400 font-medium">
-                                        {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+                                        {{ auth()->user()->role ?? 'Desconocido' }}
                                     </p>
                                 </div>
 
@@ -1976,251 +1988,7 @@
         </div>
     </main>
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('avisosApp', () => ({
-                modalVer: false,
-                modalEditar: false,
-                modalEliminar: false,
-                avisoSeleccionado: null,
-                abrirVer(aviso) {
-                    this.cerrarModales();
-                    this.avisoSeleccionado = JSON.parse(
-                        JSON.stringify(aviso)
-                    );
-                    this.normalizarAviso();
-                    this.modalVer = true;
-                },
-
-                abrirEditar(aviso) {
-                    this.cerrarModales();
-                    this.avisoSeleccionado = JSON.parse(
-                        JSON.stringify(aviso)
-                    );
-                    this.normalizarAviso();
-                    this.modalEditar = true;
-                },
-
-                abrirEliminar(aviso) {
-                    this.cerrarModales();
-                    this.avisoSeleccionado = JSON.parse(
-                        JSON.stringify(aviso)
-                    );
-                    this.normalizarAviso();
-                    this.modalEliminar = true;
-                },
-
-                normalizarAviso() {
-                    if (!this.avisoSeleccionado) {
-                        return;
-                    }
-                    if (!this.avisoSeleccionado.afecta_a) {
-
-                        this.avisoSeleccionado.afecta_a = {};
-                    }
-                    if (
-                        typeof this.avisoSeleccionado.afecta_a === 'string'
-                    ) {
-                        try {
-                            this.avisoSeleccionado.afecta_a =
-                                JSON.parse(
-                                    this.avisoSeleccionado.afecta_a
-                                );
-                        } catch (error) {
-                            this.avisoSeleccionado.afecta_a = {};
-                        }
-                    }
-                    this.avisoSeleccionado.mostrar_notificaciones =
-                        Boolean(
-                            Number(
-                                this.avisoSeleccionado.mostrar_notificaciones
-                            )
-                        );
-                    this.avisoSeleccionado.fijado =
-                        Boolean(
-                            Number(
-                                this.avisoSeleccionado.fijado
-                            )
-                        );
-                },
-
-                obtenerDepartamento(id) {
-                    const departamentos = @js($departamentos);
-                    return departamentos.find(
-                        departamento =>
-                        Number(departamento.id) === Number(id)
-                    ) || null;
-                },
-
-                obtenerUsuario(id) {
-                    const usuarios = @js($usuarios);
-                    return usuarios.find(
-                        usuario =>
-                        Number(usuario.id) === Number(id)
-                    ) || null;
-                },
-
-                cerrarModales() {
-                    this.modalVer = false;
-                    this.modalEditar = false;
-                    this.modalEliminar = false;
-                    this.avisoSeleccionado = null;
-                },
-
-                formatearFecha(fecha) {
-                    if (!fecha) {
-                        return 'No especificada';
-                    }
-                    try {
-                        const fechaNormalizada = fecha.replace(
-                            ' ',
-                            'T'
-                        );
-                        const date = new Date(
-                            fechaNormalizada
-                        );
-                        if (isNaN(date.getTime())) {
-                            return fecha;
-                        }
-                        return date.toLocaleString(
-                            'es-MX', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }
-                        );
-                    } catch (error) {
-                        return fecha;
-                    }
-                },
-
-                fechaSolo(fecha) {
-                    if (!fecha) {
-                        return '';
-                    }
-                    return fecha
-                        .replace(' ', 'T')
-                        .substring(0, 10);
-                },
-
-                horaSolo(fecha) {
-                    if (!fecha) {
-                        return '';
-                    }
-                    return fecha
-                        .replace(' ', 'T')
-                        .substring(11, 16);
-                },
-
-                afectaSeleccionado(tipo, id) {
-                    if (
-                        !this.avisoSeleccionado ||
-                        !this.avisoSeleccionado.afecta_a
-                    ) {
-                        return false;
-                    }
-                    const afecta =
-                        this.avisoSeleccionado.afecta_a;
-                    if (afecta.tipo !== tipo) {
-                        return false;
-                    }
-                    if (!Array.isArray(afecta.ids)) {
-                        return false;
-                    }
-                    return afecta.ids
-                        .map(Number)
-                        .includes(Number(id));
-                },
-
-                cambiarDestino() {
-                    if (!this.avisoSeleccionado) {
-                        return;
-                    }
-                    if (
-                        this.avisoSeleccionado.aplica_a === 'todos'
-                    ) {
-                        this.avisoSeleccionado.afecta_a = {
-                            tipo: 'todos'
-                        };
-                        return;
-                    }
-                    if (
-                        this.avisoSeleccionado.aplica_a === 'departamento'
-                    ) {
-                        this.avisoSeleccionado.afecta_a = {
-                            tipo: 'departamentos',
-                            ids: []
-                        };
-                        return;
-                    }
-                    if (
-                        this.avisoSeleccionado.aplica_a === 'usuarios'
-                    ) {
-                        this.avisoSeleccionado.afecta_a = {
-                            tipo: 'usuarios',
-                            ids: []
-                        };
-                    }
-                },
-
-                textoAplicaA(valor) {
-                    if (valor === 'todos') {
-                        return 'Todos los usuarios';
-                    }
-                    if (valor === 'departamento') {
-                        return 'Departamentos';
-                    }
-                    if (valor === 'usuarios') {
-                        return 'Usuarios específicos';
-                    }
-                    return valor || 'No especificado';
-                },
-
-                nombreArchivo(archivo) {
-                    if (!archivo) {
-                        return 'Sin archivo';
-                    }
-                    return archivo
-                        .split('/')
-                        .pop();
-                },
-
-                esImagen(archivo) {
-                    if (!archivo) {
-                        return false;
-                    }
-                    return /\.(jpg|jpeg|png)$/i.test(
-                        archivo
-                    );
-                },
-
-                esPdf(archivo) {
-                    if (!archivo) {
-                        return false;
-                    }
-                    return /\.pdf$/i.test(
-                        archivo
-                    );
-                },
-
-                esVideo(archivo) {
-                    if (!archivo) {
-                        return false;
-                    }
-                    return /\.mp4$/i.test(
-                        archivo
-                    );
-                },
-
-                urlArchivo(archivo) {
-                    if (!archivo) {
-                        return '';
-                    }
-                    return '/storage/' + archivo;
-                }
-            }));
-        });
+       
     </script>
 
 </body>

@@ -11,7 +11,7 @@
 
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/mfa.js', 'resources/js/fototecnologias', 'resources/js/app.js'])
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -44,7 +44,7 @@
                     </h4>
 
                     <p class="text-xs text-slate-400 truncate">
-                        {{ auth()->user()->departamento->nombre ?? 'Sin departamento' }}
+                        {{ auth()->user()->role ?? 'Desconocido' }}
                     </p>
 
                 </div>
@@ -87,6 +87,20 @@
 
                     </a>
                 @endif
+
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                    <a href="{{ route('usuarios.tecnologias') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+
+                        <i data-lucide="users" class="w-5 h-5"></i>
+
+                        <span class="text-sm">
+                            Usuarios
+                        </span>
+
+                    </a>
+                @endif
+
 
                 <a href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
@@ -413,7 +427,7 @@
                                     </p>
 
                                     <p class="text-[10px] text-blue-400 font-medium">
-                                        {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
+                                        {{ auth()->user()->role ?? 'Desconocido' }}
                                     </p>
 
                                 </div>
@@ -497,15 +511,6 @@
                     @php
                         $usuario = auth()->user();
 
-                        /*
-    |--------------------------------------------------------------------------
-    | Permisos para editar información
-    |--------------------------------------------------------------------------
-    | Debe cumplir AMBAS condiciones:
-    | 1. role = Gerente TI
-    | 2. priv_admin = Y
-    |--------------------------------------------------------------------------
-    */
                         $puedeEditarPerfil =
                             strtoupper(trim($usuario->role ?? '')) === 'GERENTE TI' &&
                             strtoupper(trim($usuario->priv_admin ?? '')) === 'Y';
@@ -554,9 +559,67 @@
                         </div>
 
 
-                        {{-- FORMULARIO --}}
                         <form action="{{ route('tecnologias.perfil.update') }}" method="POST" class="space-y-6"
-                            x-data="{ confirmar: false }" @submit.prevent="confirmar = true">
+                            x-data="{
+                                confirmar: false,
+                                hayCambios: false,
+                                loginModificado: false,
+                                emailModificado: false,
+                                loginOriginal: @js($usuario->login),
+                                emailOriginal: @js($usuario->email),
+                                valoresOriginales: {},
+                            
+                                init() {
+                                    this.$nextTick(() => {
+                                        this.$root.querySelectorAll('input[name]').forEach(input => {
+                                            this.valoresOriginales[input.name] = input.value;
+                                        });
+                            
+                                        this.detectarCambios();
+                            
+                                        this.$root.querySelectorAll('input[name]').forEach(input => {
+                                            input.addEventListener('input', () => this.detectarCambios());
+                                            input.addEventListener('change', () => this.detectarCambios());
+                                        });
+                                    });
+                                },
+                            
+                                detectarCambios() {
+                                    const actuales = {};
+                            
+                                    this.$root.querySelectorAll('input[name]').forEach(input => {
+                                        actuales[input.name] = input.value;
+                                    });
+                            
+                                    this.hayCambios = Object.keys(this.valoresOriginales).some(campo => {
+                                        return actuales[campo] !== this.valoresOriginales[campo];
+                                    });
+                            
+                                    const login = this.$root.querySelector('[name=login]')?.value ?? '';
+                                    const email = this.$root.querySelector('[name=email]')?.value ?? '';
+                            
+                                    this.loginModificado = login.trim() !== this.loginOriginal.trim();
+                                    this.emailModificado = email.trim() !== this.emailOriginal.trim();
+                                },
+                            
+                                prepararConfirmacion() {
+                                    this.detectarCambios();
+                            
+                                    if (!this.hayCambios) {
+                                        return;
+                                    }
+                            
+                                    this.confirmar = true;
+                                },
+                            
+                                cancelarConfirmacion() {
+                                    this.confirmar = false;
+                                },
+                            
+                                guardarCambios() {
+                                    this.$root.submit();
+                                }
+                            }" @submit.prevent="prepararConfirmacion()">
 
                             @csrf
                             @method('PUT')
@@ -771,8 +834,7 @@
                                             </label>
 
 
-                                            <input type="tel" name="telefono"
-                                                value="{{ $usuario->phone ?? '' }}"
+                                            <input type="tel" name="phone" value="{{ $usuario->phone ?? '' }}"
                                                 placeholder="Sin teléfono registrado"
                                                 {{ !$puedeEditarPerfil ? 'disabled' : '' }}
                                                 class="w-full rounded-xl px-4 py-2.5 text-xs transition
@@ -991,7 +1053,7 @@
                                         </div>
 
 
-                                        {{-- UBICACIÓN - FIJO --}}
+                                        {{-- UBICACIÓN - FIJO
                                         <div class="space-y-1.5">
 
                                             <label
@@ -1028,7 +1090,7 @@
 
                                             </div>
 
-                                        </div>
+                                        </div> --}}
 
                                     </div>
 
@@ -1044,12 +1106,16 @@
                             @if ($puedeEditarPerfil)
                                 <div class="pt-2 flex justify-end">
 
-                                    <button type="submit"
-                                        class="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30 hover:opacity-90 transition">
+                                    <button type="submit" :disabled="!hayCambios"
+                                        :class="hayCambios
+                                            ?
+                                            'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30 hover:opacity-90 cursor-pointer' :
+                                            'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'"
+                                        class="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-white transition">
 
                                         <i data-lucide="save" class="w-4 h-4"></i>
 
-                                        Guardar cambios
+                                        <span x-text="hayCambios ? 'Guardar cambios' : 'Sin cambios'"></span>
 
                                     </button>
 
@@ -1103,13 +1169,52 @@
                                             </button>
 
 
-                                            <button type="button" @click="$el.closest('form').submit()"
+                                            <button type="button" @click="guardarCambios()"
                                                 class="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition shadow-lg shadow-blue-600/20">
 
                                                 Sí, guardar cambios
 
                                             </button>
 
+                                        </div>
+                                        <div x-show="loginModificado || emailModificado" x-transition
+                                            class="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                            <div class="flex items-start gap-3">
+
+                                                <i data-lucide="shield-alert"
+                                                    class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+
+                                                <div>
+
+                                                    <p class="text-xs font-semibold text-amber-300">
+                                                        Se cerrará tu sesión
+                                                    </p>
+
+                                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                                        @if ($puedeEditarPerfil)
+                                                            Al modificar tu
+                                                            <span x-show="loginModificado && emailModificado"
+                                                                class="text-slate-200 font-medium">
+                                                                Usuario y correo electrónico
+                                                            </span>
+
+                                                            <span x-show="loginModificado && !emailModificado"
+                                                                class="text-slate-200 font-medium">
+                                                                Usuario
+                                                            </span>
+
+                                                            <span x-show="!loginModificado && emailModificado"
+                                                                class="text-slate-200 font-medium">
+                                                                Correo electrónico
+                                                            </span>
+
+                                                            , deberás iniciar sesión nuevamente.
+                                                        @endif
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
                                         </div>
 
                                     </div>
@@ -1200,31 +1305,14 @@
                         </div>
 
 
-                        {{-- ================================================================ --}}
-                        {{-- MFA / GOOGLE AUTHENTICATOR --}}
-                        {{-- ================================================================ --}}
-
                         <div
-                            class="mt-3 bg-[#030712] border border-slate-800 rounded-xl p-4
-               flex flex-col sm:flex-row items-start sm:items-center
-               justify-between gap-4">
-
-                            {{-- INFORMACIÓN MFA --}}
-
+                            class="mt-3 bg-[#030712] border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
-
-                                <div
-                                    class="p-2.5 rounded-lg bg-slate-900
-                       border border-slate-800 text-slate-400">
-
-                                    <i data-lucide="shield-check" class="w-5 h-5">
-                                    </i>
-
+                                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
+                                    <i data-lucide="shield-check" class="w-5 h-5"></i>
                                 </div>
 
-
                                 <div>
-
                                     <h4 class="text-xs font-bold text-white">
                                         Verificación en dos pasos
                                     </h4>
@@ -1233,11 +1321,7 @@
                                         Agrega una capa adicional de seguridad a tu cuenta.
                                     </p>
 
-
-                                    {{-- ESTADO MFA --}}
-
                                     <div class="mt-1">
-
                                         @if (Auth::user()->mfa === 'Y')
                                             <span class="text-[11px] text-emerald-400">
                                                 ● Activada
@@ -1247,34 +1331,25 @@
                                                 ● Desactivada
                                             </span>
                                         @endif
-
                                     </div>
-
                                 </div>
-
                             </div>
 
-
-                            {{-- BOTÓN MFA --}}
-
                             <button type="button" @click="abrirMFA()"
-                                class="flex items-center gap-1.5 px-4 py-2
-           rounded-xl text-xs font-semibold
-           bg-blue-600/10 text-blue-400
-           border border-blue-500/30
-           hover:bg-blue-600/20
-           transition shrink-0">
+                                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition shrink-0
+        {{ Auth::user()->mfa === 'Y'
+            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20'
+            : 'bg-blue-600/10 text-blue-400 border border-blue-500/30 hover:bg-blue-600/20' }}">
 
                                 @if (Auth::user()->mfa === 'Y')
-                                    <i data-lucide="settings" class="w-4 h-4"></i>
-                                    Configurar
+                                    <i data-lucide="shield-off" class="w-4 h-4"></i>
+                                    Desactivar
                                 @else
                                     <i data-lucide="shield-plus" class="w-4 h-4"></i>
                                     Activar
                                 @endif
 
                             </button>
-
                         </div>
 
                     </div>
@@ -1355,7 +1430,32 @@
                                 @endif
 
                             </div>
-                            <div class="bg-[#0f1535] rounded-2xl border border-[#1e295d] p-6 shadow-lg space-y-5">
+
+                            @error('picture')
+                                <p class="text-[10px] text-rose-400 mt-3">
+                                    {{ $message }}
+                                </p>
+                            @enderror
+
+                            @if (session('success'))
+                                <p class="text-[10px] text-emerald-400 mt-3">
+                                    {{ session('success') }}
+                                </p>
+                            @endif
+
+                        </div>
+
+                    </form>
+
+                    @if (auth()->user()->picture)
+                        <form id="deletePhotoForm" action="{{ route('perfil.delete') }}" method="POST">
+
+                            @csrf
+                            @method('DELETE')
+
+                        </form>
+                    @endif
+                    <div class="bg-[#0f1535] rounded-2xl border border-[#1e295d] p-6 shadow-lg space-y-5">
 
                         <div class="flex items-center gap-2">
 
@@ -1379,20 +1479,20 @@
                             <div>
 
                                 <p class="text-xs font-medium text-gray-400 mb-1.5">
-                                Estado de la cuenta
-                            </p>
+                                    Estado de la cuenta
+                                </p>
 
-                            @if (Auth::user()->active === 'Y')
-                                <span
-                                    class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-[#06331e] border border-emerald-600 text-emerald-400">
-                                    Activa
-                                </span>
-                            @else
-                                <span
-                                    class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-red-950/40 border border-red-600 text-red-400">
-                                    Inactiva
-                                </span>
-                            @endif
+                                @if (Auth::user()->active === 'Y')
+                                    <span
+                                        class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-[#06331e] border border-emerald-600 text-emerald-400">
+                                        Activa
+                                    </span>
+                                @else
+                                    <span
+                                        class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-red-950/40 border border-red-600 text-red-400">
+                                        Inactiva
+                                    </span>
+                                @endif
 
                             </div>
 
@@ -1436,31 +1536,6 @@
                         </div>
 
                     </div>
-                            @error('picture')
-                                <p class="text-[10px] text-rose-400 mt-3">
-                                    {{ $message }}
-                                </p>
-                            @enderror
-
-                            @if (session('success'))
-                                <p class="text-[10px] text-emerald-400 mt-3">
-                                    {{ session('success') }}
-                                </p>
-                            @endif
-
-                        </div>
-
-                    </form>
-
-                    @if (auth()->user()->picture)
-                        <form id="deletePhotoForm" action="{{ route('perfil.delete') }}" method="POST">
-
-                            @csrf
-                            @method('DELETE')
-
-                        </form>
-                    @endif
-
                     <div x-cloak x-show="confirmarActualizar" x-transition.opacity
                         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
 
@@ -1701,56 +1776,20 @@
                         </div>
 
                     </div>
-                    {{-- ================================================================ --}}
-                    {{-- MODAL MFA - GOOGLE AUTHENTICATOR --}}
-                    {{-- ================================================================ --}}
-
                     <div x-show="modalMFA" x-cloak x-transition.opacity
-                        class="fixed inset-0 z-50 flex items-center justify-center
-           bg-black/70 backdrop-blur-sm px-4">
-                        <div @click.outside="modalMFA = false" x-transition
-                            class="relative w-full max-w-md
-               bg-[#0b1026]
-               border border-blue-900/40
-               rounded-2xl
-               shadow-[0_0_40px_rgba(37,99,235,0.20)]
-               p-6">
+                        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
 
-                            {{-- ======================================================== --}}
-                            {{-- BOTÓN CERRAR --}}
-                            {{-- ======================================================== --}}
+                        <div @click.outside="modalMFA = false" x-transition
+                            class="relative w-full max-w-md bg-[#0b1026] border border-blue-900/40 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.20)] p-6">
 
                             <button type="button" @click="cerrarMFA()"
-                                class="flex items-center gap-1.5 px-4 py-2
-           rounded-xl text-xs font-semibold
-           bg-blue-600/10 text-blue-400
-           border border-blue-500/30
-           hover:bg-blue-600/20
-           transition shrink-0">
-
-                                @if (Auth::user()->mfa === 'Y')
-                                    <i data-lucide="settings" class="w-4 h-4"></i>
-                                    Configurar
-                                @else
-                                    <i data-lucide="shield-plus" class="w-4 h-4"></i>
-                                    Activar
-                                @endif
-
+                                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                                <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
 
-
-                            {{-- ======================================================== --}}
-                            {{-- ENCABEZADO --}}
-                            {{-- ======================================================== --}}
-
                             <div class="text-center">
-
                                 <div
-                                    class="mx-auto flex items-center justify-center
-                       w-14 h-14
-                       rounded-2xl
-                       bg-blue-600/10
-                       border border-blue-500/20">
+                                    class="mx-auto flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20">
                                     <i data-lucide="shield-check" class="w-7 h-7 text-blue-400"></i>
                                 </div>
 
@@ -1764,237 +1803,193 @@
                                         Google Authenticator
                                     </span>.
                                 </p>
-
                             </div>
 
+                            @if (Auth::user()->mfa !== 'Y')
+                                <div class="mt-6">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                                            1
+                                        </div>
 
-                            {{-- ======================================================== --}}
-                            {{-- PASO 1 --}}
-                            {{-- ======================================================== --}}
+                                        <div>
+                                            <p class="text-sm font-semibold text-white">
+                                                Instala Google Authenticator
+                                            </p>
 
-                            <div class="mt-6">
+                                            <p class="text-xs text-slate-500 mt-0.5">
+                                                Abre la aplicación en tu teléfono.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <div class="flex items-center gap-3">
+                                <div class="mt-5">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                                            2
+                                        </div>
+
+                                        <div>
+                                            <p class="text-sm font-semibold text-white">
+                                                Escanea el código QR
+                                            </p>
+
+                                            <p class="text-xs text-slate-500 mt-0.5">
+                                                Utiliza Google Authenticator para escanearlo.
+                                            </p>
+                                        </div>
+                                    </div>
 
                                     <div
-                                        class="flex items-center justify-center
-                           w-7 h-7
-                           rounded-full
-                           bg-blue-600
-                           text-white
-                           text-xs
-                           font-bold
-                           shrink-0">
-                                        1
+                                        class="mt-4 flex items-center justify-center min-h-[220px] rounded-xl bg-white border border-slate-700 p-4">
+                                        <div id="mfaQr"
+                                            class="w-[220px] h-[220px] flex items-center justify-center"></div>
                                     </div>
-
-                                    <div>
-
-                                        <p class="text-sm font-semibold text-white">
-                                            Instala Google Authenticator
-                                        </p>
-
-                                        <p class="text-xs text-slate-500 mt-0.5">
-                                            Abre la aplicación en tu teléfono.
-                                        </p>
-
-                                    </div>
-
                                 </div>
 
-                            </div>
+                                <div class="mt-5">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                                            3
+                                        </div>
 
+                                        <div>
+                                            <p class="text-sm font-semibold text-white">
+                                                Introduce el código
+                                            </p>
 
-                            {{-- ======================================================== --}}
-                            {{-- PASO 2 --}}
-                            {{-- ======================================================== --}}
-
-                            <div class="mt-5">
-
-                                <div class="flex items-center gap-3">
-
-                                    <div
-                                        class="flex items-center justify-center
-                           w-7 h-7
-                           rounded-full
-                           bg-blue-600
-                           text-white
-                           text-xs
-                           font-bold
-                           shrink-0">
-                                        2
+                                            <p class="text-xs text-slate-500 mt-0.5">
+                                                Escribe el código de 6 dígitos que aparece en Google Authenticator.
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <div>
+                                    <form @submit.prevent="confirmarMFA()" class="mt-4">
+                                        @csrf
 
-                                        <p class="text-sm font-semibold text-white">
-                                            Escanea el código QR
+                                        <label for="codigo_mfa"
+                                            class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                            Código de verificación
+                                        </label>
+
+                                        <input id="codigo_mfa" name="codigo" type="text" x-model="mfaCodigo"
+                                            inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                                            pattern="[0-9]{6}" placeholder="000000" required
+                                            class="w-full bg-[#030712] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white text-center tracking-[0.4em] focus:outline-none focus:border-blue-500">
+
+                                        <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
                                         </p>
 
-                                        <p class="text-xs text-slate-500 mt-0.5">
-                                            Utiliza Google Authenticator para escanearlo.
-                                        </p>
+                                        <div class="flex items-center gap-3 mt-5">
+                                            <button type="button" @click="cerrarMFA()"
+                                                class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
+                                                Cancelar
+                                            </button>
 
+                                            <button type="submit" :disabled="cargandoMFA"
+                                                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
+
+                                                <i x-show="!cargandoMFA" data-lucide="shield-check"
+                                                    class="w-4 h-4"></i>
+
+                                                <svg x-show="cargandoMFA" class="animate-spin w-4 h-4"
+                                                    viewBox="0 0 24 24" fill="none">
+                                                    <circle cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4" class="opacity-25">
+                                                    </circle>
+
+                                                    <path fill="currentColor" class="opacity-75"
+                                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                                    </path>
+                                                </svg>
+
+                                                <span
+                                                    x-text="cargandoMFA ? 'Verificando...' : 'Verificar y activar'"></span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @else
+                                <div class="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-sm font-semibold text-white">
+                                                Verificación en dos pasos activada
+                                            </p>
+
+                                            <p class="text-xs text-slate-500 mt-0.5">
+                                                Tu cuenta está protegida con Google Authenticator.
+                                            </p>
+                                        </div>
                                     </div>
-
                                 </div>
 
-
-                                {{-- ==================================================== --}}
-                                {{-- QR --}}
-                                {{-- ==================================================== --}}
-                                <div
-                                    class="mt-4 flex items-center justify-center
-           min-h-[220px]
-           rounded-xl
-           bg-white
-           border border-slate-700
-           p-4">
-
-                                    <div id="mfaQr" class="w-[220px] h-[220px] flex items-center justify-center">
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            {{-- ======================================================== --}}
-                            {{-- PASO 3 --}}
-                            {{-- ======================================================== --}}
-
-                            <div class="mt-5">
-
-                                <div class="flex items-center gap-3">
-
-                                    <div
-                                        class="flex items-center justify-center
-                           w-7 h-7
-                           rounded-full
-                           bg-blue-600
-                           text-white
-                           text-xs
-                           font-bold
-                           shrink-0">
-                                        3
-                                    </div>
-
-                                    <div>
-
-                                        <p class="text-sm font-semibold text-white">
-                                            Introduce el código
-                                        </p>
-
-                                        <p class="text-xs text-slate-500 mt-0.5">
-                                            Escribe el código de 6 dígitos que aparece
-                                            en Google Authenticator.
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                {{-- ==================================================== --}}
-                                {{-- FORMULARIO DE VERIFICACIÓN --}}
-                                {{-- ==================================================== --}}
-
-                                <form @submit.prevent="confirmarMFA()" class="mt-4">
-
-                                    @csrf
-
-                                    <label for="codigo_mfa" class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Código de verificación
+                                <div class="mt-5">
+                                    <label for="codigo_desactivar_mfa"
+                                        class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Código de Google Authenticator
                                     </label>
-                                    <input id="codigo_mfa" name="codigo" type="text" x-model="mfaCodigo"
+
+                                    <input id="codigo_desactivar_mfa" type="text" x-model="mfaCodigo"
                                         inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-                                        pattern="[0-9]{6}" placeholder="000000" required>
+                                        pattern="[0-9]{6}" placeholder="000000"
+                                        class="w-full bg-[#030712] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white text-center tracking-[0.4em] focus:outline-none focus:border-red-500">
+
+                                    <p class="mt-2 text-[11px] text-slate-500">
+                                        Para desactivar la verificación en dos pasos debes confirmar tu identidad
+                                        utilizando el código actual.
+                                    </p>
 
                                     <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
                                     </p>
+                                </div>
 
-                                    <div class="flex items-center gap-3 mt-5">
+                                <div class="flex items-center gap-3 mt-5">
+                                    <button type="button" @click="cerrarMFA()"
+                                        class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
+                                        Cancelar
+                                    </button>
 
-                                        <button type="button" @click="cerrarMFA()"
-                                            class="flex-1
-                   py-2.5
-                   rounded-xl
-                   text-xs
-                   font-semibold
-                   text-slate-300
-                   bg-slate-900
-                   border border-slate-700
-                   hover:bg-slate-800
-                   transition">
+                                    <button type="button" @click="desactivarMFA()"
+                                        :disabled="cargandoMFA || mfaCodigo.length !== 6"
+                                        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
 
-                                            Cancelar
+                                        <i x-show="!cargandoMFA" data-lucide="shield-off" class="w-4 h-4"></i>
 
-                                        </button>
+                                        <svg x-show="cargandoMFA" class="animate-spin w-4 h-4" viewBox="0 0 24 24"
+                                            fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4" class="opacity-25">
+                                            </circle>
 
-                                        <button type="submit" :disabled="cargandoMFA"
-                                            class="flex-1
-                   flex items-center justify-center gap-2
-                   py-2.5
-                   rounded-xl
-                   text-xs
-                   font-semibold
-                   text-white
-                   bg-blue-600
-                   hover:bg-blue-500
-                   disabled:opacity-50
-                   disabled:cursor-not-allowed
-                   shadow-[0_4px_14px_rgba(37,99,235,0.35)]
-                   transition">
+                                            <path fill="currentColor" class="opacity-75"
+                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                            </path>
+                                        </svg>
 
-                                            <i x-show="!cargandoMFA" data-lucide="shield-check" class="w-4 h-4">
-                                            </i>
+                                        <span x-text="cargandoMFA ? 'Desactivando...' : 'Desactivar MFA'"></span>
+                                    </button>
+                                </div>
 
-                                            <svg x-show="cargandoMFA" class="animate-spin w-4 h-4"
-                                                viewBox="0 0 24 24" fill="none">
+                                <div
+                                    class="mt-5 flex items-start gap-2 rounded-xl bg-red-500/5 border border-red-500/10 p-3">
+                                    <i data-lucide="triangle-alert" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>
 
-                                                <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                    stroke-width="4" class="opacity-25">
-                                                </circle>
-
-                                                <path fill="currentColor" class="opacity-75"
-                                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                                                </path>
-
-                                            </svg>
-
-                                            <span
-                                                x-text="cargandoMFA ? 'Verificando...' : 'Verificar y activar'"></span>
-
-                                        </button>
-
-                                    </div>
-
-                                </form>
-
-                            </div>
-
-
-                            {{-- ======================================================== --}}
-                            {{-- INFORMACIÓN --}}
-                            {{-- ======================================================== --}}
-
-                            <div
-                                class="mt-5
-                   flex items-start gap-2
-                   rounded-xl
-                   bg-blue-500/5
-                   border border-blue-500/10
-                   p-3">
-
-                                <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
-
-                                <p class="text-[11px] text-slate-500 leading-relaxed">
-                                    Después de activar la verificación en dos pasos,
-                                    necesitarás el código de Google Authenticator cada vez
-                                    que inicies sesión en TicketPro.
-                                </p>
-
-                            </div>
+                                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                                        Al desactivar esta opción, tu cuenta dejará de solicitar el código de Google
+                                        Authenticator al iniciar sesión.
+                                    </p>
+                                </div>
+                            @endif
 
                         </div>
                     </div>
@@ -2007,531 +2002,15 @@
 
     </main>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-
-        Alpine.data('perfilSeguridad', () => ({
-
-            /*
-            |--------------------------------------------------------------------------
-            | ESTADOS
-            |--------------------------------------------------------------------------
-            */
-
-            modalPassword: false,
-
-            modalMFA: false,
-
-            cargandoMFA: false,
-
-            mfaCodigo: '',
-
-            mfaMensaje: '',
-
-            qrCodeUrl: '',
-
-            secretKey: '',
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | INICIALIZACIÓN
-            |--------------------------------------------------------------------------
-            */
-
-            init() {
-
-                console.log('perfilSeguridad inicializado');
-
-            },
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | ABRIR MODAL MFA Y GENERAR CONFIGURACIÓN
-            |--------------------------------------------------------------------------
-            */
-
-            async abrirMFA() {
-
-                this.modalMFA = true;
-
-                this.cargandoMFA = true;
-
-                this.mfaMensaje = '';
-
-                this.mfaCodigo = '';
-
-                try {
-
-                    const response = await fetch(
-                        "{{ route('mfa.configurar') }}",
-                        {
-                            method: 'GET',
-
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }
-                    );
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Verificar respuesta HTTP
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            `HTTP ${response.status}`
-                        );
-
-                    }
-
-
-                    const data = await response.json();
-
-
-                    console.log(
-                        'RESPUESTA MFA:',
-                        data
-                    );
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Validar respuesta
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (!data.success) {
-
-                        this.mfaMensaje =
-                            data.message ||
-                            'No se pudo configurar la verificación MFA.';
-
-                        return;
-
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Guardar datos
-                    |--------------------------------------------------------------------------
-                    */
-
-                    this.qrCodeUrl = data.qrCodeUrl || '';
-
-                    this.secretKey = data.secretKey || '';
-
-
-                    console.log(
-                        'QR URL:',
-                        this.qrCodeUrl
-                    );
-
-                    console.log(
-                        'SECRET:',
-                        this.secretKey
-                    );
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Generar QR
-                    |--------------------------------------------------------------------------
-                    */
-
-                    this.$nextTick(() => {
-
-                        const contenedor =
-                            document.getElementById('mfaQr');
-
-
-                        if (!contenedor) {
-
-                            console.error(
-                                'No existe el contenedor #mfaQr'
-                            );
-
-                            return;
-
-                        }
-
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | Limpiar QR anterior
-                        |--------------------------------------------------------------------------
-                        */
-
-                        contenedor.innerHTML = '';
-
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | Verificar librería QRCode
-                        |--------------------------------------------------------------------------
-                        */
-
-                        if (typeof QRCode === 'undefined') {
-
-                            console.error(
-                                'QRCode no está cargado'
-                            );
-
-                            this.mfaMensaje =
-                                'No se pudo cargar el generador del código QR.';
-
-                            return;
-
-                        }
-
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | Crear QR
-                        |--------------------------------------------------------------------------
-                        */
-
-                        new QRCode(
-                            contenedor,
-                            {
-                                text: this.qrCodeUrl,
-
-                                width: 220,
-
-                                height: 220,
-
-                                colorDark: '#000000',
-
-                                colorLight: '#ffffff',
-
-                                correctLevel: QRCode.CorrectLevel.H
-                            }
-                        );
-
-
-                        console.log(
-                            'QR GENERADO CORRECTAMENTE'
-                        );
-
-                    });
-
-
-                } catch (error) {
-
-                    console.error(
-                        'Error generando MFA:',
-                        error
-                    );
-
-
-                    this.mfaMensaje =
-                        'Ocurrió un error al preparar la configuración MFA.';
-
-                } finally {
-
-                    this.cargandoMFA = false;
-
-                }
-
-            },
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | CERRAR MODAL MFA
-            |--------------------------------------------------------------------------
-            */
-
-            cerrarMFA() {
-
-                this.modalMFA = false;
-
-                this.mfaCodigo = '';
-
-                this.mfaMensaje = '';
-
-                this.cargandoMFA = false;
-
-                this.qrCodeUrl = '';
-
-                this.secretKey = '';
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Limpiar QR
-                |--------------------------------------------------------------------------
-                */
-
-                this.$nextTick(() => {
-
-                    const contenedor =
-                        document.getElementById('mfaQr');
-
-                    if (contenedor) {
-
-                        contenedor.innerHTML = '';
-
-                    }
-
-                });
-
-            },
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | CONFIRMAR Y ACTIVAR MFA
-            |--------------------------------------------------------------------------
-            */
-
-            async confirmarMFA() {
-
-                console.log(
-                    'Código MFA:',
-                    this.mfaCodigo
-                );
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validar código
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                    !this.mfaCodigo ||
-                    this.mfaCodigo.length !== 6
-                ) {
-
-                    this.mfaMensaje =
-                        'Ingresa un código de 6 dígitos.';
-
-                    return;
-
-                }
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Validar solamente números
-                |--------------------------------------------------------------------------
-                */
-
-                if (!/^\d{6}$/.test(this.mfaCodigo)) {
-
-                    this.mfaMensaje =
-                        'El código debe contener únicamente 6 números.';
-
-                    return;
-
-                }
-
-
-                this.cargandoMFA = true;
-
-                this.mfaMensaje = '';
-
-
-                try {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | CSRF
-                    |--------------------------------------------------------------------------
-                    */
-
-                    const csrfToken =
-                        document
-                            .querySelector(
-                                'meta[name="csrf-token"]'
-                            )
-                            ?.getAttribute('content');
-
-
-                    if (!csrfToken) {
-
-                        throw new Error(
-                            'No se encontró el token CSRF.'
-                        );
-
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Verificar MFA
-                    |--------------------------------------------------------------------------
-                    |
-                    | ESTA ES TU RUTA REAL:
-                    |
-                    | usuario.mfa.verificar.activacion
-                    |
-                    */
-
-                    const response = await fetch(
-                        "{{ route('usuario.mfa.verificar.activacion') }}",
-                        {
-
-                            method: 'POST',
-
-                            headers: {
-
-                                'Content-Type':
-                                    'application/json',
-
-                                'X-CSRF-TOKEN':
-                                    csrfToken,
-
-                                'Accept':
-                                    'application/json',
-
-                                'X-Requested-With':
-                                    'XMLHttpRequest'
-
-                            },
-
-                            body: JSON.stringify({
-
-                                codigo:
-                                    this.mfaCodigo
-
-                            })
-
-                        }
-                    );
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Verificar HTTP
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (!response.ok) {
-
-                        const texto =
-                            await response.text();
-
-                        console.error(
-                            'RESPUESTA HTTP MFA:',
-                            response.status,
-                            texto
-                        );
-
-                        throw new Error(
-                            `HTTP ${response.status}`
-                        );
-
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Convertir respuesta JSON
-                    |--------------------------------------------------------------------------
-                    */
-
-                    const data =
-                        await response.json();
-
-
-                    console.log(
-                        'RESPUESTA VERIFICACIÓN MFA:',
-                        data
-                    );
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | MFA NO ACTIVADO
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (!data.success) {
-
-                        this.mfaMensaje =
-                            data.message ||
-                            'El código MFA no es válido.';
-
-                        return;
-
-                    }
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | MFA ACTIVADO CORRECTAMENTE
-                    |--------------------------------------------------------------------------
-                    */
-
-                    console.log(
-                        'MFA ACTIVADO CORRECTAMENTE'
-                    );
-
-
-                    this.mfaCodigo = '';
-
-                    this.mfaMensaje = '';
-
-                    this.modalMFA = false;
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | IMPORTANTE
-                    |--------------------------------------------------------------------------
-                    |
-                    | No necesitamos inventar una ruta de redirección.
-                    |
-                    | Como estás en:
-                    |
-                    | /tecnologias/perfil/
-                    |
-                    | simplemente recargamos la página.
-                    |
-                    | Así Blade volverá a consultar:
-                    |
-                    | Auth::user()->mfa
-                    |
-                    | y mostrará "Activada".
-                    |
-                    */
-
-                    window.location.reload();
-
-
-                } catch (error) {
-
-                    console.error(
-                        'Error verificando MFA:',
-                        error
-                    );
-
-
-                    this.mfaMensaje =
-                        'No fue posible verificar el código MFA.';
-
-
-                } finally {
-
-                    this.cargandoMFA = false;
-
-                }
-
-            }
-
-        }));
-
-    });
+    <script>
+    window.perfilSeguridadConfig = {
+        loginOriginal: @js(auth()->user()->login),
+        emailOriginal: @js(auth()->user()->email),
+
+        mfaConfigurar: @js(route('mfa.configurar')),
+        mfaActivar: @js(route('usuario.mfa.verificar.activacion')),
+        mfaDesactivar: @js(route('mfa.desactivar')),
+    };
 </script>
 </body>
 

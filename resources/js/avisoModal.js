@@ -1,116 +1,157 @@
 document.addEventListener('alpine:init', () => {
 
     Alpine.data('avisosModal', () => ({
+
         abierto: false,
 
-        aviso: {},
+        aviso: {
+            tipo: '',
+            importancia: '',
+            titulo: '',
+            descripcion: '',
+            fecha_inicio: null,
+            afecta_a: null,
+            archivo: null
+        },
 
         abrirAviso(aviso) {
-            this.aviso = aviso || {};
+
+            this.aviso = aviso || {
+                tipo: '',
+                importancia: '',
+                titulo: '',
+                descripcion: '',
+                fecha_inicio: null,
+                afecta_a: null,
+                archivo: null
+            };
+
             this.abierto = true;
 
             document.body.classList.add('overflow-hidden');
+
+            this.$nextTick(() => {
+
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+
+            });
         },
 
         cerrarAviso() {
+
             this.abierto = false;
 
             document.body.classList.remove('overflow-hidden');
 
             setTimeout(() => {
-                this.aviso = {};
+
+                if (!this.abierto) {
+
+                    this.aviso = {
+                        tipo: '',
+                        importancia: '',
+                        titulo: '',
+                        descripcion: '',
+                        fecha_inicio: null,
+                        afecta_a: null,
+                        archivo: null
+                    };
+
+                }
+
             }, 200);
         },
 
         capitalizar(texto) {
+
             if (!texto) {
                 return '';
             }
 
-            return texto.charAt(0).toUpperCase() + texto.slice(1);
+            return texto.charAt(0).toUpperCase() +
+                texto.slice(1);
         },
 
         nombreTipo() {
-            if (this.aviso.tipo === 'mantenimiento') {
-                return 'Mantenimiento';
-            }
 
-            if (this.aviso.tipo === 'incidente') {
-                return 'Incidente';
-            }
+            const tipos = {
+                mantenimiento: 'Mantenimiento',
+                incidente: 'Incidente',
+                informativo: 'Informativo'
+            };
 
-            if (this.aviso.tipo === 'informativo') {
-                return 'Informativo';
-            }
-
-            return 'General';
+            return tipos[this.aviso.tipo] || 'General';
         },
 
         colorTipo() {
-            if (this.aviso.tipo === 'mantenimiento') {
-                return 'bg-amber-500';
-            }
 
-            if (this.aviso.tipo === 'incidente') {
-                return 'bg-red-500';
-            }
+            const colores = {
+                mantenimiento: 'bg-amber-500',
+                incidente: 'bg-red-500',
+                informativo: 'bg-cyan-500'
+            };
 
-            if (this.aviso.tipo === 'informativo') {
-                return 'bg-cyan-500';
-            }
-
-            return 'bg-blue-500';
+            return colores[this.aviso.tipo] || 'bg-blue-500';
         },
 
         badgeTipo() {
-            if (this.aviso.tipo === 'mantenimiento') {
-                return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-            }
 
-            if (this.aviso.tipo === 'incidente') {
-                return 'bg-red-500/10 text-red-400 border-red-500/20';
-            }
+            const clases = {
+                mantenimiento:
+                    'bg-amber-500/10 text-amber-400 border-amber-500/20',
 
-            if (this.aviso.tipo === 'informativo') {
-                return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-            }
+                incidente:
+                    'bg-red-500/10 text-red-400 border-red-500/20',
 
-            return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                informativo:
+                    'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+            };
+
+            return clases[this.aviso.tipo] ||
+                'bg-blue-500/10 text-blue-400 border-blue-500/20';
         },
 
         iconoClase() {
-            if (this.aviso.tipo === 'mantenimiento') {
-                return 'bg-amber-500/10 border-amber-500/20 text-amber-400';
-            }
 
-            if (this.aviso.tipo === 'incidente') {
-                return 'bg-red-500/10 border-red-500/20 text-red-400';
-            }
+            const clases = {
+                mantenimiento:
+                    'bg-amber-500/10 border-amber-500/20 text-amber-400',
 
-            if (this.aviso.tipo === 'informativo') {
-                return 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400';
-            }
+                incidente:
+                    'bg-red-500/10 border-red-500/20 text-red-400',
 
-            return 'bg-blue-500/10 border-blue-500/20 text-blue-400';
+                informativo:
+                    'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+            };
+
+            return clases[this.aviso.tipo] ||
+                'bg-blue-500/10 border-blue-500/20 text-blue-400';
         },
 
         badgeImportancia() {
-            if (this.aviso.importancia === 'critica') {
-                return 'border-red-500/30 bg-red-500/10 text-red-400';
-            }
 
-            if (this.aviso.importancia === 'alta') {
-                return 'border-orange-500/30 bg-orange-500/10 text-orange-400';
-            }
+            const clases = {
+                critica:
+                    'border-red-500/30 bg-red-500/10 text-red-400',
 
-            if (this.aviso.importancia === 'media') {
-                return 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400';
-            }
+                alta:
+                    'border-orange-500/30 bg-orange-500/10 text-orange-400',
 
-            return 'border-blue-500/30 bg-blue-500/10 text-blue-400';
+                media:
+                    'border-yellow-500/30 bg-yellow-500/10 text-yellow-400',
+
+                normal:
+                    'border-blue-500/30 bg-blue-500/10 text-blue-400'
+            };
+
+            return clases[this.aviso.importancia] ||
+                'border-blue-500/30 bg-blue-500/10 text-blue-400';
         },
 
         formatearFecha(fecha) {
+
             if (!fecha) {
                 return 'No disponible';
             }
@@ -124,11 +165,13 @@ document.addEventListener('alpine:init', () => {
             return date.toLocaleDateString('es-MX', {
                 day: '2-digit',
                 month: 'long',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'America/Matamoros'
             });
         },
 
         formatearHora(fecha) {
+
             if (!fecha) {
                 return 'No disponible';
             }
@@ -141,23 +184,28 @@ document.addEventListener('alpine:init', () => {
 
             return date.toLocaleTimeString('es-MX', {
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/Matamoros'
             });
         },
 
         obtenerAfectados() {
-            let afecta = this.aviso.afecta_a;
+
+            let afecta = this.aviso?.afecta_a;
 
             if (!afecta) {
                 return 'Todos los usuarios';
             }
 
             if (typeof afecta === 'string') {
+
                 try {
                     afecta = JSON.parse(afecta);
                 } catch (error) {
                     return 'Todos los usuarios';
                 }
+
             }
 
             if (!afecta || typeof afecta !== 'object') {
@@ -169,10 +217,26 @@ document.addEventListener('alpine:init', () => {
             }
 
             if (afecta.tipo === 'departamentos') {
+
+                if (
+                    Array.isArray(afecta.nombres) &&
+                    afecta.nombres.length
+                ) {
+                    return afecta.nombres.join(', ');
+                }
+
                 return 'Departamentos seleccionados';
             }
 
             if (afecta.tipo === 'usuarios') {
+
+                if (
+                    Array.isArray(afecta.nombres) &&
+                    afecta.nombres.length
+                ) {
+                    return afecta.nombres.join(', ');
+                }
+
                 return 'Usuarios seleccionados';
             }
 
@@ -180,14 +244,24 @@ document.addEventListener('alpine:init', () => {
         },
 
         obtenerUrlArchivo(archivo) {
+
             if (!archivo) {
                 return '';
+            }
+
+            if (
+                archivo.startsWith('http://') ||
+                archivo.startsWith('https://') ||
+                archivo.startsWith('/')
+            ) {
+                return archivo;
             }
 
             return '/storage/' + archivo;
         },
 
         esImagen(archivo) {
+
             if (!archivo) {
                 return false;
             }
@@ -207,6 +281,7 @@ document.addEventListener('alpine:init', () => {
                 'svg'
             ].includes(extension);
         }
+
     }));
 
 });

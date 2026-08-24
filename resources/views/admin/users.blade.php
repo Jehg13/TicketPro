@@ -1,1355 +1,1576 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>TicketPro - Usuarios</title>
-
-    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
-
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <script src="https://unpkg.com/lucide@latest"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<title>TicketPro - Usuarios</title>
+<link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
+@vite(['resources/css/app.css','resources/js/app.js'])
+<script src="https://unpkg.com/lucide@latest"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+[x-cloak]{display:none!important}
+</style>
 </head>
-
 <body class="bg-[#070b19] text-white font-sans min-h-screen antialiased">
 
-    {{-- ========================================================= --}}
-    {{-- SIDEBAR --}}
-    {{-- ========================================================= --}}
-
-    <aside
-        class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 hidden md:flex flex-col justify-between">
-
-        <div>
-
-            {{-- LOGO --}}
-            <div class="flex items-center gap-2 mb-10">
-
-                <span class="text-3xl font-extrabold tracking-wide text-white">
-                    Ticket<span class="text-blue-500">Pro</span>
-                </span>
-
-            </div>
-
-
-            {{-- USUARIO ACTUAL --}}
-
-            <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
-
-                <img src="{{ auth()->user()->picture
-                    ? asset('storage/' . auth()->user()->picture)
-                    : asset('storage/profile-photos/user.png') }}"
-                    alt="{{ auth()->user()->name }}"
-                    class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
-
-                <div class="overflow-hidden">
-
-                    <h4 class="text-sm font-semibold text-slate-200 truncate">
-                        {{ auth()->user()->name ?? 'Desconocido' }}
-                    </h4>
-
-                    <p class="text-xs text-slate-400 truncate">
-                        {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            {{-- MENU --}}
-
-            <nav class="space-y-2">
-
-                <a href="{{ route('tecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-
-                    <span class="font-medium text-sm">
-                        Inicio
-                    </span>
-
-                </a>
-
-
-                <a href="{{ route('tickettecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
-                    <i data-lucide="ticket-check" class="w-5 h-5"></i>
-
-                    <span class="font-medium text-sm">
-                        Tickets
-                    </span>
-
-                </a>
-
-
-                <a href="{{ route('cambiostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
-                    <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
-
-                    <span class="font-medium text-sm">
-                        Cambios
-                    </span>
-
-                </a>
-
-
-                {{-- USUARIOS ACTIVO --}}
-
-                <a href="#"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30">
-
-                    <i data-lucide="users" class="w-5 h-5"></i>
-
-                    <span class="text-sm">
-                        Usuarios
-                    </span>
-
-                </a>
-
-
-                <a href="{{ route('avisostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
-                    <i data-lucide="megaphone" class="w-5 h-5"></i>
-
-                    <span class="font-medium text-sm">
-                        Avisos
-                    </span>
-
-                </a>
-
-
-                <a href="{{ route('perfiltecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
-                    <i data-lucide="circle-user-round" class="w-5 h-5"></i>
-
-                    <span class="font-medium text-sm">
-                        Mi perfil
-                    </span>
-
-                </a>
-
-            </nav>
-
-        </div>
-
-
-        {{-- LOGOUT --}}
-
-        <form method="POST" action="{{ route('logout') }}">
-
-            @csrf
-
-            <button type="submit"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition">
-
-                <i data-lucide="log-out" class="w-5 h-5"></i>
-
-                <span class="font-medium text-sm">
-                    Cerrar sesión
-                </span>
-
-            </button>
-
-        </form>
-
-    </aside>
-
-
-
-    {{-- ========================================================= --}}
-    {{-- CONTENIDO --}}
-    {{-- ========================================================= --}}
-
-    <main class="md:ml-64 min-h-screen p-6 md:p-8">
-
-        <div class="max-w-[1400px] mx-auto">
-
-
-            {{-- ========================================================= --}}
-            {{-- HEADER --}}
-            {{-- ========================================================= --}}
-
-            <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-
-                <div>
-
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                        Usuarios
-                    </h1>
-
-                    <p class="text-sm text-slate-400 mt-1">
-                        Consulta y administra la información de los usuarios del sistema
-                    </p>
-
-                </div>
-
-
-                {{-- PERFIL --}}
-
-                <div class="relative" x-data="{ perfilAbierto: false }">
-
-                    <button type="button" @click="perfilAbierto = !perfilAbierto"
-                        class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200">
-
-                        <img src="{{ auth()->user()->picture
-                            ? asset('storage/' . auth()->user()->picture)
-                            : asset('storage/profile-photos/user.png') }}"
-                            class="w-8 h-8 rounded-full object-cover">
-
-                        <div class="text-left leading-tight hidden sm:block">
-
-                            <p class="text-xs font-semibold text-white">
-                                {{ auth()->user()->name ?? 'Desconocido' }}
-                            </p>
-
-                            <p class="text-[10px] text-blue-400 font-medium">
-                                {{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}
-                            </p>
-
-                        </div>
-
-                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform"
-                            :class="{ 'rotate-180': perfilAbierto }"></i>
-
-                    </button>
-
-
-                    <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
-                        class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
-                        style="display:none;">
-
-                        <a href="{{ route('perfiltecnologias') }}"
-                            class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition">
-
-                            <i data-lucide="circle-user-round" class="w-5 h-5"></i>
-
-                            Perfil
-
-                        </a>
-
-
-                        <div class="border-t border-[#1e295d]"></div>
-
-
-                        <form method="POST" action="{{ route('logout') }}">
-
-                            @csrf
-
-                            <button type="submit"
-                                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition text-left">
-
-                                <i data-lucide="log-out" class="w-5 h-5"></i>
-
-                                Cerrar sesión
-
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                </div>
-
-            </header>
-
-
-
-            {{-- ========================================================= --}}
-            {{-- TARJETAS --}}
-            {{-- ========================================================= --}}
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-
-
-                {{-- TOTAL --}}
-
-                <div
-                    class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
-
-                    <div>
-
-                        <p class="text-xs text-slate-400 font-medium mb-1">
-                            Total de usuarios
-                        </p>
-
-                        <h3 class="text-2xl font-bold text-white">
-                            248
-                        </h3>
-
-                    </div>
-
-                    <div
-                        class="w-11 h-11 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20">
-
-                        <i data-lucide="users" class="w-5 h-5"></i>
-
-                    </div>
-
-                </div>
-
-
-
-                {{-- ACTIVOS --}}
-
-                <div
-                    class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
-
-                    <div>
-
-                        <p class="text-xs text-slate-400 font-medium mb-1">
-                            Cuentas activas
-                        </p>
-
-                        <h3 class="text-2xl font-bold text-white">
-                            231
-                        </h3>
-
-                    </div>
-
-                    <div
-                        class="w-11 h-11 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20">
-
-                        <i data-lucide="user-check" class="w-5 h-5"></i>
-
-                    </div>
-
-                </div>
-
-
-
-                {{-- INACTIVOS --}}
-
-                <div
-                    class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
-
-                    <div>
-
-                        <p class="text-xs text-slate-400 font-medium mb-1">
-                            Cuentas inactivas
-                        </p>
-
-                        <h3 class="text-2xl font-bold text-white">
-                            17
-                        </h3>
-
-                    </div>
-
-                    <div
-                        class="w-11 h-11 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center border border-rose-500/20">
-
-                        <i data-lucide="user-x" class="w-5 h-5"></i>
-
-                    </div>
-
-                </div>
-
-
-
-                {{-- ADMINISTRADORES --}}
-
-                <div
-                    class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
-
-                    <div>
-
-                        <p class="text-xs text-slate-400 font-medium mb-1">
-                            Administradores
-                        </p>
-
-                        <h3 class="text-2xl font-bold text-white">
-                            8
-                        </h3>
-
-                    </div>
-
-                    <div
-                        class="w-11 h-11 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-500/20">
-
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            {{-- ========================================================= --}}
-            {{-- FILTROS --}}
-            {{-- ========================================================= --}}
-
-            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-6">
-
-
-                {{-- FILTROS --}}
-
-                <div class="flex flex-wrap items-center gap-1 bg-[#0b1026] p-1.5 rounded-xl border border-slate-800">
-
-    <button
-        class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white transition-all">
-        Todos
-    </button>
-
-    <button
-        class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
-        Activos
-    </button>
-
-    <button
-        class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
-        Inactivos
-    </button>
-
-    <div class="w-px h-5 bg-slate-700 mx-1"></div>
-
-    <button
-        class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2">
-        <i data-lucide="user" class="w-3.5 h-3.5"></i>
-        Usuario
-    </button>
-
-    <button
-        class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2">
-        <i data-lucide="headphones" class="w-3.5 h-3.5"></i>
-        Técnico
-    </button>
-
-    <button
-        class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2">
-        <i data-lucide="briefcase-business" class="w-3.5 h-3.5"></i>
-        Gerente TI
-    </button>
+<aside class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 hidden md:flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-10">
+<span class="text-3xl font-extrabold tracking-wide text-white">Ticket<span class="text-blue-500">Pro</span></span>
+</div>
+
+<div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
+<img src="{{ auth()->user()->picture ? asset('storage/'.auth()->user()->picture) : asset('storage/profile-photos/user.png') }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
+<div class="overflow-hidden">
+<h4 class="text-sm font-semibold text-slate-200 truncate">{{ auth()->user()->name ?? 'Desconocido' }}</h4>
+<p class="text-xs text-slate-400 truncate">{{ optional(auth()->user()->departamento)->nombre ?? 'Sin departamento' }}</p>
+</div>
+</div>
+
+<nav class="space-y-2">
+<a href="{{ route('tecnologias') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+<i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+<span class="font-medium text-sm">Inicio</span>
+</a>
+
+<a href="{{ route('tickettecnologias') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+<i data-lucide="ticket-check" class="w-5 h-5"></i>
+<span class="font-medium text-sm">Tickets</span>
+</a>
+
+<a href="{{ route('cambiostecnologias') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+<i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
+<span class="font-medium text-sm">Cambios</span>
+</a>
+
+<a href="{{ route('usuarios.tecnologias') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30">
+<i data-lucide="users" class="w-5 h-5"></i>
+<span class="text-sm">Usuarios</span>
+</a>
+
+<a href="{{ route('avisostecnologias') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+<i data-lucide="megaphone" class="w-5 h-5"></i>
+<span class="font-medium text-sm">Avisos</span>
+</a>
+
+<a href="{{ route('perfiltecnologias') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+<i data-lucide="circle-user-round" class="w-5 h-5"></i>
+<span class="font-medium text-sm">Mi perfil</span>
+</a>
+</nav>
+</div>
+
+<form method="POST" action="{{ route('logout') }}">
+@csrf
+<button type="submit" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition">
+<i data-lucide="log-out" class="w-5 h-5"></i>
+<span class="font-medium text-sm">Cerrar sesión</span>
+</button>
+</form>
+</aside>
+
+<main class="md:ml-64 min-h-screen p-6 md:p-8">
+<div class="max-w-[1400px] mx-auto">
+
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+<div>
+<h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Usuarios</h1>
+<p class="text-sm text-slate-400 mt-1">Consulta y administra la información de los usuarios del sistema</p>
+</div>
+
+<div class="relative" x-data="{perfilAbierto:false}">
+<button type="button" @click="perfilAbierto=!perfilAbierto" class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200">
+<img src="{{ auth()->user()->picture ? asset('storage/'.auth()->user()->picture) : asset('storage/profile-photos/user.png') }}" class="w-8 h-8 rounded-full object-cover">
+<div class="text-left leading-tight hidden sm:block">
+<p class="text-xs font-semibold text-white">{{ auth()->user()->name ?? 'Desconocido' }}</p>
+<p class="text-[10px] text-blue-400 font-medium">{{ auth()->user()->role ?? 'Sin rol' }}</p>
+</div>
+<i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform" :class="{'rotate-180':perfilAbierto}"></i>
+</button>
+
+<div x-cloak x-show="perfilAbierto" @click.outside="perfilAbierto=false" x-transition class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
+<a href="{{ route('perfiltecnologias') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition">
+<i data-lucide="circle-user-round" class="w-5 h-5"></i>
+Perfil
+</a>
+<div class="border-t border-[#1e295d]"></div>
+<form method="POST" action="{{ route('logout') }}">
+@csrf
+<button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition text-left">
+<i data-lucide="log-out" class="w-5 h-5"></i>
+Cerrar sesión
+</button>
+</form>
+</div>
+</div>
+</header>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+
+<div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+<div>
+<p class="text-xs text-slate-400 font-medium mb-1">Total de usuarios</p>
+<h3 class="text-2xl font-bold text-white">{{ $totalUsuarios }}</h3>
+</div>
+<div class="w-11 h-11 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20">
+<i data-lucide="users" class="w-5 h-5"></i>
+</div>
+</div>
+
+<div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+<div>
+<p class="text-xs text-slate-400 font-medium mb-1">Cuentas activas</p>
+<h3 class="text-2xl font-bold text-white">{{ $usuariosActivos }}</h3>
+</div>
+<div class="w-11 h-11 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20">
+<i data-lucide="user-check" class="w-5 h-5"></i>
+</div>
+</div>
+
+<div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+<div>
+<p class="text-xs text-slate-400 font-medium mb-1">Cuentas inactivas</p>
+<h3 class="text-2xl font-bold text-white">{{ $usuariosInactivos }}</h3>
+</div>
+<div class="w-11 h-11 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center border border-rose-500/20">
+<i data-lucide="user-x" class="w-5 h-5"></i>
+</div>
+</div>
+
+<div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 flex items-center justify-between shadow-xl">
+<div>
+<p class="text-xs text-slate-400 font-medium mb-1">Administradores</p>
+<h3 class="text-2xl font-bold text-white">{{ $administradores }}</h3>
+</div>
+<div class="w-11 h-11 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-500/20">
+<i data-lucide="shield-check" class="w-5 h-5"></i>
+</div>
+</div>
 
 </div>
 
+<div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-6">
 
+<div class="flex flex-wrap items-center gap-2">
 
-                {{-- BUSCADOR --}}
+<div class="flex flex-wrap items-center gap-1 bg-[#0b1026] p-1.5 rounded-xl border border-slate-800">
 
-                <div class="relative w-full xl:w-72">
+<a href="{{ route('usuarios.tecnologias', array_filter(['buscar'=>request('buscar')])) }}" class="px-4 py-2 rounded-lg text-xs font-semibold {{ !request('estado') && !request('departamento') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }} transition-all">
+Todos
+</a>
 
-                    <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-500"></i>
+<a href="{{ route('usuarios.tecnologias', array_filter(['buscar'=>request('buscar'),'estado'=>'activos','departamento'=>request('departamento')])) }}" class="px-4 py-2 rounded-lg text-xs font-semibold {{ request('estado')==='activos' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }} transition-all">
+Activos
+</a>
 
-                    <input type="text" placeholder="Buscar usuario..."
-                        class="w-full bg-[#0b1026] border border-slate-800 text-slate-200 text-xs rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-blue-500">
+<a href="{{ route('usuarios.tecnologias', array_filter(['buscar'=>request('buscar'),'estado'=>'inactivos','departamento'=>request('departamento')])) }}" class="px-4 py-2 rounded-lg text-xs font-semibold {{ request('estado')==='inactivos' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }} transition-all">
+Inactivos
+</a>
 
-                </div>
+</div>
 
-            </div>
+<div class="relative">
+<select onchange="window.location.href=this.value" class="appearance-none bg-[#0b1026] border border-slate-800 text-slate-300 text-xs rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:border-blue-500 min-w-[220px] cursor-pointer">
 
+<option value="{{ route('usuarios.tecnologias', array_filter(['buscar'=>request('buscar'),'estado'=>request('estado')])) }}" {{ !request('departamento') ? 'selected' : '' }}>
+Todos los departamentos
+</option>
 
+@foreach($departamentos as $departamento)
+<option value="{{ route('usuarios.tecnologias', array_filter(['buscar'=>request('buscar'),'estado'=>request('estado'),'departamento'=>$departamento])) }}" {{ request('departamento') === $departamento ? 'selected' : '' }}>
+{{ $departamento }}
+</option>
+@endforeach
 
-            {{-- ========================================================= --}}
-            {{-- TABLA + DETALLE --}}
-            {{-- ========================================================= --}}
+</select>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+</div>
 
+</div>
 
-                {{-- ========================================================= --}}
-                {{-- TABLA --}}
-                {{-- ========================================================= --}}
+<form method="GET" action="{{ route('usuarios.tecnologias') }}" class="relative w-full xl:w-72" x-data="{buscar:@js(request('buscar',''))}" x-ref="form">
 
-                <div class="lg:col-span-2 bg-[#070e27] border border-slate-800/80 rounded-2xl p-5 flex flex-col">
+@if(request('estado'))
+<input type="hidden" name="estado" value="{{ request('estado') }}">
+@endif
 
-                    <div class="overflow-x-auto">
+@if(request('departamento'))
+<input type="hidden" name="departamento" value="{{ request('departamento') }}">
+@endif
 
-                        <table class="w-full text-left text-xs">
+<i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-500"></i>
 
-                            <thead>
+<input type="text" name="buscar" x-model="buscar" x-ref="input" value="{{ request('buscar') }}" placeholder="Buscar usuario..." class="w-full bg-[#0b1026] border border-slate-800 text-slate-200 text-xs rounded-xl pl-10 pr-10 py-2.5 focus:outline-none focus:border-blue-500">
 
-                                <tr class="text-slate-400 border-b border-slate-800/80">
+<button type="button" x-show="buscar.length > 0" x-cloak @click="buscar='';$nextTick(()=>{$refs.form.submit()})" class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-slate-500 hover:text-white hover:bg-slate-700 transition">
+<i data-lucide="x" class="w-3.5 h-3.5"></i>
+</button>
 
-                                    <th class="pb-3 font-semibold">
-                                        Usuario
-                                    </th>
+</form>
 
-                                    <th class="pb-3 font-semibold">
-                                        Rol
-                                    </th>
+</div>
 
-                                    <th class="pb-3 font-semibold text-center">
-                                        Estado
-                                    </th>
+<div x-data="usuariosPanel()" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                                    <th class="pb-3 font-semibold">
-                                        Departamento
-                                    </th>
+<div class="lg:col-span-2 bg-[#070e27] border border-slate-800/80 rounded-2xl p-5 flex flex-col">
 
-                                    <th class="pb-3 text-center">
-                                        Acción
-                                    </th>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead>
+<tr class="text-slate-400 border-b border-slate-800/80">
+<th class="pb-3 font-semibold">Usuario</th>
+<th class="pb-3 font-semibold">Rol</th>
+<th class="pb-3 font-semibold text-center">Estado</th>
+<th class="pb-3 font-semibold">Departamento</th>
+<th class="pb-3 text-center">Acción</th>
+</tr>
+</thead>
 
-                                </tr>
+<tbody class="divide-y divide-slate-800/50 text-slate-300">
 
-                            </thead>
+@forelse($usuarios as $usuario)
 
+<tr class="hover:bg-slate-800/20 transition" :class="usuarioSeleccionado&&usuarioSeleccionado.login===@js($usuario->login)?'bg-blue-500/5':''">
 
-                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
+<td class="py-4">
+<div class="flex items-center gap-3">
+<img src="{{ $usuario->picture ? asset('storage/'.$usuario->picture) : asset('storage/profile-photos/user.png') }}" class="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/20">
+<div class="min-w-0">
+<p class="text-white font-medium truncate">{{ $usuario->name }}</p>
+<p class="text-[10px] text-slate-500 truncate">{{ $usuario->email }}</p>
+</div>
+</div>
+</td>
 
+<td class="py-4">
+@php $rol=strtolower(trim($usuario->role??'')); @endphp
 
-                                {{-- USUARIO 1 --}}
+@if($rol==='gerente ti')
+<span class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20">Gerente TI</span>
+@elseif(in_array($rol,['tecnico','técnico']))
+<span class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">Técnico</span>
+@else
+<span class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{{ $usuario->role ?: 'Usuario' }}</span>
+@endif
+</td>
+
+<td class="py-4 text-center">
+@if(strtoupper(trim((string)$usuario->active))==='Y')
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Activa
+</span>
+@else
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Inactiva
+</span>
+@endif
+</td>
+
+<td class="py-4 text-slate-400">{{ $usuario->departamento ?: 'Sin departamento' }}</td>
+
+<td class="py-4">
+<div class="flex items-center justify-center gap-2">
+
+<button type="button" title="Ver usuario" @click.prevent="seleccionarUsuario(@js($usuario->login))" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/70 text-slate-400 hover:bg-blue-500/10 hover:text-blue-400 border border-slate-700/50 transition-all">
+<i data-lucide="eye" class="w-4 h-4 pointer-events-none"></i>
+</button>
+
+<button type="button" title="Editar usuario" @click.prevent="abrirModalEditar(@js($usuario->login))" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/70 text-slate-400 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-700/50 transition-all">
+<i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
+</button>
+
+<button type="button" title="Eliminar usuario" @click.prevent="abrirModalEliminar(@js($usuario->login),@js($usuario->name))" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/70 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 border border-slate-700/50 transition-all">
+<i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+</button>
+
+</div>
+</td>
+</tr>
+
+@empty
+
+<tr>
+<td colspan="5" class="py-12 text-center text-slate-500">No se encontraron usuarios.</td>
+</tr>
+
+@endforelse
+
+</tbody>
+</table>
+</div>
+
+<div class="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
+
+<span class="text-xs text-slate-400">
+Mostrando <span class="text-white font-medium">{{ $usuarios->firstItem() ?? 0 }}</span>
+a <span class="text-white font-medium">{{ $usuarios->lastItem() ?? 0 }}</span>
+de <span class="text-white font-medium">{{ $usuarios->total() }}</span> usuarios
+</span>
+
+<div class="flex items-center gap-1">
+
+@if($usuarios->onFirstPage())
+<button type="button" disabled class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+<i data-lucide="chevron-left" class="w-4 h-4"></i>
+</button>
+@else
+<a href="{{ $usuarios->previousPageUrl() }}" class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center">
+<i data-lucide="chevron-left" class="w-4 h-4"></i>
+</a>
+@endif
+
+@foreach($usuarios->getUrlRange(max(1,$usuarios->currentPage()-2),min($usuarios->lastPage(),$usuarios->currentPage()+2)) as $page=>$url)
+<a href="{{ $url }}" class="w-8 h-8 rounded-lg text-xs flex items-center justify-center {{ $page==$usuarios->currentPage()?'bg-blue-600 text-white font-bold':'bg-slate-800 text-slate-300 hover:bg-slate-700' }}">
+{{ $page }}
+</a>
+@endforeach
+
+@if($usuarios->hasMorePages())
+<a href="{{ $usuarios->nextPageUrl() }}" class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center">
+<i data-lucide="chevron-right" class="w-4 h-4"></i>
+</a>
+@else
+<button type="button" disabled class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+<i data-lucide="chevron-right" class="w-4 h-4"></i>
+</button>
+@endif
+
+</div>
+</div>
+</div>
+
+<div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 shadow-xl backdrop-blur-md">
+
+<template x-if="cargando">
+<div class="h-full min-h-[500px] flex flex-col items-center justify-center text-center">
+<div class="w-12 h-12 rounded-full border-4 border-slate-700 border-t-blue-500 animate-spin mb-4"></div>
+<h3 class="text-sm font-semibold text-white">Cargando usuario...</h3>
+<p class="text-xs text-slate-500 mt-2">Obteniendo información.</p>
+</div>
+</template>
+
+<template x-if="!usuarioSeleccionado&&!cargando">
+<div class="h-full min-h-[500px] flex flex-col items-center justify-center text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-800/50 flex items-center justify-center mb-4">
+<i data-lucide="user-search" class="w-8 h-8 text-slate-500"></i>
+</div>
+<h3 class="text-sm font-semibold text-white">Selecciona un usuario</h3>
+<p class="text-xs text-slate-500 mt-2 max-w-xs">Selecciona un usuario de la lista para consultar su información.</p>
+</div>
+</template>
+
+<template x-if="usuarioSeleccionado&&!cargando">
+<div class="space-y-6">
+
+<div class="flex items-start justify-between pb-4 border-b border-slate-800">
+<div>
+<h2 class="text-sm font-semibold text-white">Información del usuario</h2>
+<p class="text-[10px] text-slate-500 mt-1">Detalle completo de la cuenta</p>
+</div>
+
+<span x-show="usuarioSeleccionado.active" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Activa
+</span>
+
+<span x-show="!usuarioSeleccionado.active" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Inactiva
+</span>
+</div>
+
+<div class="flex flex-col items-center text-center">
+<div class="relative">
+<img :src="usuarioSeleccionado.picture" class="w-24 h-24 rounded-full object-cover ring-4 ring-blue-500/10 border border-slate-700">
+<div class="absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-[#0b1026]" :class="usuarioSeleccionado.active?'bg-emerald-500':'bg-rose-500'"></div>
+</div>
+
+<h3 class="mt-4 text-lg font-bold text-white" x-text="usuarioSeleccionado.name"></h3>
+<p class="text-xs text-slate-400" x-text="usuarioSeleccionado.email"></p>
+<span class="mt-2 px-3 py-1 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" x-text="usuarioSeleccionado.role"></span>
+</div>
+
+<div>
+<p class="text-slate-400 text-[10px] mb-3">Información general</p>
+
+<div class="space-y-2">
+
+<div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+<div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+<i data-lucide="badge" class="w-4 h-4"></i>
+</div>
+<div>
+<p class="text-[10px] text-slate-500">Login</p>
+<p class="text-xs text-white font-medium" x-text="usuarioSeleccionado.login"></p>
+</div>
+</div>
+
+<div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+<div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+<i data-lucide="contact" class="w-4 h-4"></i>
+</div>
+<div>
+<p class="text-[10px] text-slate-500">Número de empleado</p>
+<p class="text-xs text-white font-medium" x-text="usuarioSeleccionado.numero_empleado||'Sin número de empleado'"></p>
+</div>
+</div>
+
+<div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+<div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+<i data-lucide="building" class="w-4 h-4"></i>
+</div>
+<div>
+<p class="text-[10px] text-slate-500">Empresa</p>
+<p class="text-xs text-white font-medium" x-text="usuarioSeleccionado.empresa||'Sin empresa'"></p>
+</div>
+</div>
+
+<div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+<div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+<i data-lucide="map-pin" class="w-4 h-4"></i>
+</div>
+<div>
+<p class="text-[10px] text-slate-500">Oficina</p>
+<p class="text-xs text-white font-medium" x-text="usuarioSeleccionado.oficina||'Sin oficina'"></p>
+</div>
+</div>
+
+<div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+<div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+<i data-lucide="building-2" class="w-4 h-4"></i>
+</div>
+<div>
+<p class="text-[10px] text-slate-500">Departamento</p>
+<p class="text-xs text-white font-medium" x-text="usuarioSeleccionado.departamento||'Sin departamento'"></p>
+</div>
+</div>
+
+<div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+<div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+<i data-lucide="shield" class="w-4 h-4"></i>
+</div>
+<div>
+<p class="text-[10px] text-slate-500">Rol</p>
+<p class="text-xs text-white font-medium" x-text="usuarioSeleccionado.role||'Usuario'"></p>
+</div>
+</div>
+
+</div>
+</div>
+
+<div>
+<p class="text-slate-400 text-[10px] mb-3">Información de contacto</p>
+
+<div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-3">
+
+<div class="flex items-center gap-3">
+<i data-lucide="mail" class="w-4 h-4 text-slate-500"></i>
+<div>
+<p class="text-[9px] text-slate-500">Correo electrónico</p>
+<p class="text-xs text-slate-300" x-text="usuarioSeleccionado.email||'Sin correo'"></p>
+</div>
+</div>
+
+<div class="flex items-center gap-3">
+<i data-lucide="phone" class="w-4 h-4 text-slate-500"></i>
+<div>
+<p class="text-[9px] text-slate-500">Teléfono</p>
+<p class="text-xs text-slate-300" x-text="usuarioSeleccionado.phone||'Sin teléfono'"></p>
+</div>
+</div>
+
+</div>
+</div>
+
+<div>
+<p class="text-slate-400 text-[10px] mb-3">Permisos</p>
+
+<div class="flex flex-wrap gap-2">
+
+<template x-if="usuarioSeleccionado.priv_admin">
+<span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400">Administrador</span>
+</template>
+
+<span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400">Tickets</span>
+<span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400">Comentarios</span>
+
+</div>
+</div>
+
+</div>
+</template>
+
+</div>
+
+<template x-teleport="body">
+<div x-cloak x-show="modalEditar" @keydown.escape.window="modalEditar&&cerrarModalEditar()" x-transition.opacity class="fixed inset-0 z-[999999] flex items-center justify-center p-4">
+
+<div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="cerrarModalEditar()"></div>
+
+<div x-show="modalEditar" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" @click.stop class="relative w-full max-w-4xl max-h-[92vh] overflow-hidden bg-[#0b1026] border border-slate-800 rounded-2xl shadow-2xl flex flex-col">
+
+<div class="p-6 border-b border-slate-800 shrink-0">
+
+<div class="flex items-center justify-between">
+
+<div class="flex items-center gap-4">
+
+<div class="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+<i data-lucide="pencil" class="w-5 h-5 text-amber-400"></i>
+</div>
+
+<div>
+<h3 class="text-lg font-bold text-white">Editar usuario</h3>
+<p class="text-xs text-slate-500 mt-1">Modifica la información de la cuenta.</p>
+</div>
+
+</div>
+
+<button type="button" @click="cerrarModalEditar()" :disabled="editarCargando" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800 transition">
+<i data-lucide="x" class="w-5 h-5"></i>
+</button>
+
+</div>
+</div>
+
+<form @submit.prevent="solicitarPasswordEdicion()" class="flex flex-col min-h-0">
+
+<div class="p-6 space-y-5 overflow-y-auto">
+
+<div x-show="errorEditar" class="flex items-center gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+<i data-lucide="circle-alert" class="w-4 h-4 text-rose-400 shrink-0"></i>
+<p class="text-xs text-rose-400" x-text="errorEditar"></p>
+</div>
+
+<div>
+<p class="text-xs font-semibold text-white mb-3">Información personal</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Nombre</label>
+<input type="text" x-model="editarForm.name" required class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Número de empleado</label>
+<input type="text" x-model="editarForm.numero_empleado" placeholder="Número de empleado" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Login</label>
+<input type="text" :value="editarLogin" disabled class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed">
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Correo electrónico</label>
+<input type="email" x-model="editarForm.email" required class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Teléfono</label>
+<input type="text" x-model="editarForm.phone" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Contraseña</label>
+<div class="relative">
+<i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+<input type="password" x-model="editarForm.password" autocomplete="new-password" placeholder="Nueva contraseña" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+</div>
+<p class="text-[10px] text-slate-500 mt-1">Déjala vacía si no deseas cambiarla.</p>
+</div>
+
+</div>
+</div>
+
+<div>
+<p class="text-xs font-semibold text-white mb-3">Ubicación</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Ubicación / Oficina</label>
+
+<div class="relative">
+
+<i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-500"></i>
+
+<select x-model="editarForm.oficina_id" @change="actualizarEmpresaPorOficina()" required :disabled="cargandoOficinas" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 disabled:opacity-50">
+
+<option value="">Selecciona una ubicación</option>
+
+<template x-for="oficina in oficinas" :key="oficina.id">
+<option :value="String(oficina.id)" x-text="oficina.nombre"></option>
+</template>
+
+</select>
+</div>
+
+<p x-show="cargandoOficinas" class="text-[10px] text-slate-500 mt-1">Cargando ubicaciones...</p>
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Departamento</label>
+
+<input type="text" x-model="editarForm.departamento" placeholder="Escribe el departamento del usuario" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+
+<p class="text-[10px] text-slate-500 mt-1">El departamento se guarda directamente como texto.</p>
+</div>
+
+</div>
+</div>
+
+<div>
+<p class="text-xs font-semibold text-white mb-3">Configuración de cuenta</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Role</label>
+<input type="text" x-model="editarForm.role" required placeholder="Escribe el rol del usuario" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Estado</label>
+<select x-model="editarForm.active" required class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+<option value="Y">Activa</option>
+<option value="N">Inactiva</option>
+</select>
+</div>
+
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2">Permiso administrador</label>
+<select x-model="editarForm.priv_admin" required class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+<option value="Y">Sí</option>
+<option value="N">No</option>
+</select>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<div class="px-6 py-4 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end gap-3 shrink-0">
+
+<button type="button" @click="cerrarModalEditar()" :disabled="editarCargando" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 transition">
+Cancelar
+</button>
+
+<button type="submit" :disabled="editarCargando" class="min-w-[130px] px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition flex items-center justify-center gap-2">
+
+<template x-if="!editarCargando">
+<span class="flex items-center gap-2">
+<i data-lucide="save" class="w-4 h-4"></i>Guardar
+</span>
+</template>
+
+<template x-if="editarCargando">
+<span class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>Guardando...
+</span>
+</template>
+
+</button>
+
+</div>
+</form>
+</div>
+</div>
+</template>
+
+<template x-teleport="body">
+<div x-cloak x-show="modalConfirmarEdicion" @keydown.escape.window="modalConfirmarEdicion&&cerrarConfirmacionEdicion()" x-transition.opacity class="fixed inset-0 z-[1000001] flex items-center justify-center p-4">
+
+<div class="absolute inset-0 bg-black/75 backdrop-blur-sm" @click="cerrarConfirmacionEdicion()"></div>
+
+<div x-show="modalConfirmarEdicion" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" @click.stop class="relative w-full max-w-md bg-[#0b1026] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+
+<div class="p-6">
+
+<div class="flex items-start gap-4">
+
+<div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+<i data-lucide="shield-check" class="w-6 h-6 text-blue-400"></i>
+</div>
+
+<div>
+<h3 class="text-lg font-bold text-white">Confirmar cambios</h3>
+<p class="text-sm text-slate-400 mt-1">Por seguridad, ingresa tu contraseña para aplicar los cambios al usuario.</p>
+</div>
+
+</div>
+
+<div class="mt-5 p-4 rounded-xl bg-slate-900/70 border border-slate-800">
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Usuario que será modificado</p>
+<p class="mt-1 text-sm font-semibold text-white truncate" x-text="editarForm.name"></p>
+<p class="text-xs text-slate-500 mt-1" x-text="editarLogin"></p>
+</div>
+
+<div class="mt-5">
+
+<label class="block text-xs font-medium text-slate-400 mb-2">Tu contraseña</label>
+
+<div class="relative">
+<i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
 
-                                <tr class="hover:bg-slate-800/20 transition bg-blue-500/5">
+<input type="password" x-model="passwordConfirmarEdicion" @keydown.enter.prevent="actualizarUsuario()" placeholder="Ingresa tu contraseña" autocomplete="current-password" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+</div>
 
-                                    <td class="py-4">
+<template x-if="errorConfirmarEdicion">
+<div class="mt-3 flex items-center gap-2 text-rose-400">
+<i data-lucide="circle-alert" class="w-4 h-4"></i>
+<p class="text-xs" x-text="errorConfirmarEdicion"></p>
+</div>
+</template>
 
-                                        <div class="flex items-center gap-3">
+</div>
+</div>
 
-                                            <img src="{{ asset('storage/profile-photos/user.png') }}"
-                                                class="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/20">
+<div class="px-6 py-4 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end gap-3">
 
-                                            <div class="min-w-0">
+<button type="button" @click="cerrarConfirmacionEdicion()" :disabled="editarCargando" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 transition">
+Atrás
+</button>
 
-                                                <p class="text-white font-medium truncate">
-                                                    Juan Pérez
-                                                </p>
+<button type="button" @click="actualizarUsuario()" :disabled="editarCargando||!passwordConfirmarEdicion" class="min-w-[125px] px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition flex items-center justify-center gap-2">
 
-                                                <p class="text-[10px] text-slate-500 truncate">
-                                                    juan.perez@empresa.com
-                                                </p>
+<template x-if="!editarCargando">
+<span class="flex items-center gap-2">
+<i data-lucide="check" class="w-4 h-4"></i>Confirmar
+</span>
+</template>
 
-                                            </div>
+<template x-if="editarCargando">
+<span class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>Verificando...
+</span>
+</template>
 
-                                        </div>
+</button>
+</div>
+</div>
+</div>
+</template>
 
-                                    </td>
+<template x-teleport="body">
+<div x-cloak x-show="modalEliminar" @keydown.escape.window="modalEliminar&&cerrarModalEliminar()" x-transition.opacity class="fixed inset-0 z-[1000000] flex items-center justify-center p-4">
 
+<div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="cerrarModalEliminar()"></div>
 
-                                    <td class="py-4">
+<div x-show="modalEliminar" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" @click.stop class="relative w-full max-w-md bg-[#0b1026] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
 
-                                        <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+<template x-if="!mostrarPasswordEliminar">
 
-                                            Usuario
+<div>
 
-                                        </span>
+<div class="p-6">
 
-                                    </td>
+<div class="flex items-start gap-4">
 
+<div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+<i data-lucide="triangle-alert" class="w-6 h-6 text-rose-400"></i>
+</div>
 
-                                    <td class="py-4 text-center">
+<div>
+<h3 class="text-lg font-bold text-white">Eliminar usuario</h3>
+<p class="text-sm text-slate-400 mt-1">¿Estás seguro de que deseas eliminar este usuario?</p>
+</div>
 
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+</div>
 
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+<div class="mt-5 p-4 rounded-xl bg-slate-900/70 border border-slate-800">
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Usuario seleccionado</p>
+<p class="mt-1 text-sm font-semibold text-white truncate" x-text="usuarioEliminarNombre"></p>
+<p class="text-xs text-slate-500 mt-1" x-text="usuarioEliminarLogin"></p>
+</div>
 
-                                            Activa
+<div class="mt-4 flex gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+<i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+<p class="text-xs text-slate-400 leading-relaxed">Esta acción eliminará la cuenta del usuario. <span class="text-amber-400 font-medium">Esta acción no se puede deshacer.</span></p>
+</div>
 
-                                        </span>
+</div>
 
-                                    </td>
+<div class="px-6 py-4 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end gap-3">
 
+<button type="button" @click="cerrarModalEliminar()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
+Cancelar
+</button>
 
-                                    <td class="py-4 text-slate-400">
+<button type="button" @click="mostrarConfirmacionPassword()" class="min-w-[110px] px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 transition flex items-center justify-center gap-2">
+<i data-lucide="arrow-right" class="w-4 h-4"></i>Continuar
+</button>
 
-                                        Administración
+</div>
+</div>
+</template>
 
-                                    </td>
+<template x-if="mostrarPasswordEliminar">
 
+<div>
 
-                                    <td class="py-4">
-                                        <div class="flex items-center justify-center gap-2">
+<div class="p-6">
 
-                                            {{-- VER --}}
-                                            <a href="" title="Ver solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-blue-500/10 hover:text-blue-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
+<div class="flex items-start gap-4">
 
-                                            {{-- EDITAR --}}
-                                            <a href="" title="Editar solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-amber-500/10 hover:text-amber-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </a>
+<div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+<i data-lucide="shield-check" class="w-6 h-6 text-blue-400"></i>
+</div>
+
+<div>
+<h3 class="text-lg font-bold text-white">Confirmar identidad</h3>
+<p class="text-sm text-slate-400 mt-1">Ingresa tu contraseña para confirmar la eliminación.</p>
+</div>
+
+</div>
+
+<div class="mt-5 p-4 rounded-xl bg-slate-900/70 border border-slate-800">
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Usuario que será eliminado</p>
+<p class="mt-1 text-sm font-semibold text-white truncate" x-text="usuarioEliminarNombre"></p>
+<p class="text-xs text-slate-500 mt-1" x-text="usuarioEliminarLogin"></p>
+</div>
+
+<div class="mt-5">
+
+<label class="block text-xs font-medium text-slate-400 mb-2">Tu contraseña</label>
+
+<div class="relative">
+<i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+
+<input type="password" x-model="passwordEliminar" @keydown.enter.prevent="eliminarUsuario()" placeholder="Ingresa tu contraseña" autocomplete="current-password" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<template x-if="errorPassword">
+<div class="mt-3 flex items-center gap-2 text-rose-400">
+<i data-lucide="circle-alert" class="w-4 h-4"></i>
+<p class="text-xs" x-text="errorPassword"></p>
+</div>
+</template>
+
+</div>
+</div>
+
+<div class="px-6 py-4 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end gap-3">
+
+<button type="button" @click="volverConfirmacionEliminar()" :disabled="eliminarCargando" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 transition">
+Atrás
+</button>
+
+<button type="button" @click="eliminarUsuario()" :disabled="eliminarCargando||!passwordEliminar" class="min-w-[125px] px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-50 transition flex items-center justify-center gap-2">
+
+<template x-if="!eliminarCargando">
+<span class="flex items-center gap-2">
+<i data-lucide="trash-2" class="w-4 h-4"></i>Eliminar
+</span>
+</template>
+
+<template x-if="eliminarCargando">
+<span class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>Verificando...
+</span>
+</template>
 
-                                            {{-- ELIMINAR --}}
-                                            <form method="POST" action=""
-                                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')">
+</button>
+</div>
 
-                                                @csrf
-                                                @method('DELETE')
+</div>
+</template>
 
-                                                <button type="submit" title="Eliminar solicitud"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center
-                       bg-slate-800/70 text-slate-400
-                       hover:bg-rose-500/10 hover:text-rose-400
-                       border border-slate-700/50
-                       transition-all duration-200">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
+</div>
+</div>
+</template>
 
-                                        </div>
-                                    </td>
+</div>
+</div>
+</main>
 
-                                </tr>
+<script>
+document.addEventListener('alpine:init',()=>{
 
+Alpine.data('usuariosPanel',()=>({
 
+usuarioSeleccionado:null,
+cargando:false,
 
-                                {{-- USUARIO 2 --}}
+modalEditar:false,
+modalConfirmarEdicion:false,
+editarLogin:null,
+editarCargando:false,
+errorEditar:'',
+passwordConfirmarEdicion:'',
+errorConfirmarEdicion:'',
 
-                                <tr class="hover:bg-slate-800/20 transition">
+oficinas:[],
+cargandoOficinas:false,
 
-                                    <td class="py-4">
+editarForm:{
+name:'',
+numero_empleado:'',
+email:'',
+phone:'',
+password:'',
+role:'Usuario',
+active:'Y',
+priv_admin:'N',
+empresa_id:'',
+empresa_nombre:'',
+oficina_id:'',
+oficina_nombre:'',
+departamento:''
+},
 
-                                        <div class="flex items-center gap-3">
+modalEliminar:false,
+usuarioEliminarLogin:null,
+usuarioEliminarNombre:'',
+eliminarCargando:false,
+mostrarPasswordEliminar:false,
+passwordEliminar:'',
+errorPassword:'',
 
-                                            <img src="{{ asset('storage/profile-photos/user.png') }}"
-                                                class="w-9 h-9 rounded-full object-cover">
+seleccionarUsuario(login){
 
-                                            <div class="min-w-0">
+if(!login)return;
 
-                                                <p class="text-white font-medium truncate">
-                                                    Carlos Perales
-                                                </p>
+this.cargando=true;
+this.usuarioSeleccionado=null;
 
-                                                <p class="text-[10px] text-slate-500 truncate">
-                                                    carlos.perales@empresa.com
-                                                </p>
+fetch('/tecnologias/usuarios/'+encodeURIComponent(login),{
+method:'GET',
+headers:{
+'Accept':'application/json',
+'X-Requested-With':'XMLHttpRequest'
+}
+})
+.then(async response=>{
 
-                                            </div>
+const data=await response.json();
 
-                                        </div>
+if(!response.ok){
+throw new Error(data.message||`Error HTTP ${response.status}`);
+}
 
-                                    </td>
+return data;
+})
+.then(data=>{
 
+if(!data.success){
+throw new Error(data.message||'No se pudo obtener el usuario.');
+}
 
-                                    <td class="py-4">
+this.usuarioSeleccionado=data.usuario;
 
-                                        <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+})
+.catch(error=>{
 
-                                            Técnico
+console.error('Error obteniendo usuario:',error);
 
-                                        </span>
+this.usuarioSeleccionado=null;
 
-                                    </td>
+alert(error.message||'Ocurrió un error al obtener la información del usuario.');
 
+})
+.finally(()=>{
 
-                                    <td class="py-4 text-center">
+this.cargando=false;
 
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+this.$nextTick(()=>{
 
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+if(window.lucide){
+lucide.createIcons();
+}
 
-                                            Activa
+});
 
-                                        </span>
+});
 
-                                    </td>
+},
 
+abrirModalEditar(login){
 
-                                    <td class="py-4 text-slate-400">
+if(!login)return;
 
-                                        Tecnologías
+this.editarCargando=false;
+this.errorEditar='';
+this.errorConfirmarEdicion='';
+this.passwordConfirmarEdicion='';
+this.editarLogin=login;
+this.modalEditar=true;
+this.modalConfirmarEdicion=false;
+this.oficinas=[];
+this.cargandoOficinas=true;
+this.editarForm.password='';
 
-                                    </td>
+fetch('/tecnologias/usuarios/'+encodeURIComponent(login),{
+method:'GET',
+headers:{
+'Accept':'application/json',
+'X-Requested-With':'XMLHttpRequest'
+}
+})
+.then(async response=>{
 
+const data=await response.json();
 
-                                    <td class="py-4">
-                                        <div class="flex items-center justify-center gap-2">
+if(!response.ok){
+throw new Error(data.message||`Error HTTP ${response.status}`);
+}
 
-                                            {{-- VER --}}
-                                            <a href="" title="Ver solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-blue-500/10 hover:text-blue-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
+return data;
 
-                                            {{-- EDITAR --}}
-                                            <a href="" title="Editar solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-amber-500/10 hover:text-amber-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </a>
+})
+.then(data=>{
 
-                                            {{-- ELIMINAR --}}
-                                            <form method="POST" action=""
-                                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')">
+if(!data.success){
+throw new Error(data.message||'No se pudo obtener el usuario.');
+}
 
-                                                @csrf
-                                                @method('DELETE')
+const usuario=data.usuario;
 
-                                                <button type="submit" title="Eliminar solicitud"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center
-                       bg-slate-800/70 text-slate-400
-                       hover:bg-rose-500/10 hover:text-rose-400
-                       border border-slate-700/50
-                       transition-all duration-200">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
+this.oficinas=Array.isArray(data.oficinas)?data.oficinas:[];
 
-                                        </div>
-                                    </td>
+this.editarForm={
+name:usuario.name??'',
+numero_empleado:usuario.numero_empleado??'',
+email:usuario.email??'',
+phone:usuario.phone??'',
+password:'',
+role:usuario.role??'Usuario',
+active:String(usuario.active??'').toUpperCase()==='Y'?'Y':'N',
+priv_admin:String(usuario.priv_admin??'').toUpperCase()==='Y'?'Y':'N',
+empresa_id:usuario.empresa_id?String(usuario.empresa_id):'',
+empresa_nombre:usuario.empresa??'',
+oficina_id:usuario.oficina_id?String(usuario.oficina_id):'',
+oficina_nombre:usuario.oficina??'',
+departamento:usuario.departamento??''
+};
 
-                                </tr>
+this.actualizarEmpresaPorOficina();
 
+this.cargandoOficinas=false;
 
+})
+.catch(error=>{
 
-                                {{-- USUARIO 3 --}}
+console.error('Error cargando usuario:',error);
 
-                                <tr class="hover:bg-slate-800/20 transition">
+this.cargandoOficinas=false;
 
-                                    <td class="py-4">
+this.errorEditar=error.message||'No se pudo cargar la información del usuario.';
 
-                                        <div class="flex items-center gap-3">
+})
+.finally(()=>{
 
-                                            <img src="{{ asset('storage/profile-photos/user.png') }}"
-                                                class="w-9 h-9 rounded-full object-cover">
+this.$nextTick(()=>{
 
-                                            <div class="min-w-0">
+if(window.lucide){
+lucide.createIcons();
+}
 
-                                                <p class="text-white font-medium truncate">
-                                                    María González
-                                                </p>
+});
 
-                                                <p class="text-[10px] text-slate-500 truncate">
-                                                    maria.gonzalez@empresa.com
-                                                </p>
+});
 
-                                            </div>
+},
 
-                                        </div>
+actualizarEmpresaPorOficina(){
 
-                                    </td>
+const oficinaId=String(this.editarForm.oficina_id||'');
 
+if(!oficinaId){
 
-                                    <td class="py-4">
+this.editarForm.empresa_id='';
+this.editarForm.empresa_nombre='';
+this.editarForm.oficina_nombre='';
 
-                                        <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20">
+return;
+}
 
-                                            Gerente
+const oficina=this.oficinas.find(item=>String(item.id)===oficinaId);
 
-                                        </span>
+if(!oficina){
 
-                                    </td>
+this.editarForm.empresa_id='';
+this.editarForm.empresa_nombre='';
+this.editarForm.oficina_nombre='';
 
+return;
+}
 
-                                    <td class="py-4 text-center">
+this.editarForm.oficina_nombre=oficina.nombre??'';
+this.editarForm.empresa_id=oficina.empresa_id?String(oficina.empresa_id):'';
+this.editarForm.empresa_nombre=oficina.empresa??oficina.empresa_nombre??'';
 
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+},
 
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+solicitarPasswordEdicion(){
 
-                                            Inactiva
+if(!this.editarLogin){
 
-                                        </span>
+this.errorEditar='No se encontró el login del usuario.';
 
-                                    </td>
+return;
+}
 
+if(!this.editarForm.oficina_id){
 
-                                    <td class="py-4 text-slate-400">
+this.errorEditar='Debes seleccionar una ubicación.';
 
-                                        Recursos Humanos
+return;
+}
 
-                                    </td>
+const oficina=this.oficinas.find(item=>String(item.id)===String(this.editarForm.oficina_id));
 
+if(!oficina){
 
-                                    <td class="py-4">
-                                        <div class="flex items-center justify-center gap-2">
+this.errorEditar='La ubicación seleccionada no es válida.';
 
-                                            {{-- VER --}}
-                                            <a href="" title="Ver solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-blue-500/10 hover:text-blue-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
+return;
+}
 
-                                            {{-- EDITAR --}}
-                                            <a href="" title="Editar solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-amber-500/10 hover:text-amber-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </a>
+this.actualizarEmpresaPorOficina();
 
-                                            {{-- ELIMINAR --}}
-                                            <form method="POST" action=""
-                                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')">
+if(!this.editarForm.empresa_id){
 
-                                                @csrf
-                                                @method('DELETE')
+this.errorEditar='La ubicación seleccionada no tiene una empresa asignada.';
 
-                                                <button type="submit" title="Eliminar solicitud"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center
-                       bg-slate-800/70 text-slate-400
-                       hover:bg-rose-500/10 hover:text-rose-400
-                       border border-slate-700/50
-                       transition-all duration-200">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
+return;
+}
 
-                                        </div>
-                                    </td>
+this.errorEditar='';
+this.errorConfirmarEdicion='';
+this.passwordConfirmarEdicion='';
+this.modalConfirmarEdicion=true;
 
-                                </tr>
+this.$nextTick(()=>{
 
+if(window.lucide){
+lucide.createIcons();
+}
 
+const input=document.querySelector('[x-model="passwordConfirmarEdicion"]');
 
-                                {{-- USUARIO 4 --}}
+if(input){
+input.focus();
+}
 
-                                <tr class="hover:bg-slate-800/20 transition">
+});
 
-                                    <td class="py-4">
+},
 
-                                        <div class="flex items-center gap-3">
+cerrarConfirmacionEdicion(){
 
-                                            <img src="{{ asset('storage/profile-photos/user.png') }}"
-                                                class="w-9 h-9 rounded-full object-cover">
+if(this.editarCargando)return;
 
-                                            <div class="min-w-0">
+this.modalConfirmarEdicion=false;
+this.passwordConfirmarEdicion='';
+this.errorConfirmarEdicion='';
 
-                                                <p class="text-white font-medium truncate">
-                                                    Roberto Hernández
-                                                </p>
+},
 
-                                                <p class="text-[10px] text-slate-500 truncate">
-                                                    roberto.h@empresa.com
-                                                </p>
+actualizarUsuario(){
 
-                                            </div>
+if(!this.editarLogin)return;
 
-                                        </div>
+if(!this.passwordConfirmarEdicion){
 
-                                    </td>
+this.errorConfirmarEdicion='Debes ingresar tu contraseña.';
 
+return;
+}
 
-                                    <td class="py-4">
+if(!this.editarForm.oficina_id){
 
-                                        <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+this.modalConfirmarEdicion=false;
+this.errorEditar='Debes seleccionar una ubicación.';
 
-                                            Supervisor
+return;
+}
 
-                                        </span>
+this.actualizarEmpresaPorOficina();
 
-                                    </td>
+if(!this.editarForm.empresa_id){
 
+this.modalConfirmarEdicion=false;
+this.errorEditar='La ubicación seleccionada no tiene una empresa asignada.';
 
-                                    <td class="py-4 text-center">
+return;
+}
 
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+this.editarCargando=true;
+this.errorConfirmarEdicion='';
+this.errorEditar='';
 
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+const login=this.editarLogin;
 
-                                            Activa
+const csrfToken=document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                                        </span>
+const payload={
+name:this.editarForm.name,
+numero_empleado:this.editarForm.numero_empleado,
+email:this.editarForm.email,
+phone:this.editarForm.phone,
+password:this.editarForm.password||null,
+password_actual:this.passwordConfirmarEdicion,
+role:this.editarForm.role,
+active:this.editarForm.active,
+priv_admin:this.editarForm.priv_admin,
+empresa_id:this.editarForm.empresa_id,
+oficina_id:this.editarForm.oficina_id,
+departamento:(this.editarForm.departamento||'').trim()
+};
 
-                                    </td>
+fetch('/tecnologias/usuarios/'+encodeURIComponent(login),{
+method:'PUT',
+headers:{
+'Accept':'application/json',
+'Content-Type':'application/json',
+'X-Requested-With':'XMLHttpRequest',
+'X-CSRF-TOKEN':csrfToken
+},
+body:JSON.stringify(payload)
+})
+.then(async response=>{
 
+const text=await response.text();
 
-                                    <td class="py-4 text-slate-400">
+let data={};
 
-                                        Operaciones
+try{
 
-                                    </td>
+data=JSON.parse(text);
 
+}catch(e){
 
-                                    <td class="py-4">
-                                        <div class="flex items-center justify-center gap-2">
+throw new Error(response.status===500?'Error interno del servidor. Revisa el log de Laravel.':`Error HTTP ${response.status}`);
 
-                                            {{-- VER --}}
-                                            <a href="" title="Ver solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-blue-500/10 hover:text-blue-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
+}
 
-                                            {{-- EDITAR --}}
-                                            <a href="" title="Editar solicitud"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center
-                   bg-slate-800/70 text-slate-400
-                   hover:bg-amber-500/10 hover:text-amber-400
-                   border border-slate-700/50
-                   transition-all duration-200">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                                            </a>
+if(!response.ok){
 
-                                            {{-- ELIMINAR --}}
-                                            <form method="POST" action=""
-                                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')">
+if(data.errors){
 
-                                                @csrf
-                                                @method('DELETE')
+const primerError=Object.values(data.errors).flat()[0];
 
-                                                <button type="submit" title="Eliminar solicitud"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center
-                       bg-slate-800/70 text-slate-400
-                       hover:bg-rose-500/10 hover:text-rose-400
-                       border border-slate-700/50
-                       transition-all duration-200">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
+throw new Error(primerError||data.message||`Error HTTP ${response.status}`);
 
-                                        </div>
-                                    </td>
+}
 
-                                </tr>
+throw new Error(data.message||`Error HTTP ${response.status}`);
 
-                            </tbody>
+}
 
-                        </table>
+return data;
 
-                    </div>
+})
+.then(data=>{
 
+if(!data.success){
 
+throw new Error(data.message||'No se pudo actualizar el usuario.');
 
-                    {{-- PAGINACIÓN --}}
+}
 
-                    <div
-                        class="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
+const usuarioActualizado=data.usuario||null;
 
-                        <span class="text-xs text-slate-400">
+if(usuarioActualizado&&this.usuarioSeleccionado&&this.usuarioSeleccionado.login===login){
 
-                            Mostrando
+this.usuarioSeleccionado=usuarioActualizado;
 
-                            <span class="text-white font-medium">
-                                1
-                            </span>
+}
 
-                            a
+this.modalConfirmarEdicion=false;
+this.modalEditar=false;
+this.editarLogin=null;
+this.passwordConfirmarEdicion='';
+this.errorConfirmarEdicion='';
+this.editarForm.password='';
 
-                            <span class="text-white font-medium">
-                                10
-                            </span>
+window.location.reload();
 
-                            de
+})
+.catch(error=>{
 
-                            <span class="text-white font-medium">
-                                248
-                            </span>
+console.error('Error actualizando usuario:',error);
 
-                            usuarios
+this.errorConfirmarEdicion=error.message||'No se pudo actualizar el usuario.';
 
-                        </span>
+})
+.finally(()=>{
 
+this.editarCargando=false;
 
-                        <div class="flex items-center gap-1">
+this.$nextTick(()=>{
 
-                            <button
-                                class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
+if(window.lucide){
+lucide.createIcons();
+}
 
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+});
 
-                            </button>
+});
 
+},
 
-                            <button
-                                class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+cargarOficinas(){
 
-                                1
+this.cargandoOficinas=true;
+this.oficinas=[];
 
-                            </button>
+fetch('/tecnologias/oficinas',{
+method:'GET',
+headers:{
+'Accept':'application/json',
+'X-Requested-With':'XMLHttpRequest'
+}
+})
+.then(async response=>{
 
+const data=await response.json();
 
-                            <button
-                                class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs flex items-center justify-center">
+if(!response.ok||!data.success){
 
-                                2
+throw new Error(data.message||'No se pudieron cargar las ubicaciones.');
 
-                            </button>
+}
 
+return data;
 
-                            <button
-                                class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs flex items-center justify-center">
+})
+.then(data=>{
 
-                                3
+this.oficinas=Array.isArray(data.oficinas)?data.oficinas:[];
 
-                            </button>
+})
+.catch(error=>{
 
+console.error('Error cargando oficinas:',error);
 
-                            <button
-                                class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center">
+this.errorEditar=error.message||'No se pudieron cargar las ubicaciones.';
 
-                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+})
+.finally(()=>{
 
-                            </button>
+this.cargandoOficinas=false;
 
-                        </div>
+});
 
-                    </div>
+},
 
-                </div>
+cerrarModalEditar(){
 
+if(this.editarCargando)return;
 
+this.modalEditar=false;
+this.modalConfirmarEdicion=false;
+this.editarLogin=null;
+this.errorEditar='';
+this.errorConfirmarEdicion='';
+this.passwordConfirmarEdicion='';
+this.oficinas=[];
+this.cargandoOficinas=false;
 
-                {{-- ========================================================= --}}
-                {{-- DETALLE DEL USUARIO --}}
-                {{-- ========================================================= --}}
+this.editarForm={
+name:'',
+numero_empleado:'',
+email:'',
+phone:'',
+password:'',
+role:'Usuario',
+active:'Y',
+priv_admin:'N',
+empresa_id:'',
+empresa_nombre:'',
+oficina_id:'',
+oficina_nombre:'',
+departamento:''
+};
 
-                <div class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl p-5 shadow-xl backdrop-blur-md">
+},
 
-                    <div class="space-y-6">
+abrirModalEliminar(login,nombre){
 
+if(!login)return;
 
-                        {{-- HEADER --}}
+this.usuarioEliminarLogin=login;
+this.usuarioEliminarNombre=nombre;
+this.modalEliminar=true;
+this.mostrarPasswordEliminar=false;
+this.passwordEliminar='';
+this.errorPassword='';
 
-                        <div class="flex items-start justify-between pb-4 border-b border-slate-800">
+this.$nextTick(()=>{
 
-                            <div>
+if(window.lucide){
+lucide.createIcons();
+}
 
-                                <h2 class="text-sm font-semibold text-white">
-                                    Información del usuario
-                                </h2>
+});
 
-                                <p class="text-[10px] text-slate-500 mt-1">
-                                    Detalle completo de la cuenta
-                                </p>
+},
 
-                            </div>
+cerrarModalEliminar(){
 
+if(this.eliminarCargando)return;
 
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+this.modalEliminar=false;
+this.usuarioEliminarLogin=null;
+this.usuarioEliminarNombre='';
+this.passwordEliminar='';
+this.errorPassword='';
+this.mostrarPasswordEliminar=false;
 
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+},
 
-                                Activa
+mostrarConfirmacionPassword(){
 
-                            </span>
+this.mostrarPasswordEliminar=true;
+this.passwordEliminar='';
+this.errorPassword='';
 
-                        </div>
+this.$nextTick(()=>{
 
+if(window.lucide){
+lucide.createIcons();
+}
 
+const input=document.querySelector('[x-model="passwordEliminar"]');
 
-                        {{-- FOTO + NOMBRE --}}
+if(input){
+input.focus();
+}
 
-                        <div class="flex flex-col items-center text-center">
+});
 
-                            <div class="relative">
+},
 
-                                <img src="{{ asset('storage/profile-photos/user.png') }}"
-                                    class="w-24 h-24 rounded-full object-cover ring-4 ring-blue-500/10 border border-slate-700">
+volverConfirmacionEliminar(){
 
-                                <div
-                                    class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-emerald-500 border-4 border-[#0b1026]">
-                                </div>
+if(this.eliminarCargando)return;
 
-                            </div>
+this.mostrarPasswordEliminar=false;
+this.passwordEliminar='';
+this.errorPassword='';
 
+},
 
-                            <h3 class="mt-4 text-lg font-bold text-white">
-                                Juan Pérez
-                            </h3>
+eliminarUsuario(){
 
-                            <p class="text-xs text-slate-400">
-                                juan.perez@empresa.com
-                            </p>
+if(!this.usuarioEliminarLogin)return;
 
-                            <span
-                                class="mt-2 px-3 py-1 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+if(!this.passwordEliminar){
 
-                                Usuario
+this.errorPassword='Debes ingresar tu contraseña.';
 
-                            </span>
+return;
+}
 
-                        </div>
+this.eliminarCargando=true;
+this.errorPassword='';
 
+const login=this.usuarioEliminarLogin;
 
+const csrfToken=document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                        {{-- INFORMACIÓN GENERAL --}}
+fetch('/tecnologias/usuarios/'+encodeURIComponent(login),{
+method:'DELETE',
+headers:{
+'Accept':'application/json',
+'Content-Type':'application/json',
+'X-Requested-With':'XMLHttpRequest',
+'X-CSRF-TOKEN':csrfToken
+},
+body:JSON.stringify({
+password:this.passwordEliminar
+})
+})
+.then(async response=>{
 
-                        <div>
+const text=await response.text();
 
-                            <p class="text-slate-400 text-[10px] mb-3">
-                                Información general
-                            </p>
+let data={};
 
+try{
 
-                            <div class="space-y-2">
+data=JSON.parse(text);
 
+}catch(e){
 
-                                <div class="flex items-center justify-between bg-slate-800/40 rounded-xl p-3">
+throw new Error(response.status===500?'Error interno del servidor. Revisa el log de Laravel.':`Error HTTP ${response.status}`);
 
-                                    <div class="flex items-center gap-3">
+}
 
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+if(!response.ok){
 
-                                            <i data-lucide="badge-id-card" class="w-4 h-4"></i>
+throw new Error(data.message||`Error HTTP ${response.status}`);
 
-                                        </div>
+}
 
-                                        <div>
+return data;
 
-                                            <p class="text-[10px] text-slate-500">
-                                                Número de empleado
-                                            </p>
+})
+.then(data=>{
 
-                                            <p class="text-xs text-white font-medium">
-                                                97234
-                                            </p>
+if(!data.success){
 
-                                        </div>
+throw new Error(data.message||'No se pudo eliminar el usuario.');
 
-                                    </div>
+}
 
-                                </div>
+this.modalEliminar=false;
+this.mostrarPasswordEliminar=false;
 
+if(this.usuarioSeleccionado&&this.usuarioSeleccionado.login===login){
 
+this.usuarioSeleccionado=null;
 
-                                <div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+}
 
-                                    <div
-                                        class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+this.usuarioEliminarLogin=null;
+this.usuarioEliminarNombre='';
+this.passwordEliminar='';
+this.errorPassword='';
 
-                                        <i data-lucide="building-2" class="w-4 h-4"></i>
+window.location.reload();
 
-                                    </div>
+})
+.catch(error=>{
 
-                                    <div>
+console.error('Error eliminando usuario:',error);
 
-                                        <p class="text-[10px] text-slate-500">
-                                            Departamento
-                                        </p>
+this.errorPassword=error.message||'La contraseña es incorrecta.';
 
-                                        <p class="text-xs text-white font-medium">
-                                            Administración
-                                        </p>
+})
+.finally(()=>{
 
-                                    </div>
+this.eliminarCargando=false;
 
-                                </div>
+this.$nextTick(()=>{
 
+if(window.lucide){
+lucide.createIcons();
+}
 
+});
 
-                                <div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
+});
 
-                                    <div
-                                        class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+}
 
-                                        <i data-lucide="shield" class="w-4 h-4"></i>
+}));
 
-                                    </div>
+});
 
-                                    <div>
+document.addEventListener('DOMContentLoaded',()=>{
 
-                                        <p class="text-[10px] text-slate-500">
-                                            Rol
-                                        </p>
+if(window.lucide){
+lucide.createIcons();
+}
 
-                                        <p class="text-xs text-white font-medium">
-                                            Usuario
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-
-                                <div class="flex items-center gap-3 bg-slate-800/40 rounded-xl p-3">
-
-                                    <div
-                                        class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-
-                                        <i data-lucide="calendar" class="w-4 h-4"></i>
-
-                                    </div>
-
-                                    <div>
-
-                                        <p class="text-[10px] text-slate-500">
-                                            Fecha de registro
-                                        </p>
-
-                                        <p class="text-xs text-white font-medium">
-                                            10 Agosto 2026
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-
-                        {{-- CONTACTO --}}
-
-                        <div>
-
-                            <p class="text-slate-400 text-[10px] mb-3">
-                                Información de contacto
-                            </p>
-
-
-                            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-3">
-
-
-                                <div class="flex items-center gap-3">
-
-                                    <i data-lucide="mail" class="w-4 h-4 text-slate-500"></i>
-
-                                    <div>
-
-                                        <p class="text-[9px] text-slate-500">
-                                            Correo electrónico
-                                        </p>
-
-                                        <p class="text-xs text-slate-300">
-                                            juan.perez@empresa.com
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="flex items-center gap-3">
-
-                                    <i data-lucide="phone" class="w-4 h-4 text-slate-500"></i>
-
-                                    <div>
-
-                                        <p class="text-[9px] text-slate-500">
-                                            Teléfono
-                                        </p>
-
-                                        <p class="text-xs text-slate-300">
-                                            899 123 4567
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-
-                        {{-- PERMISOS --}}
-
-                        <div>
-
-                            <p class="text-slate-400 text-[10px] mb-3">
-                                Permisos
-                            </p>
-
-                            <div class="flex flex-wrap gap-2">
-
-                                <span
-                                    class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400">
-
-                                    Tickets
-
-                                </span>
-
-                                <span
-                                    class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400">
-
-                                    Comentarios
-
-                                </span>
-
-                                <span
-                                    class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400">
-
-                                    Solicitudes
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-
-                        {{-- ÚLTIMA ACTIVIDAD --}}
-
-                        <div class="pt-4 border-t border-slate-800">
-
-                            <div class="flex items-center justify-between">
-
-                                <div>
-
-                                    <p class="text-[10px] text-slate-500">
-                                        Última actividad
-                                    </p>
-
-                                    <p class="text-xs text-slate-300 mt-1">
-                                        Hoy, 10:42 AM
-                                    </p>
-
-                                </div>
-
-
-                                <div
-                                    class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-
-                                    <i data-lucide="activity" class="w-4 h-4"></i>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </main>
-
-
-
-    <script>
-        lucide.createIcons();
-    </script>
+});
+</script>
 
 </body>
-
 </html>

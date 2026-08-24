@@ -19,6 +19,7 @@ use App\Http\Controllers\TecnologiasController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\MfaController;
+use App\Http\Controllers\ObtenerusuariosController;
 
 Route::post('/login', [LoginController::class, 'Login'])
     ->name('login.process');
@@ -242,9 +243,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
         ->name('tecnologias.evolucion');
 
-Route::get('/tecnologias/usuarios', function () {
-    return view('admin.users');
-})->name('usuariostecnologias');
     Route::get('/tecnologias/tickets', [MisticketsController::class, 'tecnologias'])
         ->name('tickettecnologias');
 
@@ -296,7 +294,26 @@ Route::get('/tecnologias/usuarios', function () {
         ->name('tecnologias.perfil.update');
 
 Route::put('/tecnologias/perfil/password', [PerfilController::class, 'actualizarPassword'])
-    ->middleware(['auth', 'role:tecnologias'])
     ->name('tecnologias.perfil.password.update');
     
+Route::get('/tecnologias/usuarios', [ObtenerusuariosController::class, 'index'])
+    ->name('usuarios.tecnologias');
+    Route::get('/tecnologias/usuarios/{login}', [ObtenerusuariosController::class, 'show'])
+    ->name('usuarios.show');
+
+    Route::delete('/tecnologias/usuarios/{login}', [ObtenerusuariosController::class, 'destroy'])
+    ->name('usuarios.eliminar');
+
+    Route::put(
+    'tecnologias/usuarios/{login}',
+    [ObtenerusuariosController::class, 'update']
+)->name('usuarios.update');
+Route::get('/tecnologias/empresas', [ObtenerusuariosController::class, 'empresas'])
+    ->name('tecnologias.empresas');
+
+Route::get('/tecnologias/oficinas/{empresaId}', [ObtenerusuariosController::class, 'oficinasPorEmpresa'])
+    ->name('tecnologias.oficinas');
+
+Route::get('/tecnologias/departamentos/{oficinaId}', [ObtenerusuariosController::class, 'departamentosPorOficina'])
+    ->name('tecnologias.departamentos');
 });

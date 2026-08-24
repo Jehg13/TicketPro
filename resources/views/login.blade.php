@@ -163,6 +163,7 @@
                             name="password"
                             type="password"
                             required
+                            placeholder="Ingresa tu contraseña"
                             autocomplete="current-password"
                             class="w-full rounded-lg
                                    bg-[#161b28]

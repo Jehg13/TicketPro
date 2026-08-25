@@ -34,7 +34,7 @@
                     <h4 class="text-sm font-semibold text-slate-200 truncate">{{ Auth::user()->name ?? 'Desconocido' }}
                     </h4>
                     <p class="text-xs text-slate-400 truncate">
-                                        {{ auth()->user()->role ?? 'Desconocido' }}
+                        {{ auth()->user()->role ?? 'Desconocido' }}
                 </div>
             </div>
 
@@ -51,9 +51,9 @@
                     <span class="text-sm">Tickets</span>
                 </a>
 
-                                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
+                @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
                     <a href="{{ route('cambiostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
 
                         <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
 
@@ -66,7 +66,7 @@
 
                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
                     <a href="{{ route('usuarios.tecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
 
                         <i data-lucide="users" class="w-5 h-5"></i>
 
@@ -108,87 +108,87 @@
         <div class="max-w-7xl mx-auto" x-data="ticketModal()">
 
             <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                            @if (session('success'))
-                <div id="successMessage"
-                    class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
+                @if (session('success'))
+                    <div id="successMessage"
+                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
 
-                    <div class="flex items-start gap-3">
+                        <div class="flex items-start gap-3">
 
-                        <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400">
 
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7">
-                                </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7">
+                                    </path>
 
-                            </svg>
+                                </svg>
+
+                            </div>
+
+                            <div class="flex-1">
+
+                                <p class="font-bold text-white">
+                                    ¡Éxito!
+                                </p>
+
+                                <p class="mt-1 text-sm text-slate-400">
+                                    {{ session('success') }}
+                                </p>
+
+                            </div>
+
+                            <button type="button" onclick="document.getElementById('successMessage')?.remove()"
+                                class="text-slate-500 hover:text-white transition">
+                                ✕
+                            </button>
 
                         </div>
-
-                        <div class="flex-1">
-
-                            <p class="font-bold text-white">
-                                ¡Éxito!
-                            </p>
-
-                            <p class="mt-1 text-sm text-slate-400">
-                                {{ session('success') }}
-                            </p>
-
-                        </div>
-
-                        <button type="button" onclick="document.getElementById('successMessage')?.remove()"
-                            class="text-slate-500 hover:text-white transition">
-                            ✕
-                        </button>
 
                     </div>
+                @endif
 
-                </div>
-            @endif
+                @if (session('error'))
+                    <div id="errorMessage"
+                        class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-red-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(239,68,68,0.20)]">
 
-            @if (session('error'))
-                <div id="errorMessage"
-                    class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-red-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(239,68,68,0.20)]">
+                        <div class="flex items-start gap-3">
 
-                    <div class="flex items-start gap-3">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-400">
 
-                        <div
-                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12">
+                                    </path>
 
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12">
-                                </path>
+                                </svg>
 
-                            </svg>
+                            </div>
+
+                            <div class="flex-1">
+
+                                <p class="font-bold text-white">
+                                    ¡Error!
+                                </p>
+
+                                <p class="mt-1 text-sm text-slate-400">
+                                    {{ session('error') }}
+                                </p>
+
+                            </div>
+
+                            <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
+                                class="text-slate-500 hover:text-white transition">
+                                ✕
+                            </button>
 
                         </div>
-
-                        <div class="flex-1">
-
-                            <p class="font-bold text-white">
-                                ¡Error!
-                            </p>
-
-                            <p class="mt-1 text-sm text-slate-400">
-                                {{ session('error') }}
-                            </p>
-
-                        </div>
-
-                        <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
-                            class="text-slate-500 hover:text-white transition">
-                            ✕
-                        </button>
 
                     </div>
-
-                </div>
-            @endif
+                @endif
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Tickets</h1>
                     <p class="text-sm text-slate-400 mt-1">Consulta y da seguimiento a todos los tickets que se han
@@ -849,660 +849,403 @@
                     </table>
                 </div>
 
-                <div
-                    class="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <span class="text-xs text-slate-400">
-                        Mostrando {{ $tickets->firstItem() ?? 0 }} a {{ $tickets->lastItem() ?? 0 }} de
-                        {{ $tickets->total() }} tickets
-                    </span>
-
-                    <div class="flex items-center gap-1">
-                        @if ($tickets->onFirstPage())
-                            <span
-                                class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                            </span>
-                        @else
-                            <a href="{{ $tickets->previousPageUrl() }}"
-                                class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                            </a>
-                        @endif
-
-                        @foreach ($tickets->getUrlRange(max(1, $tickets->currentPage() - 2), min($tickets->lastPage(), $tickets->currentPage() + 2)) as $page => $url)
-                            <a href="{{ $url }}"
-                                class="w-8 h-8 rounded-lg flex items-center justify-center text-xs transition {{ $page == $tickets->currentPage() ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}">
-                                {{ $page }}
-                            </a>
-                        @endforeach
-
-                        @if ($tickets->hasMorePages())
-                            <a href="{{ $tickets->nextPageUrl() }}"
-                                class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 flex items-center justify-center transition">
-                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                            </a>
-                        @else
-                            <span
-                                class="w-8 h-8 bg-slate-900 text-slate-600 rounded-lg flex items-center justify-center">
-                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                            </span>
-                        @endif
-                    </div>
-                </div>
-
-                <template x-teleport="body">
-
-    <div
-        x-show="openModalSolucion"
-        x-cloak
-        x-transition.opacity
-        class="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
-        @keydown.escape.window="cerrarModalSolucion()"
-        @click.self="cerrarModalSolucion()">
-
-        <div
-            x-show="openModalSolucion"
-            x-transition
-            @click.stop
-            class="relative w-full max-w-3xl bg-[#030712] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden">
-
-            <div class="px-6 py-5 border-b border-slate-800">
-
-                <div class="flex items-start justify-between gap-4">
-
-                    <div class="min-w-0">
-
-                        <div class="flex items-center gap-3 mb-2">
-
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
-
-                                <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
-
-                                Ticket
-
-                            </span>
-
-                            <span
-                                class="text-sm font-bold text-white"
-                                x-text="'#' + (ticketSolucion?.folio ?? '—')">
-                            </span>
-
-                        </div>
-
-                        <h2
-                            class="text-xl font-bold text-white truncate"
-                            x-text="ticketSolucion?.titulo ?? 'Ticket'">
-                        </h2>
-
-                        <p
-                            class="text-xs text-slate-400 mt-1"
-                            x-text="modalSolucionSoloLectura
-                                ? 'Consulta la información registrada de este ticket.'
-                                : 'Registra la solución y solicita la firma de conformidad.'">
-                        </p>
-
-                    </div>
-
-                    <button
-                        type="button"
-                        @click="cerrarModalSolucion()"
-                        class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition shrink-0">
-
-                        <i data-lucide="x" class="w-5 h-5"></i>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
-
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-                    <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-
-                        <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                            Folio
-                        </span>
-
-                        <p
-                            class="text-sm font-bold text-white mt-1"
-                            x-text="ticketSolucion?.folio ?? '—'">
-                        </p>
-
-                    </div>
-
-
-                    <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-
-                        <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                            Título
-                        </span>
-
-                        <p
-                            class="text-sm font-bold text-white mt-1 truncate"
-                            x-text="ticketSolucion?.titulo ?? '—'">
-                        </p>
-
-                    </div>
-
-
-                    <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-
-                        <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                            Tomado por
-                        </span>
-
-                        <p
-                            class="text-sm font-bold text-white mt-1"
-                            x-text="ticketSolucion?.tomado_por?.name ?? '—'">
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <label class="block text-xs font-semibold text-slate-300 mb-2">
-                        Estado
-                    </label>
-
+                <div class="mt-8 px-2 sm:px-4 pb-2">
                     <div
-                        class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs"
-                        :class="
-                            ticketSolucion?.estado === 'solucionado'
-                                ? 'text-emerald-400'
-                                : ticketSolucion?.estado === 'cancelado'
-                                    ? 'text-red-400'
-                                    : ticketSolucion?.estado === 'en proceso'
-                                        ? 'text-amber-400'
-                                        : 'text-slate-400'
-                        "
-                        x-text="
-                            ticketSolucion?.estado === 'solucionado'
-                                ? 'Solucionado'
-                                : ticketSolucion?.estado === 'cancelado'
-                                    ? 'Cancelado'
-                                    : ticketSolucion?.estado === 'en proceso'
-                                        ? 'En proceso'
-                                        : 'Pendiente'
-                        ">
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <label class="block text-xs font-semibold text-slate-300 mb-2">
-                        Solución aplicada
-                    </label>
-
-                    <textarea
-                        x-model="solucionForm.solucion"
-                        rows="5"
-                        :readonly="modalSolucionSoloLectura"
-                        placeholder="Describe la solución aplicada al problema..."
-                        class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none"
-                        :class="modalSolucionSoloLectura ? 'opacity-70 cursor-default' : ''">
-                    </textarea>
-
-                </div>
-
-
-             <div>
-    <label class="block text-xs font-semibold text-slate-300 mb-2">
-        Evidencia de la solución
-    </label>
-
-    {{-- SUBIR EVIDENCIA --}}
-    <div x-show="!modalSolucionSoloLectura">
-
-        <div
-            class="relative border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-xl p-5 transition bg-[#060c21]">
-
-            <input
-                type="file"
-                x-ref="archivoSolucion"
-                @change="seleccionarArchivoSolucion($event)"
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                accept="image/*,video/mp4,video/webm,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar">
-
-            <div class="flex flex-col items-center justify-center text-center pointer-events-none">
-
-                <div
-                    class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
-                    <i data-lucide="upload-cloud" class="w-6 h-6 text-emerald-400"></i>
-                </div>
-
-                <p class="text-sm font-semibold text-white">
-                    Seleccionar evidencia
-                </p>
-
-                <p class="text-[11px] text-slate-500 mt-1">
-                    Arrastra un archivo aquí o haz clic para seleccionarlo
-                </p>
-
-                <p class="text-[10px] text-slate-600 mt-2">
-                    PDF, Word, Excel, imágenes, ZIP o RAR
-                </p>
-
-            </div>
-        </div>
-
-        {{-- VISTA PREVIA --}}
-        <div
-            x-show="archivoSolucion"
-            x-cloak
-            class="mt-3 rounded-xl bg-[#060c21] border border-emerald-500/20 overflow-hidden">
-
-            {{-- PREVIEW IMAGEN --}}
-            <div
-                x-show="archivoSolucion && archivoSolucion.type && archivoSolucion.type.startsWith('image/')"
-                class="p-3 border-b border-slate-800">
-
-                <div class="rounded-lg overflow-hidden bg-black/30 flex items-center justify-center max-h-64">
-
-                    <img
-                        x-ref="previewImagenSolucion"
-                        class="max-w-full max-h-64 object-contain rounded-lg"
-                        alt="Vista previa">
-
-                </div>
-            </div>
-
-            {{-- PREVIEW PDF --}}
-            <div
-                x-show="archivoSolucion && archivoSolucion.type === 'application/pdf'"
-                class="border-b border-slate-800">
-
-                <iframe
-                    x-ref="previewPdfSolucion"
-                    class="w-full h-64 bg-white"
-                    title="Vista previa PDF">
-                </iframe>
-
-            </div>
-
-            {{-- INFORMACIÓN DEL ARCHIVO --}}
-            <div class="flex items-center justify-between gap-3 p-3">
-
-                <div class="flex items-center gap-3 min-w-0">
-
-                    <div
-                        class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-
-                        <i
-                            data-lucide="file-check-2"
-                            class="w-5 h-5 text-emerald-400">
-                        </i>
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <p
-                            class="text-xs text-white font-medium truncate"
-                            x-text="archivoSolucion ? archivoSolucion.name : ''">
-                        </p>
-
-                        <div class="flex items-center gap-2 mt-0.5">
-
-                            <p
-                                class="text-[10px] text-slate-500"
-                                x-text="archivoSolucion ? formatearTamano(archivoSolucion.size) : ''">
-                            </p>
-
-                            <span
-                                x-show="archivoSolucion"
-                                class="text-slate-700">
-                                •
-                            </span>
-
-                            <p
-                                x-show="archivoSolucion"
-                                class="text-[10px] text-slate-500"
-                                x-text="archivoSolucion ? (archivoSolucion.type || 'Archivo') : ''">
-                            </p>
-
-                        </div>
-
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    @click.stop="quitarArchivoSolucion()"
-                    class="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition shrink-0">
-
-                    <i
-                        data-lucide="trash-2"
-                        class="w-4 h-4">
-                    </i>
-
-                </button>
-
-            </div>
-        </div>
-
-    </div>
-
-    {{-- EVIDENCIA REGISTRADA --}}
-    <div x-show="modalSolucionSoloLectura">
-
-        <div
-            x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
-            class="space-y-2">
-
-            <template
-                x-for="(archivo, index) in evidenciasSolucion"
-                :key="index">
-
-                <a
-                    :href="archivo.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-[#060c21] border border-slate-800 hover:border-emerald-500/40 transition">
-
-                    <div class="flex items-center gap-3 min-w-0">
-
-                        <div
-                            class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-
-                            <i
-                                data-lucide="file-text"
-                                class="w-4 h-4 text-emerald-400">
-                            </i>
-
-                        </div>
-
-                        <div class="min-w-0">
-
-                            <p
-                                class="text-xs text-white truncate"
-                                x-text="archivo.nombre || nombreArchivo(archivo)">
-                            </p>
-
-                            <p class="text-[10px] text-slate-500">
-                                Evidencia registrada
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <i
-                        data-lucide="external-link"
-                        class="w-4 h-4 text-slate-500 shrink-0">
-                    </i>
-
-                </a>
-
-            </template>
-
-        </div>
-
-        <div
-            x-show="!Array.isArray(evidenciasSolucion) || evidenciasSolucion.length === 0"
-            class="px-3 py-3 rounded-xl bg-[#060c21] border border-slate-800">
-
-            <p class="text-xs text-slate-500">
-                No hay evidencia registrada.
-            </p>
-
-        </div>
-
-
-
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <label class="block text-xs font-semibold text-slate-300 mb-3">
-                        ¿El problema fue solucionado?
-                    </label>
-
-                    <div class="grid grid-cols-2 gap-3">
-
-                        <button
-                            type="button"
-                            @click="!modalSolucionSoloLectura && (solucionForm.solucionado = true)"
-                            :disabled="modalSolucionSoloLectura"
-                            :class="
-                                solucionForm.solucionado === true
-                                    ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                                    : 'bg-[#060c21] border-slate-800 text-slate-400'
-                            "
-                            class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
-
-                            <i
-                                data-lucide="circle-check"
-                                class="w-4 h-4">
-                            </i>
-
-                            Sí, fue solucionado
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            @click="!modalSolucionSoloLectura && (solucionForm.solucionado = false)"
-                            :disabled="modalSolucionSoloLectura"
-                            :class="
-                                solucionForm.solucionado === false
-                                    ? 'bg-red-500/15 border-red-500/50 text-red-300'
-                                    : 'bg-[#060c21] border-slate-800 text-slate-400'
-                            "
-                            class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
-
-                            <i
-                                data-lucide="circle-x"
-                                class="w-4 h-4">
-                            </i>
-
-                            No fue solucionado
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <label class="block text-xs font-semibold text-slate-300 mb-2">
-                        Fecha de solución
-                    </label>
-
-                    <input
-                        type="datetime-local"
-                        x-model="solucionForm.fecha_solucion"
-                        :disabled="modalSolucionSoloLectura"
-                        class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
-
-                </div>
-
-
-                <div class="border-t border-slate-800 pt-6">
-
-                    <h3 class="text-sm font-bold text-white mb-1">
-                        Conformidad del usuario
-                    </h3>
-
-                    <p
-                        class="text-[11px] text-slate-500 mb-5"
-                        x-text="
-                            modalSolucionSoloLectura
-                                ? 'Información registrada al momento de cerrar el ticket.'
-                                : 'La persona que levantó el ticket deberá confirmar que recibió atención.'
-                        ">
-                    </p>
-
-
-                    <div class="mb-5">
-
-                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                            Persona que levantó el ticket
-                        </label>
-
-                        <div
-                            class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-
-                            <span
-                                x-text="ticketSolucion?.user?.name ?? solucionForm.nombre_firmante ?? 'Sin nombre'"
-                                class="font-medium">
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div>
-
-                        <div x-show="!modalSolucionSoloLectura">
-
-                            <div class="flex items-center justify-between mb-2">
-
-                                <label class="block text-xs font-semibold text-slate-300">
-                                    Firma
-                                </label>
-
-                                <button
-                                    type="button"
-                                    @click="limpiarFirma()"
-                                    class="text-[10px] text-slate-500 hover:text-red-400 transition">
-
-                                    Limpiar firma
-
-                                </button>
-
-                            </div>
-
-
-                            <div
-                                class="bg-white rounded-xl overflow-hidden border border-slate-700">
-
-                                <canvas
-                                    x-ref="canvasFirma"
-                                    width="900"
-                                    height="220"
-                                    class="w-full h-40 sm:h-48 cursor-crosshair touch-none">
-                                </canvas>
-
-                            </div>
-
-
-                            <p class="text-[10px] text-slate-500 mt-2">
-                                Firma dentro del recuadro utilizando el mouse o pantalla táctil.
-                            </p>
-
-                        </div>
-
-
-                        <div x-show="modalSolucionSoloLectura">
-
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-2">
-                                Firma
-                            </label>
-
-                            <div
-                                class="bg-white rounded-xl overflow-hidden border border-slate-700 p-3 min-h-[160px] flex items-center justify-center">
-
-                                <img
-                                    x-show="ticketSolucion?.solucion?.firma"
-                                    :src="
-                                        ticketSolucion?.solucion?.url_firma
-                                            ?? archivoUrl(ticketSolucion?.solucion?.firma)
-                                    "
-                                    alt="Firma registrada"
-                                    class="max-w-full max-h-40 object-contain"
-                                    x-on:error="console.error('No se pudo cargar la firma:', $event.target.src)">
-
+                        class="pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-5">
+                        <span class="text-xs text-slate-400 text-center sm:text-left">
+                            Mostrando
+                            <span class="text-slate-200 font-medium">{{ $tickets->firstItem() ?? 0 }}</span>
+                            a
+                            <span class="text-slate-200 font-medium">{{ $tickets->lastItem() ?? 0 }}</span>
+                            de
+                            <span class="text-slate-200 font-medium">{{ $tickets->total() }}</span>
+                            tickets
+                        </span>
+
+                        <div class="flex items-center gap-2">
+                            @if ($tickets->onFirstPage())
                                 <span
-                                    x-show="!ticketSolucion?.solucion?.firma"
-                                    class="text-slate-500 text-xs">
-
-                                    No hay una firma registrada.
-
+                                    class="w-9 h-9 bg-slate-900 text-slate-600 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
                                 </span>
+                            @else
+                                <a href="{{ $tickets->previousPageUrl() }}"
+                                    class="w-9 h-9 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white flex items-center justify-center transition-all duration-200">
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                </a>
+                            @endif
 
-                            </div>
+                            @foreach ($tickets->getUrlRange(max(1, $tickets->currentPage() - 2), min($tickets->lastPage(), $tickets->currentPage() + 2)) as $page => $url)
+                                <a href="{{ $url }}"
+                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-xs transition-all duration-200 {{ $page == $tickets->currentPage() ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+                                    {{ $page }}
+                                </a>
+                            @endforeach
 
+                            @if ($tickets->hasMorePages())
+                                <a href="{{ $tickets->nextPageUrl() }}"
+                                    class="w-9 h-9 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white flex items-center justify-center transition-all duration-200">
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </a>
+                            @else
+                                <span
+                                    class="w-9 h-9 bg-slate-900 text-slate-600 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </span>
+                            @endif
                         </div>
-
                     </div>
-
-
-                    <div class="mt-5">
-
-                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                            Fecha de firma
-                        </label>
-
-                        <input
-                            type="datetime-local"
-                            x-model="solucionForm.fecha_firma"
-                            :disabled="modalSolucionSoloLectura"
-                            class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
-
-                    </div>
-
                 </div>
-
-            </div>
-
-
-            <div
-                class="flex items-center justify-between px-6 py-5 border-t border-slate-800 bg-[#030712]">
-
-                <button
-                    type="button"
-                    @click="cerrarModalSolucion()"
-                    class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition">
-
-                    Cerrar
-
-                </button>
-
-
-                <button
-                    x-show="!modalSolucionSoloLectura"
-                    type="button"
-                    @click="guardarSolucion()"
-                    :disabled="guardandoSolucion"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
-
-                    <i
-                        data-lucide="save"
-                        class="w-4 h-4">
-                    </i>
-
-                    <span
-                        x-text="guardandoSolucion ? 'Guardando...' : 'Guardar solución'">
-                    </span>
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</template>
+                <template x-teleport="body">
+                    <div x-show="openModalSolucion" x-cloak x-transition.opacity
+                        class="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                        @keydown.escape.window="cerrarModalSolucion()" @click.self="cerrarModalSolucion()">
+                        <div x-show="openModalSolucion" x-transition @click.stop
+                            class="relative flex flex-col w-full max-w-3xl max-h-[90vh] bg-[#030712] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden">
+                            <div class="shrink-0 px-6 py-5 border-b border-slate-800 bg-[#030712]">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <span
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
+                                                <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
+                                                Ticket
+                                            </span>
+                                            <span class="text-sm font-bold text-white"
+                                                x-text="'#' + (ticketSolucion?.folio ?? '—')">
+                                            </span>
+                                        </div>
+                                        <h2 class="text-xl font-bold text-white truncate"
+                                            x-text="ticketSolucion?.titulo ?? 'Ticket'">
+                                        </h2>
+                                        <p class="text-xs text-slate-400 mt-1"
+                                            x-text="modalSolucionSoloLectura ? 'Consulta la información registrada de este ticket.' : 'Registra la solución y solicita la firma de conformidad.'">
+                                        </p>
+                                    </div>
+                                    <button type="button" @click="cerrarModalSolucion()"
+                                        class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition shrink-0">
+                                        <i data-lucide="x" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+                                <div class="p-6 space-y-6">
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                                Folio
+                                            </span>
+                                            <p class="text-sm font-bold text-white mt-1"
+                                                x-text="ticketSolucion?.folio ?? '—'">
+                                            </p>
+                                        </div>
+                                        <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                                Título
+                                            </span>
+                                            <p class="text-sm font-bold text-white mt-1 truncate"
+                                                x-text="ticketSolucion?.titulo ?? '—'">
+                                            </p>
+                                        </div>
+                                        <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                                Tomado por
+                                            </span>
+                                            <p class="text-sm font-bold text-white mt-1"
+                                                x-text="ticketSolucion?.tomado_por?.name ?? ticketSolucion?.tomado_por?.login ?? ticketSolucion?.tomado_por ?? '—'">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                            Estado
+                                        </label>
+                                        <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs"
+                                            :class="ticketSolucion?.estado === 'solucionado' ? 'text-emerald-400' :
+                                                ticketSolucion?.estado === 'cancelado' ? 'text-red-400' :
+                                                ticketSolucion?.estado === 'en proceso' ? 'text-amber-400' :
+                                                'text-slate-400'"
+                                            x-text="ticketSolucion?.estado === 'solucionado' ? 'Solucionado' : ticketSolucion?.estado === 'cancelado' ? 'Cancelado' : ticketSolucion?.estado === 'en proceso' ? 'En proceso' : 'Pendiente'">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                            Solución aplicada
+                                        </label>
+                                        <textarea x-model="solucionForm.solucion" rows="5" :readonly="modalSolucionSoloLectura"
+                                            placeholder="Describe la solución aplicada al problema..."
+                                            class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none"
+                                            :class="modalSolucionSoloLectura ? 'opacity-70 cursor-default' : ''"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                            Evidencias de la solución
+                                        </label>
+                                        <div x-show="!modalSolucionSoloLectura">
+                                            <div
+                                                class="relative border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-xl p-5 transition bg-[#060c21]">
+                                                <input type="file" x-ref="evidenciaInput"
+                                                    @change="seleccionarEvidencias($event)" multiple
+                                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    accept="image/*,.pdf,.mp4,.webm,application/pdf,video/mp4,video/webm">
+                                                <div
+                                                    class="flex flex-col items-center justify-center text-center pointer-events-none">
+                                                    <div
+                                                        class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
+                                                        <i data-lucide="upload-cloud"
+                                                            class="w-6 h-6 text-emerald-400"></i>
+                                                    </div>
+                                                    <p class="text-sm font-semibold text-white">
+                                                        Seleccionar evidencias
+                                                    </p>
+                                                    <p class="text-[11px] text-slate-500 mt-1">
+                                                        Puedes seleccionar varios archivos
+                                                    </p>
+                                                    <p class="text-[10px] text-slate-600 mt-2">
+                                                        Imágenes, PDF, MP4 o WebM
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
+                                                x-cloak class="mt-4 space-y-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span
+                                                        class="text-[10px] uppercase tracking-wider font-bold text-slate-500">
+                                                        Archivos seleccionados
+                                                    </span>
+                                                    <span class="text-[10px] font-bold text-emerald-400"
+                                                        x-text="evidenciasSolucion.length + (evidenciasSolucion.length === 1 ? ' archivo' : ' archivos')">
+                                                    </span>
+                                                </div>
+                                                <template x-for="(archivo, index) in evidenciasSolucion"
+                                                    :key="`${archivo.name}-${archivo.size}-${archivo.lastModified}-${index}`">
+                                                    <div
+                                                        class="rounded-xl bg-[#060c21] border border-slate-800 overflow-hidden">
+                                                        <div x-show="esImagen(archivo)"
+                                                            class="p-3 border-b border-slate-800">
+                                                            <div
+                                                                class="rounded-lg overflow-hidden bg-black/30 flex items-center justify-center">
+                                                                <img :src="archivoUrl(archivo)" :alt="archivo.name"
+                                                                    class="max-h-64 max-w-full object-contain rounded-lg">
+                                                            </div>
+                                                        </div>
+                                                        <div x-show="esPDF(archivo)"
+                                                            class="border-b border-slate-800">
+                                                            <iframe :src="archivoUrl(archivo)"
+                                                                class="w-full h-64 bg-white"
+                                                                title="Vista previa PDF"></iframe>
+                                                        </div>
+                                                        <div x-show="esVideo(archivo)"
+                                                            class="p-3 border-b border-slate-800">
+                                                            <div
+                                                                class="rounded-lg overflow-hidden bg-black/30 flex items-center justify-center">
+                                                                <video :src="archivoUrl(archivo)" controls
+                                                                    class="w-full max-h-64 rounded-lg"></video>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex items-center justify-between gap-3 p-3">
+                                                            <div class="flex items-center gap-3 min-w-0">
+                                                                <div
+                                                                    class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                    <i :data-lucide="esVideo(archivo) ? 'video' : esPDF(archivo) ?
+                                                                        'file-text' : esImagen(archivo) ? 'image' :
+                                                                        'file-check-2'"
+                                                                        class="w-5 h-5 text-emerald-400"></i>
+                                                                </div>
+                                                                <div class="min-w-0">
+                                                                    <p class="text-xs text-white font-medium truncate"
+                                                                        x-text="archivo.name || nombreArchivo(archivo)">
+                                                                    </p>
+                                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                                        <p class="text-[10px] text-slate-500"
+                                                                            x-text="formatearTamano(archivo.size)">
+                                                                        </p>
+                                                                        <span class="text-slate-700">•</span>
+                                                                        <p class="text-[10px] text-slate-500 truncate"
+                                                                            x-text="archivo.type || tipoArchivo(archivo)">
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <button type="button"
+                                                                @click.stop="eliminarEvidencia(index)"
+                                                                class="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition shrink-0"
+                                                                title="Eliminar evidencia">
+                                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div x-show="modalSolucionSoloLectura">
+                                            <div x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
+                                                class="space-y-2">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <span
+                                                        class="text-[10px] uppercase tracking-wider font-bold text-slate-500">
+                                                        Evidencias registradas
+                                                    </span>
+                                                    <span class="text-[10px] font-bold text-emerald-400"
+                                                        x-text="evidenciasSolucion.length + (evidenciasSolucion.length === 1 ? ' archivo' : ' archivos')">
+                                                    </span>
+                                                </div>
+                                                <template x-for="(archivo, index) in evidenciasSolucion"
+                                                    :key="index">
+                                                    <a :href="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
+                                                        target="_blank" rel="noopener noreferrer"
+                                                        class="flex items-center justify-between gap-3 px-3 py-3 rounded-xl bg-[#060c21] border border-slate-800 hover:border-emerald-500/40 transition">
+                                                        <div class="flex items-center gap-3 min-w-0">
+                                                            <div
+                                                                class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                <i :data-lucide="esVideo(archivo) ? 'video' : esPDF(archivo) ?
+                                                                    'file-text' : esImagen(archivo) ? 'image' : 'file'"
+                                                                    class="w-4 h-4 text-emerald-400"></i>
+                                                            </div>
+                                                            <div class="min-w-0">
+                                                                <p class="text-xs text-white truncate"
+                                                                    x-text="archivo.nombre || archivo.name || nombreArchivo(archivo)">
+                                                                </p>
+                                                                <p class="text-[10px] text-slate-500"
+                                                                    x-text="tipoArchivo(archivo)">
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <i data-lucide="external-link"
+                                                            class="w-4 h-4 text-slate-500 shrink-0"></i>
+                                                    </a>
+                                                </template>
+                                            </div>
+                                            <div x-show="!Array.isArray(evidenciasSolucion) || evidenciasSolucion.length === 0"
+                                                class="px-3 py-3 rounded-xl bg-[#060c21] border border-slate-800">
+                                                <p class="text-xs text-slate-500">
+                                                    No hay evidencias registradas.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-3">
+                                            ¿El problema fue solucionado?
+                                        </label>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <button type="button"
+                                                @click="!modalSolucionSoloLectura && (solucionForm.solucionado = true)"
+                                                :disabled="modalSolucionSoloLectura"
+                                                :class="solucionForm.solucionado === true ?
+                                                    'bg-emerald-500/15 border-emerald-500/50 text-emerald-300' :
+                                                    'bg-[#060c21] border-slate-800 text-slate-400'"
+                                                class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
+                                                <i data-lucide="circle-check" class="w-4 h-4"></i>
+                                                Sí, fue solucionado
+                                            </button>
+                                            <button type="button"
+                                                @click="!modalSolucionSoloLectura && (solucionForm.solucionado = false)"
+                                                :disabled="modalSolucionSoloLectura"
+                                                :class="solucionForm.solucionado === false ?
+                                                    'bg-red-500/15 border-red-500/50 text-red-300' :
+                                                    'bg-[#060c21] border-slate-800 text-slate-400'"
+                                                class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition disabled:opacity-70 disabled:cursor-default">
+                                                <i data-lucide="circle-x" class="w-4 h-4"></i>
+                                                No fue solucionado
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                            Fecha de solución
+                                        </label>
+                                        <input type="datetime-local" x-model="solucionForm.fecha_solucion"
+                                            :disabled="modalSolucionSoloLectura"
+                                            class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
+                                    </div>
+                                    <div class="border-t border-slate-800 pt-6">
+                                        <h3 class="text-sm font-bold text-white mb-1">
+                                            Conformidad del usuario
+                                        </h3>
+                                        <p class="text-[11px] text-slate-500 mb-5"
+                                            x-text="modalSolucionSoloLectura ? 'Información registrada al momento de cerrar el ticket.' : 'La persona que levantó el ticket deberá confirmar que recibió atención.'">
+                                        </p>
+                                        <div class="mb-5">
+                                            <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                                Persona que levantó el ticket
+                                            </label>
+                                            <div
+                                                class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                                                <span
+                                                    x-text="ticketSolucion?.user?.name ?? solucionForm.nombre_firmante ?? 'Sin nombre'"
+                                                    class="font-medium">
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div x-show="!modalSolucionSoloLectura">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <label class="block text-xs font-semibold text-slate-300">
+                                                        Firma
+                                                    </label>
+                                                    <button type="button" @click="limpiarFirma()"
+                                                        class="text-[10px] text-slate-500 hover:text-red-400 transition">
+                                                        Limpiar firma
+                                                    </button>
+                                                </div>
+                                                <div
+                                                    class="bg-white rounded-xl overflow-hidden border border-slate-700">
+                                                    <canvas x-ref="canvasFirma" width="900" height="220"
+                                                        class="w-full h-40 sm:h-48 cursor-crosshair touch-none"></canvas>
+                                                </div>
+                                                <p class="text-[10px] text-slate-500 mt-2">
+                                                    Firma dentro del recuadro utilizando el mouse o pantalla táctil.
+                                                </p>
+                                            </div>
+                                            <div x-show="modalSolucionSoloLectura">
+                                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                                    Firma
+                                                </label>
+                                                <div
+                                                    class="bg-white rounded-xl overflow-hidden border border-slate-700 p-3 min-h-[160px] flex items-center justify-center">
+                                                    <img x-show="ticketSolucion?.solucion?.firma || ticketSolucion?.solucion?.url_firma"
+                                                        :src="ticketSolucion?.solucion?.url_firma ?? archivoUrl(ticketSolucion
+                                                            ?.solucion?.firma)"
+                                                        alt="Firma registrada"
+                                                        class="max-w-full max-h-40 object-contain"
+                                                        x-on:error="console.error('No se pudo cargar la firma:', $event.target.src)">
+                                                    <span
+                                                        x-show="!ticketSolucion?.solucion?.firma && !ticketSolucion?.solucion?.url_firma"
+                                                        class="text-slate-500 text-xs">
+                                                        No hay una firma registrada.
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-5">
+                                            <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                                Fecha de firma
+                                            </label>
+                                            <input type="datetime-local" x-model="solucionForm.fecha_firma"
+                                                :disabled="modalSolucionSoloLectura"
+                                                class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-70">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="shrink-0 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-slate-800 bg-[#030712]">
+                                <button type="button" @click="cerrarModalSolucion()"
+                                    class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition text-center">
+                                    Cerrar
+                                </button>
+                                <button x-show="!modalSolucionSoloLectura" type="button" @click="guardarSolucion()"
+                                    :disabled="guardandoSolucion"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span x-text="guardandoSolucion ? 'Guardando...' : 'Guardar solución'">
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
                 <template x-teleport="body">
                     <div x-show="openModal" x-cloak x-transition.opacity
                         class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto"
@@ -1921,73 +1664,55 @@
                     </div>
                 </template>
             </div>
-  <div>
-              <!-- NOTIFICACIÓN -->
-<div
-    x-show="notificacionVisible"
-    x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="opacity-0 translate-x-5"
-    x-transition:enter-end="opacity-100 translate-x-0"
-    x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="opacity-100 translate-x-0"
-    x-transition:leave-end="opacity-0 translate-x-5"
-    class="fixed right-5 top-5 z-[999999] w-full max-w-sm rounded-2xl border bg-[#0f1535] p-4"
-    :class="
-        notificacionTipo === 'success'
-            ? 'border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.20)]'
-            : 'border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.20)]'
-    "
->
-    <div class="flex items-start gap-3">
+            <div>
+                <!-- NOTIFICACIÓN -->
+                <div x-cloak x-show="notificacionVisible" x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-x-5"
+                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-x-5"
+                    class="fixed right-5 top-5 z-[999999] w-full max-w-sm rounded-2xl border bg-[#0f1535] p-4"
+                    :class="notificacionTipo === 'success'
+                        ?
+                        'border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.20)]' :
+                        'border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.20)]'">
+                    <div class="flex items-start gap-3">
 
-        <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-            :class="
-                notificacionTipo === 'success'
-                    ? 'bg-green-500/10 text-green-400'
-                    : 'bg-red-500/10 text-red-400'
-            "
-        >
-            <i
-                :data-lucide="
-                    notificacionTipo === 'success'
-                        ? 'check-circle'
-                        : 'circle-alert'
-                "
-                class="h-5 w-5"
-            ></i>
-        </div>
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                            :class="notificacionTipo === 'success'
+                                ?
+                                'bg-green-500/10 text-green-400' :
+                                'bg-red-500/10 text-red-400'">
+                            <i :data-lucide="notificacionTipo === 'success'
+                                ?
+                                'check-circle' :
+                                'circle-alert'"
+                                class="h-5 w-5"></i>
+                        </div>
 
-        <div class="min-w-0 flex-1">
+                        <div class="min-w-0 flex-1">
 
-            <p
-                class="text-sm font-semibold text-white"
-                x-text="
+                            <p class="text-sm font-semibold text-white"
+                                x-text="
                     notificacionTipo === 'success'
                         ? 'Éxito'
                         : 'Error'
-                "
-            ></p>
+                ">
+                            </p>
 
-            <p
-                class="mt-1 text-xs text-slate-400 break-words"
-                x-text="notificacionMensaje"
-            ></p>
+                            <p class="mt-1 text-xs text-slate-400 break-words" x-text="notificacionMensaje"></p>
 
-        </div>
+                        </div>
 
-        <button
-            type="button"
-            @click="cerrarNotificacion()"
-            class="text-slate-500 hover:text-white"
-        >
-            <i data-lucide="x" class="h-4 w-4"></i>
-        </button>
+                        <button type="button" @click="cerrarNotificacion()" class="text-slate-500 hover:text-white">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
 
-    </div>
-</div>
+                    </div>
+                </div>
 
-        </div>
+            </div>
     </main>
 </body>
 

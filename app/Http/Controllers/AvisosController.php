@@ -33,19 +33,33 @@ class AvisosController extends Controller
             ->get()
             ->unique(function ($departamento) {
                 return $departamento->oficina_id . '|' .
-                    mb_strtolower(trim($departamento->nombre), 'UTF-8');
+                    mb_strtolower(
+                        trim($departamento->nombre),
+                        'UTF-8'
+                    );
             })
             ->values();
 
-        $oficinas = Oficina::where('empresa_id', $empresaId)
+        $oficinas = Oficina::where(
+            'empresa_id',
+            $empresaId
+        )
             ->whereHas('departamento')
             ->orderBy('nombre')
             ->get();
 
-        $usuarios = User::with('departamento.oficina')
-            ->whereHas('departamento.oficina', function ($query) use ($empresaId) {
-                $query->where('empresa_id', $empresaId);
-            })
+        $usuarios = User::with(
+            'departamento.oficina'
+        )
+            ->whereHas(
+                'departamento.oficina',
+                function ($query) use ($empresaId) {
+                    $query->where(
+                        'empresa_id',
+                        $empresaId
+                    );
+                }
+            )
             ->orderBy('name')
             ->get();
 
@@ -58,7 +72,11 @@ class AvisosController extends Controller
             'login',
             $usuario->login
         )
-            ->where('tipo', '!=', 'aviso')
+            ->where(
+                'tipo',
+                '!=',
+                'aviso'
+            )
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
@@ -67,8 +85,15 @@ class AvisosController extends Controller
             'login',
             $usuario->login
         )
-            ->where('tipo', '!=', 'aviso')
-            ->where('leida', false)
+            ->where(
+                'tipo',
+                '!=',
+                'aviso'
+            )
+            ->where(
+                'leida',
+                false
+            )
             ->count();
 
         return view(
@@ -94,7 +119,8 @@ class AvisosController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'aplica_a' => 'No se pudo determinar la empresa del usuario actual.'
+                    'aplica_a' =>
+                        'No se pudo determinar la empresa del usuario actual.'
                 ]);
         }
 
@@ -125,17 +151,6 @@ class AvisosController extends Controller
                 'date_format:H:i',
             ],
 
-            'fecha_fin' => [
-                'nullable',
-                'date',
-                'after_or_equal:fecha_inicio',
-            ],
-
-            'hora_fin' => [
-                'nullable',
-                'date_format:H:i',
-            ],
-
             'aplica_a' => [
                 'required',
                 'in:todos,oficina,departamento,usuarios',
@@ -157,6 +172,11 @@ class AvisosController extends Controller
                 'boolean',
             ],
 
+            'estado' => [
+                'nullable',
+                'in:activo,inactivo',
+            ],
+
             'archivo' => [
                 'nullable',
                 'file',
@@ -171,26 +191,23 @@ class AvisosController extends Controller
             $request->hora_inicio .
             ':00';
 
-        $validated['fecha_fin'] =
-            $request->filled('fecha_fin') &&
-            $request->filled('hora_fin')
-                ? $request->fecha_fin .
-                    ' ' .
-                    $request->hora_fin .
-                    ':00'
-                : null;
-
         $validated['mostrar_notificaciones'] =
             $request->boolean('mostrar_notificaciones');
 
         $validated['fijado'] =
             $request->boolean('fijado');
 
+        $validated['estado'] =
+            $request->input('estado', 'activo');
+
         $validated['archivo'] =
             $request->hasFile('archivo')
                 ? $request
                     ->file('archivo')
-                    ->store('avisos', 'public')
+                    ->store(
+                        'avisos',
+                        'public'
+                    )
                 : null;
 
         $validated['afecta_a'] =
@@ -205,6 +222,7 @@ class AvisosController extends Controller
         $aviso = Aviso::create($validated);
 
         if (
+            $aviso->estado === 'activo' &&
             (int) $aviso->mostrar_notificaciones === 1
         ) {
             $this->crearNotificacionesAviso(
@@ -228,13 +246,18 @@ class AvisosController extends Controller
     ) {
         $usuario = Auth::user();
 
-        $empresaId = $usuario->departamento?->oficina?->empresa_id;
+        $empresaId =
+            $usuario
+                ->departamento
+                ?->oficina
+                ?->empresa_id;
 
         if (!$empresaId) {
             return back()
                 ->withInput()
                 ->withErrors([
-                    'aplica_a' => 'No se pudo determinar la empresa del usuario actual.'
+                    'aplica_a' =>
+                        'No se pudo determinar la empresa del usuario actual.'
                 ]);
         }
 
@@ -265,17 +288,6 @@ class AvisosController extends Controller
                 'date_format:H:i',
             ],
 
-            'fecha_fin' => [
-                'nullable',
-                'date',
-                'after_or_equal:fecha_inicio',
-            ],
-
-            'hora_fin' => [
-                'nullable',
-                'date_format:H:i',
-            ],
-
             'aplica_a' => [
                 'required',
                 'in:todos,oficina,departamento,usuarios',
@@ -297,6 +309,11 @@ class AvisosController extends Controller
                 'boolean',
             ],
 
+            'estado' => [
+                'required',
+                'in:activo,inactivo',
+            ],
+
             'archivo' => [
                 'nullable',
                 'file',
@@ -311,20 +328,14 @@ class AvisosController extends Controller
             $request->hora_inicio .
             ':00';
 
-        $validated['fecha_fin'] =
-            $request->filled('fecha_fin') &&
-            $request->filled('hora_fin')
-                ? $request->fecha_fin .
-                    ' ' .
-                    $request->hora_fin .
-                    ':00'
-                : null;
-
         $validated['mostrar_notificaciones'] =
             $request->boolean('mostrar_notificaciones');
 
         $validated['fijado'] =
             $request->boolean('fijado');
+
+        $validated['estado'] =
+            $request->input('estado');
 
         if ($request->hasFile('archivo')) {
             if ($aviso->archivo) {
@@ -336,7 +347,10 @@ class AvisosController extends Controller
             $validated['archivo'] =
                 $request
                     ->file('archivo')
-                    ->store('avisos', 'public');
+                    ->store(
+                        'avisos',
+                        'public'
+                    );
         } else {
             unset($validated['archivo']);
         }
@@ -365,6 +379,7 @@ class AvisosController extends Controller
         $aviso->refresh();
 
         if (
+            $aviso->estado === 'activo' &&
             (int) $aviso->mostrar_notificaciones === 1
         ) {
             $this->crearNotificacionesAviso(
@@ -382,8 +397,9 @@ class AvisosController extends Controller
             );
     }
 
-    public function destroy(Aviso $aviso)
-    {
+    public function destroy(
+        Aviso $aviso
+    ) {
         Notificacion::where(
             'tipo',
             'aviso'
@@ -418,9 +434,11 @@ class AvisosController extends Controller
         $empresaId,
         User $usuario
     ) {
-        if (
-            (int) $aviso->mostrar_notificaciones !== 1
-        ) {
+        if ($aviso->estado !== 'activo') {
+            return;
+        }
+
+        if ((int) $aviso->mostrar_notificaciones !== 1) {
             return;
         }
 
@@ -429,16 +447,22 @@ class AvisosController extends Controller
                 $aviso->afecta_a,
                 $empresaId
             )
-                ->filter(function ($usuarioAfectado) use ($usuario) {
+                ->filter(function (
+                    $usuarioAfectado
+                ) use ($usuario) {
                     return $usuarioAfectado->login !==
                         $usuario->login;
                 })
-                ->filter(function ($usuarioAfectado) {
+                ->filter(function (
+                    $usuarioAfectado
+                ) {
                     return !$this->esTecnologias(
                         $usuarioAfectado
                     );
                 })
-                ->filter(function ($usuarioAfectado) {
+                ->filter(function (
+                    $usuarioAfectado
+                ) {
                     return !$this->esRolExcluido(
                         $usuarioAfectado
                     );
@@ -448,7 +472,10 @@ class AvisosController extends Controller
 
         $ahora = now();
 
-        foreach ($usuariosAfectados as $usuarioAfectado) {
+        foreach (
+            $usuariosAfectados
+            as $usuarioAfectado
+        ) {
             Notificacion::create([
                 'login' =>
                     $usuarioAfectado->login,
@@ -492,8 +519,11 @@ class AvisosController extends Controller
     ) {
         if ($request->aplica_a === 'todos') {
             return [
-                'tipo' => 'todos',
-                'empresa_id' => $empresaId,
+                'tipo' =>
+                    'todos',
+
+                'empresa_id' =>
+                    $empresaId,
             ];
         }
 
@@ -562,8 +592,11 @@ class AvisosController extends Controller
             }
 
             return [
-                'tipo' => 'oficinas',
-                'ids' => $oficinaIds,
+                'tipo' =>
+                    'oficinas',
+
+                'ids' =>
+                    $oficinaIds,
             ];
         }
 
@@ -630,8 +663,11 @@ class AvisosController extends Controller
             }
 
             return [
-                'tipo' => 'departamentos',
-                'ids' => $departamentoIds,
+                'tipo' =>
+                    'departamentos',
+
+                'ids' =>
+                    $departamentoIds,
             ];
         }
 
@@ -700,8 +736,11 @@ class AvisosController extends Controller
             }
 
             return [
-                'tipo' => 'usuarios',
-                'logins' => $logins,
+                'tipo' =>
+                    'usuarios',
+
+                'logins' =>
+                    $logins,
             ];
         }
 
@@ -843,7 +882,9 @@ class AvisosController extends Controller
         User $usuario
     ): bool {
         $nombreDepartamento =
-            $usuario->departamento?->nombre;
+            $usuario
+                ->departamento
+                ?->nombre;
 
         if (!$nombreDepartamento) {
             return false;
@@ -851,9 +892,7 @@ class AvisosController extends Controller
 
         $nombreDepartamento =
             mb_strtolower(
-                trim(
-                    $nombreDepartamento
-                ),
+                trim($nombreDepartamento),
                 'UTF-8'
             );
 

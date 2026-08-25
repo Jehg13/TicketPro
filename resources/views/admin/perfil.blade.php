@@ -432,66 +432,33 @@
 
                                 </div>
 
-                                <svg id="profile-arrow"
+                                <i data-lucide="chevron-down"
                                     class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
-                                    :class="{ 'rotate-180': perfilAbierto }" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7">
-                                    </path>
-
-                                </svg>
+                                    :class="{ 'rotate-180': perfilAbierto }">
+                                </i>
 
                             </button>
 
-                            <div id="profile-dropdown" x-show="perfilAbierto" @click.outside="perfilAbierto = false"
-                                x-transition
+                            <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
                                 class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
-                                style="display: none;">
+                                style="display:none;">
 
                                 <a href="{{ route('perfiltecnologias') }}"
                                     class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
-
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7-7z">
-                                        </path>
-
-                                    </svg>
-
-                                    <span>
-                                        Perfil
-                                    </span>
-
+                                    <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400"></i>
+                                    <span>Perfil</span>
                                 </a>
 
                                 <div class="border-t border-[#1e295d]"></div>
 
                                 <form method="POST" action="{{ route('logout') }}">
-
                                     @csrf
 
                                     <button type="submit"
                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
-
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                            </path>
-
-                                        </svg>
-
-                                        <span>
-                                            Cerrar sesión
-                                        </span>
-
+                                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                                        <span>Cerrar sesión</span>
                                     </button>
-
                                 </form>
 
                             </div>
@@ -891,7 +858,7 @@
                                                     <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-500">
                                                     </i>
 
-                                                    Empresa
+                                                    {{ auth()->user()->departamento?->oficina?->empresa?->empresa ?? 'N/A' }}
 
                                                 </span>
 
@@ -1038,7 +1005,7 @@
                                                 class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
 
                                                 <span class="truncate">
-                                                    Reynosa, Centro
+                                                    {{ Auth::user()->departamento->oficina->nombre ?? 'N/A' }}
                                                 </span>
 
                                                 <span

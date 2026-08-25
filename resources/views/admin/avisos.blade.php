@@ -424,85 +424,56 @@
                         </div>
                         <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
 
-                            <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
-                                class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
+                        <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
+                            class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
-                                    alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                            <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
+                                alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
 
-                                <div class="text-left leading-tight hidden sm:block">
-                                    <p class="text-xs font-semibold text-white">
-                                        {{ auth()->user()->name ?? 'Desconocido' }}
-                                    </p>
+                            <div class="text-left leading-tight hidden sm:block">
 
-                                    <p class="text-[10px] text-blue-400 font-medium">
-                                        {{ auth()->user()->role ?? 'Desconocido' }}
-                                    </p>
-                                </div>
+                                <p class="text-xs font-semibold text-white">
+                                    {{ auth()->user()->name ?? 'Desconocido' }}
+                                </p>
 
-                                <svg id="profile-arrow"
-                                    class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
-                                    :class="{ 'rotate-180': perfilAbierto }" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7">
-                                    </path>
-
-                                </svg>
-
-                            </button>
-
-
-                            <div id="profile-dropdown" x-show="perfilAbierto" @click.outside="perfilAbierto = false"
-                                x-transition
-                                class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
-                                style="display: none;">
-
-                                <!-- PERFIL -->
-                                <a href="{{ route('perfiltecnologias') }}"
-                                    class="flex items-center gap-3
-                           px-4 py-3
-                           text-sm text-slate-300
-                           hover:bg-[#151b3b]
-                           hover:text-white
-                           transition-colors">
-
-                                    <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400">
-                                    </i>
-
-                                    <span>
-                                        Perfil
-                                    </span>
-
-                                </a>
-
-                                <div class="border-t border-[#1e295d]"></div>
-
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-
-                                    <button type="submit"
-                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
-
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                            </path>
-
-                                        </svg>
-
-                                        <span>Cerrar sesión</span>
-
-                                    </button>
-
-                                </form>
+                                <p class="text-[10px] text-blue-400 font-medium">
+                                    {{ auth()->user()->role ?? 'Desconocido' }}
+                                </p>
 
                             </div>
 
+                            <i data-lucide="chevron-down"
+                                class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
+                                :class="{ 'rotate-180': perfilAbierto }">
+                            </i>
+
+                        </button>
+
+                        <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
+                            class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
+                            style="display:none;">
+
+                            <a href="{{ route('perfiltecnologias') }}"
+                                class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
+                                <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400"></i>
+                                <span>Perfil</span>
+                            </a>
+
+                            <div class="border-t border-[#1e295d]"></div>
+
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+
+                                <button type="submit"
+                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                                    <span>Cerrar sesión</span>
+                                </button>
+                            </form>
+
                         </div>
+
+                    </div>
                     </div>
                 </div>
 
@@ -1409,21 +1380,16 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            @php
-                                                $inicio = \Carbon\Carbon::parse($aviso->fecha_inicio);
-                                                $fin = $aviso->fecha_fin
-                                                    ? \Carbon\Carbon::parse($aviso->fecha_fin)
-                                                    : null;
-                                            @endphp
-                                            @if ($inicio->isFuture())
+                                            @if ($aviso->estado === 'inactivo')
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                                    Inactivo
+                                                </span>
+                                            @elseif (\Carbon\Carbon::parse($aviso->fecha_inicio)->isFuture())
                                                 <span
                                                     class="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
                                                     Programado
-                                                </span>
-                                            @elseif($fin && $fin->isPast())
-                                                <span
-                                                    class="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-500/10 text-slate-400 border border-slate-500/20">
-                                                    Finalizado
                                                 </span>
                                             @else
                                                 <span
@@ -1722,105 +1688,190 @@
             </div>
             <div x-show="modalEditar" x-cloak x-transition.opacity @keydown.escape.window="cerrarModales()"
                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+
                 <div @click.outside="cerrarModales()" x-show="modalEditar" x-transition
                     class="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0b1026] border border-blue-900/50 rounded-2xl shadow-2xl">
+
                     <template x-if="avisoSeleccionado">
+
                         <form :action="'/tecnologias/avisos/' + avisoSeleccionado.id" method="POST"
                             enctype="multipart/form-data" class="p-6">
+
                             @csrf
                             @method('PUT')
+
                             <div class="flex items-center justify-between mb-6">
+
                                 <div>
                                     <span class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">
                                         Modificar aviso
                                     </span>
+
                                     <h2 class="text-xl font-bold text-white mt-1">
                                         Editar información
                                     </h2>
                                 </div>
+
                                 <button type="button" @click="cerrarModales()"
                                     class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
                                     ×
                                 </button>
+
                             </div>
+
                             <div class="space-y-5">
+
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-300 mb-2">
                                         Título
                                     </label>
+
                                     <input type="text" name="titulo" x-model="avisoSeleccionado.titulo" required
                                         class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
                                 </div>
+
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-300 mb-2">
                                             Tipo
                                         </label>
+
                                         <select name="tipo" x-model="avisoSeleccionado.tipo" required
                                             class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
-                                            <option value="mantenimiento">Mantenimiento</option>
-                                            <option value="incidente">Incidente</option>
-                                            <option value="informativo">Informativo</option>
-                                            <option value="general">General</option>
+
+                                            <option value="mantenimiento">
+                                                Mantenimiento
+                                            </option>
+
+                                            <option value="incidente">
+                                                Incidente
+                                            </option>
+
+                                            <option value="informativo">
+                                                Informativo
+                                            </option>
+
+                                            <option value="general">
+                                                General
+                                            </option>
+
                                         </select>
                                     </div>
+
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-300 mb-2">
                                             Importancia
                                         </label>
+
                                         <select name="importancia" x-model="avisoSeleccionado.importancia" required
                                             class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
-                                            <option value="critica">Crítica</option>
-                                            <option value="alta">Alta</option>
-                                            <option value="media">Media</option>
-                                            <option value="normal">Normal</option>
+
+                                            <option value="critica">
+                                                Crítica
+                                            </option>
+
+                                            <option value="alta">
+                                                Alta
+                                            </option>
+
+                                            <option value="media">
+                                                Media
+                                            </option>
+
+                                            <option value="normal">
+                                                Normal
+                                            </option>
+
                                         </select>
                                     </div>
+
                                 </div>
+
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-300 mb-2">
                                             Fecha de inicio
                                         </label>
+
                                         <input type="date" name="fecha_inicio"
                                             :value="fechaSolo(avisoSeleccionado.fecha_inicio)" required
                                             class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
                                     </div>
+
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-300 mb-2">
                                             Hora de inicio
                                         </label>
+
                                         <input type="time" name="hora_inicio"
                                             :value="horaSolo(avisoSeleccionado.fecha_inicio)" required
                                             class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
                                     </div>
+
                                 </div>
+
                                 <div>
+
+                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                        Estado del aviso
+                                    </label>
+
+                                    <select name="estado" x-model="avisoSeleccionado.estado" required
+                                        class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
+
+                                        <option value="activo">
+                                            Activo
+                                        </option>
+
+                                        <option value="inactivo">
+                                            Inactivo
+                                        </option>
+
+                                    </select>
+
+                                    <p class="text-[10px] text-slate-500 mt-2">
+                                        Los avisos inactivos no serán visibles para los usuarios.
+                                    </p>
+
+                                </div>
+
+                                <div>
+
                                     <label class="block text-xs font-semibold text-slate-300 mb-2">
                                         Aplicar a
                                     </label>
+
                                     <select name="aplica_a" x-model="avisoSeleccionado.aplica_a"
                                         @change="cambiarDestino()" required
                                         class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
+
                                         <option value="todos">
                                             Todos los usuarios
                                         </option>
+
                                         <option value="oficina">
                                             Ubicaciones
                                         </option>
+
                                         <option value="departamento">
                                             Departamentos
                                         </option>
+
                                         <option value="usuarios">
                                             Usuarios específicos
                                         </option>
+
                                     </select>
+
                                 </div>
 
                                 <div x-show="avisoSeleccionado.aplica_a === 'oficina'" x-transition
                                     class="bg-[#070b19] border border-slate-800 rounded-xl p-4">
 
                                     <div class="mb-3">
+
                                         <p class="text-xs font-semibold text-white">
                                             Ubicaciones / Oficinas
                                         </p>
@@ -1828,6 +1879,7 @@
                                         <p class="text-[10px] text-slate-500 mt-1">
                                             Selecciona la oficina cuyos usuarios recibirán el aviso.
                                         </p>
+
                                     </div>
 
                                     <div class="space-y-2 max-h-48 overflow-y-auto">
@@ -1842,6 +1894,7 @@
                                                     class="w-4 h-4 accent-blue-600">
 
                                                 <div>
+
                                                     <p class="text-xs text-slate-200">
                                                         {{ $oficina->nombre }}
                                                     </p>
@@ -1849,18 +1902,21 @@
                                                     <p class="text-[10px] text-slate-500">
                                                         Oficina
                                                     </p>
+
                                                 </div>
 
                                             </label>
                                         @endforeach
 
                                     </div>
+
                                 </div>
 
                                 <div x-show="avisoSeleccionado.aplica_a === 'departamento'" x-transition
                                     class="bg-[#070b19] border border-slate-800 rounded-xl p-4">
 
                                     <div class="mb-3">
+
                                         <p class="text-xs font-semibold text-white">
                                             Departamentos
                                         </p>
@@ -1868,6 +1924,7 @@
                                         <p class="text-[10px] text-slate-500 mt-1">
                                             Selecciona los departamentos que recibirán el aviso.
                                         </p>
+
                                     </div>
 
                                     <div class="space-y-2 max-h-48 overflow-y-auto">
@@ -1882,6 +1939,7 @@
                                                     class="w-4 h-4 accent-blue-600">
 
                                                 <div>
+
                                                     <p class="text-xs text-slate-200">
                                                         {{ $departamento->nombre }}
                                                     </p>
@@ -1891,18 +1949,21 @@
                                                             {{ $departamento->oficina->nombre }}
                                                         </p>
                                                     @endif
+
                                                 </div>
 
                                             </label>
                                         @endforeach
 
                                     </div>
+
                                 </div>
 
                                 <div x-show="avisoSeleccionado.aplica_a === 'usuarios'" x-transition
                                     class="bg-[#070b19] border border-slate-800 rounded-xl p-4">
 
                                     <div class="mb-3">
+
                                         <p class="text-xs font-semibold text-white">
                                             Usuarios
                                         </p>
@@ -1910,6 +1971,7 @@
                                         <p class="text-[10px] text-slate-500 mt-1">
                                             Selecciona los usuarios que recibirán el aviso.
                                         </p>
+
                                     </div>
 
                                     <div class="space-y-2 max-h-48 overflow-y-auto">
@@ -1924,6 +1986,7 @@
                                                     class="w-4 h-4 accent-blue-600">
 
                                                 <div>
+
                                                     <p class="text-xs text-slate-200">
                                                         {{ $usuario->name }}
                                                     </p>
@@ -1934,19 +1997,23 @@
 
                                                     @if ($usuario->departamento)
                                                         <p class="text-[10px] text-slate-500">
+
                                                             {{ $usuario->departamento->nombre }}
 
                                                             @if ($usuario->departamento->oficina)
                                                                 · {{ $usuario->departamento->oficina->nombre }}
                                                             @endif
+
                                                         </p>
                                                     @endif
+
                                                 </div>
 
                                             </label>
                                         @endforeach
 
                                     </div>
+
                                 </div>
 
                                 <div x-show="avisoSeleccionado.aplica_a === 'todos'" x-transition
@@ -1961,137 +2028,219 @@
                                     </p>
 
                                 </div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                    Descripción
-                                </label>
-                                <textarea name="descripcion" rows="5" x-model="avisoSeleccionado.descripcion" required
-                                    class="w-full bg-[#070b19] border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500 resize-none"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                    Archivo adjunto
-                                </label>
-                                <template x-if="avisoSeleccionado.archivo">
-                                    <div class="mb-4">
-                                        <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">
-                                            Archivo actual
-                                        </p>
-                                        <template x-if="esImagen(avisoSeleccionado.archivo)">
-                                            <a :href="urlArchivo(avisoSeleccionado.archivo)" target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="block rounded-xl overflow-hidden border border-slate-800 bg-black/30 hover:border-blue-500/40 transition cursor-pointer">
-                                                <img :src="urlArchivo(avisoSeleccionado.archivo)" alt="Archivo actual"
-                                                    class="w-full max-h-[250px] object-contain">
-                                            </a>
-                                        </template>
-                                        <template x-if="esPdf(avisoSeleccionado.archivo)">
-                                            <a :href="urlArchivo(avisoSeleccionado.archivo)" target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="block rounded-xl overflow-hidden border border-slate-800 bg-[#111827] hover:border-blue-500/40 transition cursor-pointer">
-                                                <iframe :src="urlArchivo(avisoSeleccionado.archivo)"
-                                                    class="w-full h-[250px] pointer-events-none" frameborder="0">
-                                                </iframe>
-                                            </a>
-                                        </template>
-                                        <template x-if="esVideo(avisoSeleccionado.archivo)">
-                                            <a :href="urlArchivo(avisoSeleccionado.archivo)" target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="block rounded-xl overflow-hidden border border-slate-800 bg-black hover:border-blue-500/40 transition cursor-pointer">
-                                                <video :src="urlArchivo(avisoSeleccionado.archivo)"
-                                                    class="w-full max-h-[250px] pointer-events-none" muted>
-                                                </video>
-                                            </a>
-                                        </template>
-                                        <div
-                                            class="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-slate-900/50 border border-slate-800">
-                                            <i data-lucide="paperclip" class="w-4 h-4 text-blue-400 shrink-0">
-                                            </i>
-                                            <p class="text-[10px] text-slate-400 truncate"
-                                                x-text="nombreArchivo(avisoSeleccionado.archivo)">
-                                            </p>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template x-if="!avisoSeleccionado.archivo">
-                                    <div class="mb-4">
-                                        <div
-                                            class="flex items-center gap-3 p-4 rounded-xl border border-dashed border-slate-800 bg-[#070b19]/50">
-                                            <i data-lucide="file-x" class="w-5 h-5 text-slate-600">
-                                            </i>
-                                            <p class="text-[10px] text-slate-500">
-                                                Actualmente no hay archivo adjunto.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </template>
+
                                 <div>
-                                    <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">
-                                        Reemplazar archivo
-                                    </p>
-                                    <input type="file" name="archivo" accept=".jpg,.jpeg,.png,.pdf,.mp4"
-                                        class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-300">
-                                    <p class="text-[10px] text-slate-500 mt-2">
-                                        Selecciona un archivo únicamente si deseas reemplazar el actual.
-                                    </p>
+
+                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                        Descripción
+                                    </label>
+
+                                    <textarea name="descripcion" rows="5" x-model="avisoSeleccionado.descripcion" required
+                                        class="w-full bg-[#070b19] border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <label
-                                    class="flex items-center justify-between bg-[#070b19] border border-slate-800 rounded-xl p-4 cursor-pointer hover:border-blue-900/60 transition">
+
+                                <div>
+
+                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                        Archivo adjunto
+                                    </label>
+
+                                    <template x-if="avisoSeleccionado.archivo">
+
+                                        <div class="mb-4">
+
+                                            <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">
+                                                Archivo actual
+                                            </p>
+
+                                            <template x-if="esImagen(avisoSeleccionado.archivo)">
+
+                                                <a :href="urlArchivo(avisoSeleccionado.archivo)" target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="block rounded-xl overflow-hidden border border-slate-800 bg-black/30 hover:border-blue-500/40 transition cursor-pointer">
+
+                                                    <img :src="urlArchivo(avisoSeleccionado.archivo)"
+                                                        alt="Archivo actual"
+                                                        class="w-full max-h-[250px] object-contain">
+
+                                                </a>
+
+                                            </template>
+
+                                            <template x-if="esPdf(avisoSeleccionado.archivo)">
+
+                                                <a :href="urlArchivo(avisoSeleccionado.archivo)" target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="block rounded-xl overflow-hidden border border-slate-800 bg-[#111827] hover:border-blue-500/40 transition cursor-pointer">
+
+                                                    <iframe :src="urlArchivo(avisoSeleccionado.archivo)"
+                                                        class="w-full h-[250px] pointer-events-none"
+                                                        frameborder="0"></iframe>
+
+                                                </a>
+
+                                            </template>
+
+                                            <template x-if="esVideo(avisoSeleccionado.archivo)">
+
+                                                <a :href="urlArchivo(avisoSeleccionado.archivo)" target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="block rounded-xl overflow-hidden border border-slate-800 bg-black hover:border-blue-500/40 transition cursor-pointer">
+
+                                                    <video :src="urlArchivo(avisoSeleccionado.archivo)"
+                                                        class="w-full max-h-[250px] pointer-events-none" muted></video>
+
+                                                </a>
+
+                                            </template>
+
+                                            <div
+                                                class="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-slate-900/50 border border-slate-800">
+
+                                                <i data-lucide="paperclip" class="w-4 h-4 text-blue-400 shrink-0"></i>
+
+                                                <p class="text-[10px] text-slate-400 truncate"
+                                                    x-text="nombreArchivo(avisoSeleccionado.archivo)">
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    </template>
+
+                                    <template x-if="!avisoSeleccionado.archivo">
+
+                                        <div class="mb-4">
+
+                                            <div
+                                                class="flex items-center gap-3 p-4 rounded-xl border border-dashed border-slate-800 bg-[#070b19]/50">
+
+                                                <i data-lucide="file-x" class="w-5 h-5 text-slate-600"></i>
+
+                                                <p class="text-[10px] text-slate-500">
+                                                    Actualmente no hay archivo adjunto.
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    </template>
+
                                     <div>
-                                        <p class="text-xs font-semibold text-white">
-                                            Mostrar notificaciones
+
+                                        <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">
+                                            Reemplazar archivo
                                         </p>
-                                        <p class="text-[10px] text-slate-500 mt-1">
-                                            Notificar a los usuarios.
+
+                                        <input type="file" name="archivo" accept=".jpg,.jpeg,.png,.pdf,.mp4"
+                                            class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-300">
+
+                                        <p class="text-[10px] text-slate-500 mt-2">
+                                            Selecciona un archivo únicamente si deseas reemplazar el actual.
                                         </p>
+
                                     </div>
-                                    <div class="relative shrink-0 ml-4">
-                                        <input type="checkbox" name="mostrar_notificaciones" value="1"
-                                            x-model="avisoSeleccionado.mostrar_notificaciones" class="sr-only peer">
-                                        <div
-                                            class="w-11 h-6 bg-slate-800 border border-slate-700 rounded-full transition-colors peer-checked:bg-blue-600 peer-checked:border-blue-500">
+
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                                    <label
+                                        class="flex items-center justify-between bg-[#070b19] border border-slate-800 rounded-xl p-4 cursor-pointer hover:border-blue-900/60 transition">
+
+                                        <div>
+
+                                            <p class="text-xs font-semibold text-white">
+                                                Mostrar notificaciones
+                                            </p>
+
+                                            <p class="text-[10px] text-slate-500 mt-1">
+                                                Notificar a los usuarios.
+                                            </p>
+
                                         </div>
-                                        <div
-                                            class="absolute top-0.5 left-0.5 w-5 h-5 bg-slate-300 rounded-full shadow transition-transform peer-checked:translate-x-5 peer-checked:bg-white">
+
+                                        <div class="relative shrink-0 ml-4">
+
+                                            <input type="checkbox" name="mostrar_notificaciones" value="1"
+                                                x-model="avisoSeleccionado.mostrar_notificaciones"
+                                                class="sr-only peer">
+
+                                            <div
+                                                class="w-11 h-6 bg-slate-800 border border-slate-700 rounded-full transition-colors peer-checked:bg-blue-600 peer-checked:border-blue-500">
+                                            </div>
+
+                                            <div
+                                                class="absolute top-0.5 left-0.5 w-5 h-5 bg-slate-300 rounded-full shadow transition-transform peer-checked:translate-x-5 peer-checked:bg-white">
+                                            </div>
+
                                         </div>
-                                    </div>
-                                </label>
-                                <label
-                                    class="flex items-center justify-between bg-[#070b19] border border-slate-800 rounded-xl p-4 cursor-pointer hover:border-blue-900/60 transition">
-                                    <div>
-                                        <p class="text-xs font-semibold text-white">
-                                            Fijar aviso
-                                        </p>
-                                        <p class="text-[10px] text-slate-500 mt-1">
-                                            Mantener el aviso arriba.
-                                        </p>
-                                    </div>
-                                    <div class="relative shrink-0 ml-4">
-                                        <input type="checkbox" name="fijado" value="1"
-                                            x-model="avisoSeleccionado.fijado" class="sr-only peer">
-                                        <div
-                                            class="w-11 h-6 bg-slate-800 border border-slate-700 rounded-full transition-colors peer-checked:bg-blue-600 peer-checked:border-blue-500">
+
+                                    </label>
+
+                                    <label
+                                        class="flex items-center justify-between bg-[#070b19] border border-slate-800 rounded-xl p-4 cursor-pointer hover:border-blue-900/60 transition">
+
+                                        <div>
+
+                                            <p class="text-xs font-semibold text-white">
+                                                Fijar aviso
+                                            </p>
+
+                                            <p class="text-[10px] text-slate-500 mt-1">
+                                                Mantener el aviso arriba.
+                                            </p>
+
                                         </div>
-                                        <div
-                                            class="absolute top-0.5 left-0.5 w-5 h-5 bg-slate-300 rounded-full shadow transition-transform peer-checked:translate-x-5 peer-checked:bg-white">
+
+                                        <div class="relative shrink-0 ml-4">
+
+                                            <input type="checkbox" name="fijado" value="1"
+                                                x-model="avisoSeleccionado.fijado" class="sr-only peer">
+
+                                            <div
+                                                class="w-11 h-6 bg-slate-800 border border-slate-700 rounded-full transition-colors peer-checked:bg-blue-600 peer-checked:border-blue-500">
+                                            </div>
+
+                                            <div
+                                                class="absolute top-0.5 left-0.5 w-5 h-5 bg-slate-300 rounded-full shadow transition-transform peer-checked:translate-x-5 peer-checked:bg-white">
+                                            </div>
+
                                         </div>
-                                    </div>
-                                </label>
+
+                                    </label>
+
+                                </div>
+
                             </div>
+
+                            <div class="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-slate-800">
+
+                                <button type="button" @click="cerrarModales()"
+                                    class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-white transition">
+
+                                    Cancelar
+
+                                </button>
+
+                                <button type="submit"
+                                    class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30 hover:opacity-90 transition">
+
+                                    Guardar cambios
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </template>
+
                 </div>
-                <div class="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-slate-800">
-                    <button type="button" @click="cerrarModales()"
-                        class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-white transition">
-                        Cancelar
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/30 hover:opacity-90 transition">
-                        Guardar cambios
-                    </button>
-                </div>
-                </form>
-                </template>
+
             </div>
         </div>
         <div x-show="modalEliminar" x-cloak x-transition.opacity @keydown.escape.window="cerrarModales()"

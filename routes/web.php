@@ -21,17 +21,12 @@ use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\MfaController;
 use App\Http\Controllers\ObtenerusuariosController;
 
-Route::post('/login', [LoginController::class, 'Login'])
-    ->name('login.process');
 
-Route::post('/tickets/{ticket}/comentarios', [TicketComentarioController::class, 'store'])
-    ->name('tickets.comentarios.store');
+Route::post(
+    '/login',
+    [LoginController::class, 'Login']
+)->name('login.process');
 
-Route::get('/tickets/{ticket}/comentarios', [TicketComentarioController::class, 'index'])
-    ->name('tickets.comentarios.index');
-
-Route::post('/tickets/{ticket}/tomar', [MisticketsController::class, 'tomar'])
-    ->name('tickets.tomar');
 
 Route::post('/logout', function (Request $request) {
 
@@ -50,6 +45,7 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/olvidecontraseña', function () {
         return view('forget-password');
     })->name('olvidecontraseña');
+
 
     Route::post('/olvidecontraseña', function (Request $request) {
 
@@ -76,17 +72,17 @@ Route::middleware(['guest'])->group(function () {
     })->name('password.email');
 
 
-    Route::get('/reset-password/{token}', function (
-        string $token,
-        Request $request
-    ) {
+    Route::get(
+        '/reset-password/{token}',
+        function (string $token, Request $request) {
 
-        return view('reset-password', [
-            'token' => $token,
-            'email' => $request->email,
-        ]);
+            return view('reset-password', [
+                'token' => $token,
+                'email' => $request->email,
+            ]);
 
-    })->name('password.reset');
+        }
+    )->name('password.reset');
 
 
     Route::post('/reset-password', function (Request $request) {
@@ -132,184 +128,314 @@ Route::middleware(['guest'])->group(function () {
         }
 
         return back()->withErrors([
-            'email' => 'El enlace para restablecer la contraseña no es válido o ha expirado.',
+            'email' => 'El enlace para restablecer tu contraseña no es válido o ha expirado.',
         ]);
 
     })->name('password.update');
 
 
-    Route::get('/conocer-mas', function () {
-        return view('about');
-    })->name('about');
+    Route::get(
+        '/conocer-mas',
+        function () {
+            return view('about');
+        }
+    )->name('about');
 
 
-    Route::get('/login', function () {
-        return view('login');
-    })->name('login');
+    Route::get(
+        '/login',
+        function () {
+            return view('login');
+        }
+    )->name('login');
 
 
-    Route::get('/', function () {
-        return view('welcome');
-    })->name('welcome');
+    Route::get(
+        '/',
+        function () {
+            return view('welcome');
+        }
+    )->name('welcome');
+
+        Route::post(
+        '/login/mfa/verificar',
+        [MfaController::class, 'verificar']
+    )->name('mfa.verificar');
 
 });
 
 
-Route::patch('/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
-    ->middleware('auth')
-    ->name('notificaciones.marcarLeidas');
-
-    Route::post(
-    '/login/mfa/verificar',
-    [MfaController::class, 'verificar']
-)->name('mfa.verificar');
-
-
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', [UsuarioController::class, 'index'])
-        ->name('dashboard');
+    Route::post(
+        '/tickets/{ticket}/comentarios',
+        [TicketComentarioController::class, 'store']
+    )->name('tickets.comentarios.store');
 
-    Route::get('/dashboard/tickets', [TicketController::class, 'create'])
-        ->name('ticketusuario');
 
-    Route::post('/dashboard/tickets', [TicketController::class, 'store'])
-        ->name('ticketusuario.store');
+    Route::get(
+        '/tickets/{ticket}/comentarios',
+        [TicketComentarioController::class, 'index']
+    )->name('tickets.comentarios.index');
 
-    Route::get('/dashboard/tickets/{ticket}', [UsuarioController::class, 'verTicket'])
-        ->name('ticketusuario.detalles');
 
-    Route::get('/dashboard/mistickets', [MisticketsController::class, 'create'])
-        ->name('misticketusuario');
-
-    Route::get('/dashboard/avisos', [AvisosusuarioController::class, 'create'])
-        ->name('avisosusuario');
-
-    Route::get('/dashboard/perfil', [PerfilController::class, 'create'])
-        ->name('perfilusuario');
-
-    Route::put('/dashboard/perfil/foto', [PerfilController::class, 'update'])
-        ->name('actualizarfoto');
-
-    Route::put('/dashboard/perfil/password', [PerfilController::class, 'actualizarPassword'])
-    ->middleware('auth')
-    ->name('perfil.password.update');
-
-    Route::delete('/dashboard/perfil/foto', [PerfilController::class, 'delete'])
-        ->name('eliminarfoto');
-        
-
-    Route::post('/dashboard/solicitar-cambio', [PerfilController::class, 'solicitarCambio'])
-        ->name('solicitar.cambio.store');
-
-        Route::get(
+    Route::get(
         '/dashboard/perfil/mfa/configurar',
         [MfaController::class, 'configurar']
     )->name('usuario.mfa.configurar');
+
 
     Route::post(
         '/dashboard/perfil/mfa/verificar-activacion',
         [MfaController::class, 'verificarActivacion']
     )->name('usuario.mfa.verificar.activacion');
 
+
     Route::get(
-    '/perfil/mfa/configurar',
-    [MfaController::class, 'configurar']
-)->name('mfa.configurar');
+        '/perfil/mfa/configurar',
+        [MfaController::class, 'configurar']
+    )->name('mfa.configurar');
 
-Route::post(
-    '/perfil/mfa/verificar-activacion',
-    [MfaController::class, 'verificarActivacion']
-)->name('mfa.verificar.activacion');
 
-Route::post(
-    '/perfil/mfa/desactivar',
-    [MfaController::class, 'desactivar']
-)->name('mfa.desactivar');
+    Route::post(
+        '/perfil/mfa/verificar-activacion',
+        [MfaController::class, 'verificarActivacion']
+    )->name('mfa.verificar.activacion');
+
+
+    Route::post(
+        '/perfil/mfa/desactivar',
+        [MfaController::class, 'desactivar']
+    )->name('mfa.desactivar');
+
+
+    Route::patch(
+        '/notificaciones/marcar-leidas',
+        [NotificacionController::class, 'marcarLeidas']
+    )->name('notificaciones.marcarLeidas');
+
+});
+
+
+Route::middleware(['auth', 'role:no-admin'])->group(function () {
+
+    Route::get(
+        '/dashboard',
+        [UsuarioController::class, 'index']
+    )->name('dashboard');
+
+
+    Route::get(
+        '/dashboard/tickets',
+        [ticketController::class, 'create']
+    )->name('ticketusuario');
+
+
+    Route::post(
+        '/dashboard/tickets',
+        [ticketController::class, 'store']
+    )->name('ticketusuario.store');
+
+
+    Route::get(
+        '/dashboard/tickets/{ticket}',
+        [UsuarioController::class, 'verTicket']
+    )->name('ticketusuario.detalles');
+
+
+    Route::get(
+        '/dashboard/mistickets',
+        [MisticketsController::class, 'create']
+    )->name('misticketusuario');
+
+
+    Route::get(
+        '/dashboard/avisos',
+        [AvisosusuarioController::class, 'create']
+    )->name('avisosusuario');
+
+
+    Route::get(
+        '/dashboard/perfil',
+        [PerfilController::class, 'create']
+    )->name('perfilusuario');
+
+
+    Route::put(
+        '/dashboard/perfil/foto',
+        [PerfilController::class, 'update']
+    )->name('actualizarfoto');
+
+
+    Route::put(
+        '/dashboard/perfil/password',
+        [PerfilController::class, 'actualizarPassword']
+    )->name('perfil.password.update');
+
+
+    Route::delete(
+        '/dashboard/perfil/foto',
+        [PerfilController::class, 'delete']
+    )->name('eliminarfoto');
+
+
+    Route::post(
+        '/dashboard/solicitar-cambio',
+        [PerfilController::class, 'solicitarCambio']
+    )->name('solicitar.cambio.store');
 
 });
 
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
-    Route::get('/tecnologias', [TecnologiasController::class, 'index'])
-        ->name('tecnologias');
+    Route::get(
+        '/tecnologias',
+        [TecnologiasController::class, 'index']
+    )->name('tecnologias');
 
-    Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion'])
-        ->name('tecnologias.evolucion');
 
-    Route::get('/tecnologias/tickets', [MisticketsController::class, 'tecnologias'])
-        ->name('tickettecnologias');
+    Route::get(
+        '/tecnologias/evolucion',
+        [TecnologiasController::class, 'evolucion']
+    )->name('tecnologias.evolucion');
+
+
+    Route::get(
+        '/tecnologias/tickets',
+        [MisticketsController::class, 'tecnologias']
+    )->name('tickettecnologias');
+
+
+    Route::post(
+        '/tickets/{ticket}/tomar',
+        [MisticketsController::class, 'tomar']
+    )->name('tickets.tomar');
+
 
     Route::post(
         '/tecnologias/tickets/{ticket}/solucion',
         [SolucionController::class, 'store']
     )->name('tickets.solucion.store');
 
-    Route::get('/tecnologias/avisos', [AvisosController::class, 'index'])
-        ->name('avisostecnologias');
 
-    Route::put('/tecnologias/avisos/{aviso}', [AvisosController::class, 'update'])
-        ->name('avisos.update');
+    Route::get(
+        '/tecnologias/avisos',
+        [AvisosController::class, 'index']
+    )->name('avisostecnologias');
 
-    Route::post('/tecnologias/avisos', [AvisosController::class, 'store'])
-        ->name('avisos.store');
 
-    Route::delete('/tecnologias/avisos/{aviso}', [AvisosController::class, 'destroy'])
-        ->name('avisos.destroy');
+    Route::post(
+        '/tecnologias/avisos',
+        [AvisosController::class, 'store']
+    )->name('avisos.store');
 
-    Route::get('/tecnologias/avisos/{aviso}', [AvisosController::class, 'show'])
-        ->name('avisos.show');
+
+    Route::get(
+        '/tecnologias/avisos/{aviso}',
+        [AvisosController::class, 'show']
+    )->name('avisos.show');
+
+
+    Route::put(
+        '/tecnologias/avisos/{aviso}',
+        [AvisosController::class, 'update']
+    )->name('avisos.update');
+
+
+    Route::delete(
+        '/tecnologias/avisos/{aviso}',
+        [AvisosController::class, 'destroy']
+    )->name('avisos.destroy');
+
 
     Route::get(
         '/tecnologias/cambios',
         [SolicitudCambioController::class, 'index']
     )->name('cambiostecnologias');
 
+
     Route::post(
         '/tecnologias/cambios/{solicitud}/aprobar',
         [SolicitudCambioController::class, 'aprobar']
     )->name('cambios.aprobar');
+
 
     Route::post(
         '/tecnologias/cambios/{solicitud}/rechazar',
         [SolicitudCambioController::class, 'rechazar']
     )->name('cambios.rechazar');
 
-    Route::get('/tecnologias/perfil', [PerfilController::class, 'create'])
-        ->name('perfiltecnologias');
 
-    Route::put('/tecnologias/perfil/foto', [PerfilController::class, 'update'])
-        ->name('perfil.update');
+    Route::get(
+        '/tecnologias/perfil',
+        [PerfilController::class, 'create']
+    )->name('perfiltecnologias');
 
-    Route::delete('/tecnologias/perfil/foto', [PerfilController::class, 'delete'])
-        ->name('perfil.delete');
-
-    Route::put('/tecnologias/perfil', [PerfilController::class, 'updateTecnologias'])
-        ->name('tecnologias.perfil.update');
-
-Route::put('/tecnologias/perfil/password', [PerfilController::class, 'actualizarPassword'])
-    ->name('tecnologias.perfil.password.update');
-    
-Route::get('/tecnologias/usuarios', [ObtenerusuariosController::class, 'index'])
-    ->name('usuarios.tecnologias');
-    Route::get('/tecnologias/usuarios/{login}', [ObtenerusuariosController::class, 'show'])
-    ->name('usuarios.show');
-
-    Route::delete('/tecnologias/usuarios/{login}', [ObtenerusuariosController::class, 'destroy'])
-    ->name('usuarios.eliminar');
 
     Route::put(
-    'tecnologias/usuarios/{login}',
-    [ObtenerusuariosController::class, 'update']
-)->name('usuarios.update');
-Route::get('/tecnologias/empresas', [ObtenerusuariosController::class, 'empresas'])
-    ->name('tecnologias.empresas');
+        '/tecnologias/perfil/foto',
+        [PerfilController::class, 'update']
+    )->name('perfil.update');
 
-Route::get('/tecnologias/oficinas/{empresaId}', [ObtenerusuariosController::class, 'oficinasPorEmpresa'])
-    ->name('tecnologias.oficinas');
 
-Route::get('/tecnologias/departamentos/{oficinaId}', [ObtenerusuariosController::class, 'departamentosPorOficina'])
-    ->name('tecnologias.departamentos');
+    Route::delete(
+        '/tecnologias/perfil/foto',
+        [PerfilController::class, 'delete']
+    )->name('perfil.delete');
+
+
+    Route::put(
+        '/tecnologias/perfil',
+        [PerfilController::class, 'updateTecnologias']
+    )->name('tecnologias.perfil.update');
+
+
+    Route::put(
+        '/tecnologias/perfil/password',
+        [PerfilController::class, 'actualizarPassword']
+    )->name('tecnologias.perfil.password.update');
+
+
+    Route::get(
+        '/tecnologias/usuarios',
+        [ObtenerusuariosController::class, 'index']
+    )->name('usuarios.tecnologias');
+
+
+    Route::get(
+        '/tecnologias/usuarios/{login}',
+        [ObtenerusuariosController::class, 'show']
+    )->name('usuarios.show');
+
+
+    Route::delete(
+        '/tecnologias/usuarios/{login}',
+        [ObtenerusuariosController::class, 'destroy']
+    )->name('usuarios.eliminar');
+
+
+    Route::put(
+        '/tecnologias/usuarios/{login}',
+        [ObtenerusuariosController::class, 'update']
+    )->name('usuarios.update');
+
+
+    Route::get(
+        '/tecnologias/empresas',
+        [ObtenerusuariosController::class, 'empresas']
+    )->name('tecnologias.empresas');
+
+
+    Route::get(
+        '/tecnologias/oficinas/{empresaId}',
+        [ObtenerusuariosController::class, 'oficinasPorEmpresa']
+    )->name('tecnologias.oficinas');
+
+
+    Route::get(
+        '/tecnologias/departamentos/{oficinaId}',
+        [ObtenerusuariosController::class, 'departamentosPorOficina']
+    )->name('tecnologias.departamentos');
 
 });

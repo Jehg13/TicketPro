@@ -22,6 +22,7 @@ class Aviso extends Model
         'fijado',
         'archivo',
         'publicado_por',
+        'estado'
     ];
 
     protected $casts = [

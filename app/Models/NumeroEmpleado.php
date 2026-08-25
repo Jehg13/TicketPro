@@ -12,4 +12,13 @@ class NumeroEmpleado extends Model
         'login',
         'numero_empleado',
     ];
+
+     public function usuario()
+    {
+        return $this->belongsTo(
+            User::class,
+            'login',
+            'login'
+        );
+    }
 }

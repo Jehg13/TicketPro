@@ -7,7 +7,7 @@
 
     <title>Crear nuevo ticket - TicketPro</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/vistapreviaarchivos.js', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -791,6 +791,100 @@
                                             Equipo
                                         </option>
 
+                                        <option value="Impresoras"
+                                            {{ old('tipo_falla') == 'Impresoras' ? 'selected' : '' }}>
+                                            Impresoras
+                                        </option>
+
+                                        <option value="Perifericos"
+                                            {{ old('tipo_falla') == 'Perifericos' ? 'selected' : '' }}>
+                                            Periféricos
+                                        </option>
+
+                                        <option value="Internet"
+                                            {{ old('tipo_falla') == 'Internet' ? 'selected' : '' }}>
+                                            Internet
+                                        </option>
+
+                                        <option value="Correo electronico"
+                                            {{ old('tipo_falla') == 'Correo electronico' ? 'selected' : '' }}>
+                                            Correo electrónico
+                                        </option>
+
+                                        <option value="Acceso a sistemas"
+                                            {{ old('tipo_falla') == 'Acceso a sistemas' ? 'selected' : '' }}>
+                                            Acceso a sistemas
+                                        </option>
+
+                                        <option value="Usuarios y contrasenas"
+                                            {{ old('tipo_falla') == 'Usuarios y contrasenas' ? 'selected' : '' }}>
+                                            Usuarios y contraseñas
+                                        </option>
+
+                                        <option value="Telefonia"
+                                            {{ old('tipo_falla') == 'Telefonia' ? 'selected' : '' }}>
+                                            Telefonía
+                                        </option>
+
+                                        <option value="Camaras"
+                                            {{ old('tipo_falla') == 'Camaras' ? 'selected' : '' }}>
+                                            Cámaras
+                                        </option>
+
+                                        <option value="Sistemas de seguridad"
+                                            {{ old('tipo_falla') == 'Sistemas de seguridad' ? 'selected' : '' }}>
+                                            Sistemas de seguridad
+                                        </option>
+
+                                        <option value="Servidor"
+                                            {{ old('tipo_falla') == 'Servidor' ? 'selected' : '' }}>
+                                            Servidor
+                                        </option>
+
+                                        <option value="Base de datos"
+                                            {{ old('tipo_falla') == 'Base de datos' ? 'selected' : '' }}>
+                                            Base de datos
+                                        </option>
+
+                                        <option value="Aplicaciones"
+                                            {{ old('tipo_falla') == 'Aplicaciones' ? 'selected' : '' }}>
+                                            Aplicaciones
+                                        </option>
+
+                                        <option value="Sistema operativo"
+                                            {{ old('tipo_falla') == 'Sistema operativo' ? 'selected' : '' }}>
+                                            Sistema operativo
+                                        </option>
+
+                                        <option value="Configuracion"
+                                            {{ old('tipo_falla') == 'Configuracion' ? 'selected' : '' }}>
+                                            Configuración
+                                        </option>
+
+                                        <option value="Cuenta de usuario"
+                                            {{ old('tipo_falla') == 'Cuenta de usuario' ? 'selected' : '' }}>
+                                            Cuenta de usuario
+                                        </option>
+
+                                        <option value="Permisos"
+                                            {{ old('tipo_falla') == 'Permisos' ? 'selected' : '' }}>
+                                            Permisos
+                                        </option>
+
+                                        <option value="Respaldos"
+                                            {{ old('tipo_falla') == 'Respaldos' ? 'selected' : '' }}>
+                                            Respaldos
+                                        </option>
+
+                                        <option value="Mantenimiento"
+                                            {{ old('tipo_falla') == 'Mantenimiento' ? 'selected' : '' }}>
+                                            Mantenimiento
+                                        </option>
+
+                                        <option value="Otro" {{ old('tipo_falla') == 'Otro' ? 'selected' : '' }}>
+                                            Otro
+                                        </option>
+
                                     </select>
 
                                     <div
@@ -823,13 +917,17 @@
                                 <div class="flex flex-wrap gap-2">
 
                                     <label
-                                        class="flex items-center gap-1.5 px-3 py-2 border border-red-500/50 rounded-lg cursor-pointer hover:bg-red-500/10 transition">
+                                        class="flex items-center gap-1.5 px-3 py-2 border border-red-500/50 rounded-lg cursor-pointer transition
+               hover:bg-red-500/10
+               has-[:checked]:bg-red-500/20
+               has-[:checked]:border-red-500
+               has-[:checked]:shadow-[0_0_12px_rgba(239,68,68,0.15)]">
 
                                         <input type="radio" name="prioridad" class="hidden" value="Critica"
                                             {{ old('prioridad') == 'Critica' ? 'checked' : '' }}>
 
-                                        <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5 text-red-500 transition-transform has-[:checked]:scale-110"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
@@ -843,14 +941,19 @@
 
                                     </label>
 
+
                                     <label
-                                        class="flex items-center gap-1.5 px-3 py-2 border border-orange-500/50 rounded-lg cursor-pointer hover:bg-orange-500/10 transition">
+                                        class="flex items-center gap-1.5 px-3 py-2 border border-orange-500/50 rounded-lg cursor-pointer transition
+               hover:bg-orange-500/10
+               has-[:checked]:bg-orange-500/20
+               has-[:checked]:border-orange-500
+               has-[:checked]:shadow-[0_0_12px_rgba(249,115,22,0.15)]">
 
                                         <input type="radio" name="prioridad" class="hidden" value="Alta"
                                             {{ old('prioridad') == 'Alta' ? 'checked' : '' }}>
 
-                                        <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5 text-orange-500 transition-transform has-[:checked]:scale-110"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                 d="M5 10l7-7m0 0l7 7m-7-7v18">
@@ -864,14 +967,19 @@
 
                                     </label>
 
+
                                     <label
-                                        class="flex items-center gap-1.5 px-3 py-2 border border-yellow-500/50 rounded-lg cursor-pointer hover:bg-yellow-500/10 transition">
+                                        class="flex items-center gap-1.5 px-3 py-2 border border-yellow-500/50 rounded-lg cursor-pointer transition
+               hover:bg-yellow-500/10
+               has-[:checked]:bg-yellow-500/20
+               has-[:checked]:border-yellow-500
+               has-[:checked]:shadow-[0_0_12px_rgba(234,179,8,0.15)]">
 
                                         <input type="radio" name="prioridad" class="hidden" value="Media"
                                             {{ old('prioridad') == 'Media' ? 'checked' : '' }}>
 
-                                        <svg class="w-3.5 h-3.5 text-yellow-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5 text-yellow-500 transition-transform has-[:checked]:scale-110"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                                 d="M20 12H4">
@@ -885,8 +993,13 @@
 
                                     </label>
 
+
                                     <label
-                                        class="flex items-center gap-1.5 px-3 py-2 border border-green-500/50 rounded-lg cursor-pointer hover:bg-green-500/10 transition">
+                                        class="flex items-center gap-1.5 px-3 py-2 border border-green-500/50 rounded-lg cursor-pointer transition
+               hover:bg-green-500/10
+               has-[:checked]:bg-green-500/20
+               has-[:checked]:border-green-500
+               has-[:checked]:shadow-[0_0_12px_rgba(34,197,94,0.15)]">
 
                                         <input type="radio" name="prioridad" class="hidden" value="Normal"
                                             {{ old('prioridad', 'Normal') == 'Normal' ? 'checked' : '' }}>
@@ -1109,10 +1222,11 @@
                                         JPG, JPEG, PNG, PDF o MP4
                                     </p>
 
-                                    <input type="file" name="evidencia[]" multiple class="hidden"
-                                        accept=".jpg,.jpeg,.png,.pdf,.mp4">
+                                    <input id="evidenciaInput" type="file" name="evidencia[]" multiple
+                                        class="hidden" accept=".jpg,.jpeg,.png,.pdf,.mp4">
 
                                 </label>
+
 
                                 @error('evidencia.*')
                                     <p class="text-red-400 text-xs mt-1">
@@ -1120,8 +1234,12 @@
                                     </p>
                                 @enderror
 
-                            </div>
 
+                                <div id="evidenciasPreview"
+                                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4 hidden">
+                                </div>
+
+                            </div>
                         </div>
 
                         <div class="mt-8 flex flex-col sm:flex-row justify-end gap-3">

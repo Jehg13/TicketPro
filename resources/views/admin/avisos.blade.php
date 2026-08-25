@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TicketPro - Nuevo Aviso</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/vistapreviaarchivos', 'resources/js/app.js'])
     <script>
         window.departamentos = @json($departamentos);
         window.usuarios = @json($usuarios);
@@ -747,203 +747,212 @@
                                 </div>
                             </div>
                             <div class="mb-6">
-    <label class="block text-xs font-semibold text-slate-300 mb-2">
-        Aplicar a
-    </label>
-    <div class="relative">
-        <select name="aplica_a" x-model="aplicaA" required
-            class="w-full appearance-none bg-[#070b19] border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            <option value="todos">
-                Todos los usuarios
-            </option>
-            <option value="oficina">
-                Ubicaciones / Oficinas
-            </option>
-            <option value="departamento">
-                Departamentos
-            </option>
-            <option value="usuarios">
-                Usuarios específicos
-            </option>
-        </select>
-        <i data-lucide="users-round"
-            class="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none"></i>
-        <i data-lucide="chevron-down"
-            class="w-4 h-4 text-slate-500 absolute right-3.5 top-3 pointer-events-none"></i>
-    </div>
-    <div x-show="aplicaA === 'todos'" x-cloak class="mt-3">
-        <div class="flex items-start gap-3 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-            <i data-lucide="users" class="w-5 h-5 text-blue-400 mt-0.5 shrink-0"></i>
-            <div>
-                <p class="text-xs font-semibold text-white">
-                    Todos los usuarios
-                </p>
-                <p class="text-[10px] text-slate-500 mt-1">
-                    El aviso será visible para todos los usuarios pertenecientes a tu empresa.
-                </p>
-            </div>
-        </div>
-    </div>
-    <div x-show="aplicaA === 'oficina'" x-cloak class="mt-3">
-        <label class="block text-[11px] font-semibold text-slate-400 mb-2">
-            Seleccionar ubicaciones / oficinas
-        </label>
-        <div class="bg-[#070b19] border border-slate-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-1">
-            @forelse($oficinas as $oficina)
-                <label class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
-                    <input type="checkbox"
-                        name="afecta_a[]"
-                        value="{{ $oficina->id }}"
-                        :disabled="aplicaA !== 'oficina'"
-                        {{ in_array((string) $oficina->id, array_map('strval', old('afecta_a', []))) ? 'checked' : '' }}
-                        class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
-                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                        <i data-lucide="building" class="w-4 h-4 text-blue-400"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs font-medium text-white">
-                            {{ $oficina->nombre }}
-                        </p>
-                        <p class="text-[9px] text-slate-500">
-                            Ubicación / Oficina
-                        </p>
-                    </div>
-                </label>
-            @empty
-                <div class="p-5 text-center">
-                    <i data-lucide="building"
-                        class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
-                    <p class="text-xs text-slate-500">
-                        No hay oficinas disponibles.
-                    </p>
-                </div>
-            @endforelse
-        </div>
-        <div class="flex items-start gap-2 mt-2">
-            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 mt-0.5"></i>
-            <p class="text-[10px] text-slate-500">
-                Puedes seleccionar una o varias oficinas. Solo aparecen oficinas de tu empresa.
-            </p>
-        </div>
-        @error('afecta_a')
-            <p class="text-[10px] text-rose-400 mt-1">
-                {{ $message }}
-            </p>
-        @enderror
-    </div>
-    <div x-show="aplicaA === 'departamento'" x-cloak class="mt-3">
-        <label class="block text-[11px] font-semibold text-slate-400 mb-2">
-            Seleccionar departamentos
-        </label>
-        <div class="bg-[#070b19] border border-slate-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-1">
-            @forelse($departamentos as $departamento)
-                <label class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
-                    <input type="checkbox"
-                        name="afecta_a[]"
-                        value="{{ $departamento->id }}"
-                        :disabled="aplicaA !== 'departamento'"
-                        {{ in_array((string) $departamento->id, array_map('strval', old('afecta_a', []))) ? 'checked' : '' }}
-                        class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
-                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                        <i data-lucide="building-2" class="w-4 h-4 text-blue-400"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs font-medium text-white">
-                            {{ $departamento->nombre }}
-                        </p>
-                        @if ($departamento->oficina)
-                            <p class="text-[9px] text-slate-500">
-                                {{ $departamento->oficina->nombre }}
-                            </p>
-                        @endif
-                    </div>
-                </label>
-            @empty
-                <div class="p-5 text-center">
-                    <i data-lucide="building-2"
-                        class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
-                    <p class="text-xs text-slate-500">
-                        No hay departamentos disponibles.
-                    </p>
-                </div>
-            @endforelse
-        </div>
-        <div class="flex items-start gap-2 mt-2">
-            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 mt-0.5"></i>
-            <p class="text-[10px] text-slate-500">
-                Puedes seleccionar uno o varios departamentos. Solo aparecen departamentos de tu empresa.
-            </p>
-        </div>
-        @error('afecta_a')
-            <p class="text-[10px] text-rose-400 mt-1">
-                {{ $message }}
-            </p>
-        @enderror
-    </div>
-    <div x-show="aplicaA === 'usuarios'" x-cloak class="mt-3">
-        <label class="block text-[11px] font-semibold text-slate-400 mb-2">
-            Seleccionar usuarios
-        </label>
-        <div class="bg-[#070b19] border border-slate-800 rounded-xl p-3 max-h-72 overflow-y-auto space-y-1">
-            @forelse($usuarios as $usuario)
-                <label class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
-                    <input type="checkbox"
-                        name="afecta_a[]"
-                        value="{{ $usuario->login }}"
-                        :disabled="aplicaA !== 'usuarios'"
-                        {{ in_array((string) $usuario->login, array_map('strval', old('afecta_a', []))) ? 'checked' : '' }}
-                        class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
-                    <div class="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
-                        <i data-lucide="user-round" class="w-4 h-4 text-indigo-400"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs font-medium text-white truncate">
-                            {{ $usuario->name }}
-                        </p>
-                        <p class="text-[9px] text-slate-500 truncate">
-                            {{ $usuario->login }}
-                        </p>
-                        @if ($usuario->departamento)
-                            <p class="text-[9px] text-slate-500 truncate">
-                                {{ $usuario->departamento->nombre }}
-                                @if ($usuario->departamento->oficina)
-                                    · {{ $usuario->departamento->oficina->nombre }}
-                                @endif
-                            </p>
-                        @endif
-                    </div>
-                </label>
-            @empty
-                <div class="p-5 text-center">
-                    <i data-lucide="users"
-                        class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
-                    <p class="text-xs text-slate-500">
-                        No hay usuarios disponibles.
-                    </p>
-                </div>
-            @endforelse
-        </div>
-        <div class="flex items-start gap-2 mt-2">
-            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 mt-0.5"></i>
-            <p class="text-[10px] text-slate-500">
-                Puedes seleccionar uno o varios usuarios. Solo aparecen usuarios de tu empresa.
-            </p>
-        </div>
-        @error('afecta_a')
-            <p class="text-[10px] text-rose-400 mt-1">
-                {{ $message }}
-            </p>
-        @enderror
-    </div>
-    <p class="text-[11px] text-slate-500 mt-2">
-        Selecciona a qué usuarios, ubicaciones o departamentos se mostrará este aviso.
-    </p>
-    @error('aplica_a')
-        <p class="text-[10px] text-rose-400 mt-1">
-            {{ $message }}
-        </p>
-    @enderror
-</div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Aplicar a
+                                </label>
+                                <div class="relative">
+                                    <select name="aplica_a" x-model="aplicaA" required
+                                        class="w-full appearance-none bg-[#070b19] border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                                        <option value="todos">
+                                            Todos los usuarios
+                                        </option>
+                                        <option value="oficina">
+                                            Ubicaciones / Oficinas
+                                        </option>
+                                        <option value="departamento">
+                                            Departamentos
+                                        </option>
+                                        <option value="usuarios">
+                                            Usuarios específicos
+                                        </option>
+                                    </select>
+                                    <i data-lucide="users-round"
+                                        class="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none"></i>
+                                    <i data-lucide="chevron-down"
+                                        class="w-4 h-4 text-slate-500 absolute right-3.5 top-3 pointer-events-none"></i>
+                                </div>
+                                <div x-show="aplicaA === 'todos'" x-cloak class="mt-3">
+                                    <div
+                                        class="flex items-start gap-3 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                        <i data-lucide="users" class="w-5 h-5 text-blue-400 mt-0.5 shrink-0"></i>
+                                        <div>
+                                            <p class="text-xs font-semibold text-white">
+                                                Todos los usuarios
+                                            </p>
+                                            <p class="text-[10px] text-slate-500 mt-1">
+                                                El aviso será visible para todos los usuarios pertenecientes a tu
+                                                empresa.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="aplicaA === 'oficina'" x-cloak class="mt-3">
+                                    <label class="block text-[11px] font-semibold text-slate-400 mb-2">
+                                        Seleccionar ubicaciones / oficinas
+                                    </label>
+                                    <div
+                                        class="bg-[#070b19] border border-slate-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-1">
+                                        @forelse($oficinas as $oficina)
+                                            <label
+                                                class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
+                                                <input type="checkbox" name="afecta_a[]" value="{{ $oficina->id }}"
+                                                    :disabled="aplicaA !== 'oficina'"
+                                                    {{ in_array((string) $oficina->id, array_map('strval', old('afecta_a', []))) ? 'checked' : '' }}
+                                                    class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
+                                                <div
+                                                    class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                                                    <i data-lucide="building" class="w-4 h-4 text-blue-400"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="text-xs font-medium text-white">
+                                                        {{ $oficina->nombre }}
+                                                    </p>
+                                                    <p class="text-[9px] text-slate-500">
+                                                        Ubicación / Oficina
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        @empty
+                                            <div class="p-5 text-center">
+                                                <i data-lucide="building"
+                                                    class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
+                                                <p class="text-xs text-slate-500">
+                                                    No hay oficinas disponibles.
+                                                </p>
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    <div class="flex items-start gap-2 mt-2">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 mt-0.5"></i>
+                                        <p class="text-[10px] text-slate-500">
+                                            Puedes seleccionar una o varias oficinas. Solo aparecen oficinas de tu
+                                            empresa.
+                                        </p>
+                                    </div>
+                                    @error('afecta_a')
+                                        <p class="text-[10px] text-rose-400 mt-1">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                                <div x-show="aplicaA === 'departamento'" x-cloak class="mt-3">
+                                    <label class="block text-[11px] font-semibold text-slate-400 mb-2">
+                                        Seleccionar departamentos
+                                    </label>
+                                    <div
+                                        class="bg-[#070b19] border border-slate-800 rounded-xl p-3 max-h-60 overflow-y-auto space-y-1">
+                                        @forelse($departamentos as $departamento)
+                                            <label
+                                                class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
+                                                <input type="checkbox" name="afecta_a[]"
+                                                    value="{{ $departamento->id }}"
+                                                    :disabled="aplicaA !== 'departamento'"
+                                                    {{ in_array((string) $departamento->id, array_map('strval', old('afecta_a', []))) ? 'checked' : '' }}
+                                                    class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
+                                                <div
+                                                    class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                                                    <i data-lucide="building-2" class="w-4 h-4 text-blue-400"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="text-xs font-medium text-white">
+                                                        {{ $departamento->nombre }}
+                                                    </p>
+                                                    @if ($departamento->oficina)
+                                                        <p class="text-[9px] text-slate-500">
+                                                            {{ $departamento->oficina->nombre }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            </label>
+                                        @empty
+                                            <div class="p-5 text-center">
+                                                <i data-lucide="building-2"
+                                                    class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
+                                                <p class="text-xs text-slate-500">
+                                                    No hay departamentos disponibles.
+                                                </p>
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    <div class="flex items-start gap-2 mt-2">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 mt-0.5"></i>
+                                        <p class="text-[10px] text-slate-500">
+                                            Puedes seleccionar uno o varios departamentos. Solo aparecen departamentos
+                                            de tu empresa.
+                                        </p>
+                                    </div>
+                                    @error('afecta_a')
+                                        <p class="text-[10px] text-rose-400 mt-1">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                                <div x-show="aplicaA === 'usuarios'" x-cloak class="mt-3">
+                                    <label class="block text-[11px] font-semibold text-slate-400 mb-2">
+                                        Seleccionar usuarios
+                                    </label>
+                                    <div
+                                        class="bg-[#070b19] border border-slate-800 rounded-xl p-3 max-h-72 overflow-y-auto space-y-1">
+                                        @forelse($usuarios as $usuario)
+                                            <label
+                                                class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
+                                                <input type="checkbox" name="afecta_a[]"
+                                                    value="{{ $usuario->login }}" :disabled="aplicaA !== 'usuarios'"
+                                                    {{ in_array((string) $usuario->login, array_map('strval', old('afecta_a', []))) ? 'checked' : '' }}
+                                                    class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
+                                                <div
+                                                    class="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
+                                                    <i data-lucide="user-round" class="w-4 h-4 text-indigo-400"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="text-xs font-medium text-white truncate">
+                                                        {{ $usuario->name }}
+                                                    </p>
+                                                    <p class="text-[9px] text-slate-500 truncate">
+                                                        {{ $usuario->login }}
+                                                    </p>
+                                                    @if ($usuario->departamento)
+                                                        <p class="text-[9px] text-slate-500 truncate">
+                                                            {{ $usuario->departamento->nombre }}
+                                                            @if ($usuario->departamento->oficina)
+                                                                · {{ $usuario->departamento->oficina->nombre }}
+                                                            @endif
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            </label>
+                                        @empty
+                                            <div class="p-5 text-center">
+                                                <i data-lucide="users"
+                                                    class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
+                                                <p class="text-xs text-slate-500">
+                                                    No hay usuarios disponibles.
+                                                </p>
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    <div class="flex items-start gap-2 mt-2">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 mt-0.5"></i>
+                                        <p class="text-[10px] text-slate-500">
+                                            Puedes seleccionar uno o varios usuarios. Solo aparecen usuarios de tu
+                                            empresa.
+                                        </p>
+                                    </div>
+                                    @error('afecta_a')
+                                        <p class="text-[10px] text-rose-400 mt-1">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                                <p class="text-[11px] text-slate-500 mt-2">
+                                    Selecciona a qué usuarios, ubicaciones o departamentos se mostrará este aviso.
+                                </p>
+                                @error('aplica_a')
+                                    <p class="text-[10px] text-rose-400 mt-1">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
                         </div>
                         <hr class="border-slate-800/80 my-6">
                         <div>
@@ -1011,29 +1020,45 @@
                                 </div>
                             </div>
                             <div class="mb-6">
+
                                 <label class="block text-xs font-semibold text-slate-300 mb-2">
                                     Adjuntar archivo
                                 </label>
+
                                 <p class="text-[11px] text-slate-400 mb-3">
                                     Puedes adjuntar un documento relacionado con el aviso.
                                 </p>
+
                                 <label
-                                    class="block border-2 border-dashed border-blue-900/60 hover:border-blue-500/50 bg-[#070b19]/60 rounded-xl p-6 text-center cursor-pointer transition">
-                                    <i data-lucide="cloud-upload" class="w-6 h-6 text-blue-400 mx-auto mb-2"></i>
+                                    class="block border-2 border-dashed border-blue-900/60 hover:border-blue-500/50 bg-[#070b19]/60 rounded-xl p-6 text-center cursor-pointer transition group">
+
+                                    <i data-lucide="cloud-upload"
+                                        class="w-6 h-6 text-blue-400 mx-auto mb-2 group-hover:text-blue-300 transition">
+                                    </i>
+
                                     <p class="text-[11px] font-medium text-slate-300">
-                                        Arrastra archivos aquí o haz click para seleccionar
+                                        Arrastra un archivo aquí o haz click para seleccionar
                                     </p>
+
                                     <p class="text-[9px] text-slate-500 mt-1">
                                         JPG, JPEG, PNG, PDF o MP4
                                     </p>
-                                    <input type="file" name="archivo" accept=".jpg,.jpeg,.png,.pdf,.mp4"
-                                        class="hidden">
+
+                                    <input type="file" name="archivo" id="archivoAvisoInput"
+                                        accept=".jpg,.jpeg,.png,.pdf,.mp4" class="hidden">
+
                                 </label>
+
+                                <div id="archivoAvisoPreview"
+                                    class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                </div>
+
                                 @error('archivo')
                                     <p class="text-[10px] text-rose-400 mt-1">
                                         {{ $message }}
                                     </p>
                                 @enderror
+
                             </div>
                             <div class="flex items-center justify-end gap-3 pt-2">
                                 <a href="{{ route('avisostecnologias') }}"
@@ -1771,28 +1796,26 @@
                                     </div>
                                 </div>
                                 <div>
-    <label class="block text-xs font-semibold text-slate-300 mb-2">
-        Aplicar a
-    </label>
-    <select name="aplica_a"
-        x-model="avisoSeleccionado.aplica_a"
-        @change="cambiarDestino()"
-        required
-        class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
-        <option value="todos">
-            Todos los usuarios
-        </option>
-        <option value="oficina">
-            Ubicaciones
-        </option>
-        <option value="departamento">
-            Departamentos
-        </option>
-        <option value="usuarios">
-            Usuarios específicos
-        </option>
-    </select>
-</div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                        Aplicar a
+                                    </label>
+                                    <select name="aplica_a" x-model="avisoSeleccionado.aplica_a"
+                                        @change="cambiarDestino()" required
+                                        class="w-full bg-[#070b19] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
+                                        <option value="todos">
+                                            Todos los usuarios
+                                        </option>
+                                        <option value="oficina">
+                                            Ubicaciones
+                                        </option>
+                                        <option value="departamento">
+                                            Departamentos
+                                        </option>
+                                        <option value="usuarios">
+                                            Usuarios específicos
+                                        </option>
+                                    </select>
+                                </div>
 
                                 <div x-show="avisoSeleccionado.aplica_a === 'oficina'" x-transition
                                     class="bg-[#070b19] border border-slate-800 rounded-xl p-4">

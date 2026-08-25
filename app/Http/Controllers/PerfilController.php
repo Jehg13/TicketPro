@@ -281,109 +281,160 @@ class PerfilController extends Controller
         );
     }
 
-   public function updateTecnologias(Request $request)
-{
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
+    public function updateTecnologias(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-    if (!$user) {
-        abort(401);
-    }
-
-    if (!$this->esAdministradorTI($user)) {
-        abort(
-            403,
-            'No tienes permisos administrativos para modificar esta información.'
-        );
-    }
-
-    $loginActual = $user->login;
-
-    $request->validate([
-        'name' => [
-            'required',
-            'string',
-            'max:255',
-        ],
-        'login' => [
-            'required',
-            'string',
-            'max:100',
-            'unique:users,login,' . $loginActual . ',login',
-        ],
-        'email' => [
-            'required',
-            'email',
-            'max:255',
-            'unique:users,email,' . $loginActual . ',login',
-        ],
-        'phone' => [
-            'nullable',
-            'string',
-            'max:30',
-        ],
-        'departamento' => [
-            'required',
-            'string',
-            'max:255',
-        ],
-        'role' => [
-            'required',
-            'string',
-            'in:Gerente Ti,Soporte Tecnico',
-        ],
-    ]);
-
-    DB::beginTransaction();
-
-    try {
-        $nuevoLogin = trim($request->login);
-
-        $user->name = trim($request->name);
-        $user->login = $nuevoLogin;
-        $user->email = trim($request->email);
-        $user->phone = $request->filled('phone')
-            ? trim($request->phone)
-            : null;
-        $user->role = $request->role;
-
-        $user->save();
-
-        if ($user->departamento) {
-            $user->departamento->nombre = trim($request->departamento);
-            $user->departamento->save();
+        if (!$user) {
+            abort(401);
         }
 
-        if ($loginActual !== $nuevoLogin) {
-            DB::table('numeros_empleado')
-                ->where('login', $loginActual)
-                ->update([
-                    'login' => $nuevoLogin,
-                ]);
-
-            Notificacion::where('login', $loginActual)
-                ->update([
-                    'login' => $nuevoLogin,
-                ]);
+        if (!$this->esAdministradorTI($user)) {
+            abort(
+                403,
+                'No tienes permisos administrativos para modificar esta información.'
+            );
         }
 
-        DB::commit();
+        $loginActual = $user->login;
 
-        return back()->with(
-            'success',
-            'Información personal y laboral actualizada correctamente.'
-        );
-    } catch (\Throwable $e) {
-        DB::rollBack();
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        report($e);
+            'login' => [
+                'required',
+                'string',
+                'max:100',
+                'unique:users,login,' . $loginActual . ',login',
+            ],
 
-        return back()->withInput()->with(
-            'error',
-            'No se pudo actualizar la información.'
-        );
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email,' . $loginActual . ',login',
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'departamento' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'role' => [
+                'required',
+                'string',
+                'in:Gerente Ti,Soporte Tecnico',
+            ],
+
+            'numero_empleado' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $nuevoLogin = trim($request->login);
+
+            $numeroEmpleado = trim(
+                $request->numero_empleado
+            );
+
+            $user->name = trim(
+                $request->name
+            );
+
+            $user->login = $nuevoLogin;
+
+            $user->email = trim(
+                $request->email
+            );
+
+            $user->phone = $request->filled('phone')
+                ? trim($request->phone)
+                : null;
+
+            $user->role = $request->role;
+
+            $user->save();
+
+            if ($user->departamento) {
+                $user->departamento->nombre = trim(
+                    $request->departamento
+                );
+
+                $user->departamento->save();
+            }
+
+            $numeroEmpleadoExiste = DB::table(
+                'numeros_empleado'
+            )
+                ->where(
+                    'login',
+                    $loginActual
+                )
+                ->exists();
+
+            if ($numeroEmpleadoExiste) {
+                DB::table('numeros_empleado')
+                    ->where(
+                        'login',
+                        $loginActual
+                    )
+                    ->update([
+                        'login' => $nuevoLogin,
+                        'numero_empleado' => $numeroEmpleado,
+                    ]);
+            } else {
+                DB::table('numeros_empleado')
+                    ->insert([
+                        'login' => $nuevoLogin,
+                        'numero_empleado' => $numeroEmpleado,
+                    ]);
+            }
+
+            if ($loginActual !== $nuevoLogin) {
+                Notificacion::where(
+                    'login',
+                    $loginActual
+                )->update([
+                    'login' => $nuevoLogin,
+                ]);
+            }
+
+            DB::commit();
+
+            return back()->with(
+                'success',
+                'Información personal y laboral actualizada correctamente.'
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'No se pudo actualizar la información.'
+                );
+        }
     }
-}
 
     public function solicitarCambio(Request $request)
     {
@@ -427,7 +478,6 @@ class PerfilController extends Controller
         }
 
         switch ($request->campo) {
-
             case 'nombre':
                 $valorActual = $user->name;
                 break;
@@ -453,7 +503,12 @@ class PerfilController extends Controller
                 break;
 
             case 'numeroempleado':
-                $valorActual = $user->numeroempleado;
+                $valorActual = DB::table('numeros_empleado')
+                    ->where(
+                        'login',
+                        $user->login
+                    )
+                    ->value('numero_empleado');
                 break;
 
             case 'role':
@@ -505,7 +560,7 @@ class PerfilController extends Controller
             'departamento' =>
                 'departamento',
 
-            'phone' =>
+            'telefono' =>
                 'teléfono',
 
             'usuario' =>
@@ -523,42 +578,41 @@ class PerfilController extends Controller
             ?? $request->campo;
 
         foreach ($administradores as $administrador) {
+            Notificacion::create([
+                'login' =>
+                    $administrador->login,
 
-    Notificacion::create([
-        'login' =>
-            $administrador->login,
+                'tipo' =>
+                    'solicitud_cambio',
 
-        'tipo' =>
-            'solicitud_cambio',
+                'titulo' =>
+                    'Nueva solicitud de cambio',
 
-        'titulo' =>
-            'Nueva solicitud de cambio',
+                'mensaje' =>
+                    $user->name .
+                    ' solicitó cambiar su ' .
+                    $nombreCampo .
+                    '.',
 
-        'mensaje' =>
-            $user->name .
-            ' solicitó cambiar su ' .
-            $nombreCampo .
-            '.',
+                'url' =>
+                    route(
+                        'cambiostecnologias',
+                        [
+                            'solicitud' =>
+                                $solicitud->id,
+                        ]
+                    ),
 
-        'url' =>
-            route(
-                'cambiostecnologias',
-                [
-                    'solicitud' =>
-                        $solicitud->id,
-                ]
-            ),
+                'leida' =>
+                    false,
 
-        'leida' =>
-            false,
+                'icono' =>
+                    'user-cog',
 
-        'icono' =>
-            'user-cog',
-
-        'color' =>
-            'blue',
-    ]);
-}
+                'color' =>
+                    'blue',
+            ]);
+        }
 
         return back()->with(
             'success',

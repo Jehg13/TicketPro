@@ -219,8 +219,42 @@ class AvisosusuarioController extends Controller
         );
 
         $avisos = $avisos
-            ->sortByDesc('fecha_inicio')
-            ->sortByDesc('fijado')
+            ->map(function ($aviso) {
+                $aviso->fijado_activo =
+                    (bool) $aviso->fijado &&
+                    $aviso->fecha_inicio &&
+                    now()->diffInHours(
+                        $aviso->fecha_inicio
+                    ) < 3;
+
+                return $aviso;
+            })
+            ->sort(function ($a, $b) {
+                if (
+                    $a->fijado_activo &&
+                    !$b->fijado_activo
+                ) {
+                    return -1;
+                }
+
+                if (
+                    !$a->fijado_activo &&
+                    $b->fijado_activo
+                ) {
+                    return 1;
+                }
+
+                if (
+                    $a->fijado_activo &&
+                    $b->fijado_activo
+                ) {
+                    return $b->fecha_inicio
+                        <=> $a->fecha_inicio;
+                }
+
+                return $b->fecha_inicio
+                    <=> $a->fecha_inicio;
+            })
             ->values();
 
         $avisosTodos = $avisos->values();

@@ -69,4 +69,13 @@ class User extends Authenticatable
     {
         return $value;
     }
+
+    public function numero_empleado()
+    {
+        return $this->hasOne(
+            NumeroEmpleado::class,
+            'login',
+            'login'
+        );
+    }
 }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Mi Perfil - TicketPro</title>
     <link rel="icon" type="image/png" href="{{ asset('storage/images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/mfa.js', 'resources/js/fotoperfil.js', 'resources/js/app.js', 'alpine.js', 'resources/js/modalcambio.js'])
@@ -784,47 +784,6 @@
 
                                     </div>
 
-
-                                    {{-- ================================================= --}}
-                                    {{-- NÚMERO DE EMPLEADO --}}
-                                    {{-- ================================================= --}}
-
-                                    <div class="space-y-1.5">
-
-                                        <label
-                                            class="flex items-center justify-between text-xs font-semibold text-slate-500">
-
-                                            <span class="flex items-center gap-1.5">
-
-                                                <i data-lucide="badge" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                                Número de empleado
-
-                                            </span>
-
-                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
-
-                                        </label>
-
-
-                                        <div
-                                            class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
-
-                                            <span class="truncate">
-                                                {{ Auth::user()->numeroempleado ?? 'No registrado' }}
-                                            </span>
-
-                                            <span
-                                                class="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap">
-
-                                                Fijo
-
-                                            </span>
-
-                                        </div>
-
-                                    </div>
-
                                 </div>
 
                             </div>
@@ -1031,9 +990,8 @@
 
                                     </div>
 
-
                                     {{-- ================================================= --}}
-                                    {{-- UBICACIÓN FÍSICA --}}
+                                    {{-- NÚMERO DE EMPLEADO --}}
                                     {{-- ================================================= --}}
 
                                     <div class="space-y-1.5">
@@ -1043,9 +1001,9 @@
 
                                             <span class="flex items-center gap-1.5">
 
-                                                <i data-lucide="building" class="w-3.5 h-3.5 text-slate-500"></i>
+                                                <i data-lucide="badge" class="w-3.5 h-3.5 text-slate-500"></i>
 
-                                                Ubicación física
+                                                Número de empleado
 
                                             </span>
 
@@ -1058,7 +1016,7 @@
                                             class="w-full bg-[#030712]/50 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs text-slate-400 flex items-center justify-between gap-3">
 
                                             <span class="truncate">
-                                                Edificio A, piso 2
+                                                {{ Auth::user()->numero_empleado->numero_empleado ?? 'No registrado' }}
                                             </span>
 
                                             <span
@@ -1071,6 +1029,7 @@
                                         </div>
 
                                     </div>
+
                                 </div>
 
                             </div>
@@ -1184,7 +1143,7 @@
                             </button>
 
                         </div>
-                       <div
+                        <div
                             class="mt-3 bg-[#030712] border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
                                 <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
@@ -1590,368 +1549,356 @@
             </form>
 
         </div>
-        
+
 
     </div>
     <div x-show="modalPassword" x-cloak x-transition.opacity
-                        class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        class="fixed inset-0 z-[999] flex items-center justify-center p-4">
 
-                        <!-- Fondo oscuro -->
-                        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="modalPassword = false">
-                        </div>
-
-
-                        <!-- Contenido -->
-                        <div x-show="modalPassword" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95"
-                            x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 scale-100"
-                            x-transition:leave-end="opacity-0 scale-95" @click.stop
-                            class="relative w-full max-w-md bg-[#0b1026] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
-
-                            <!-- Header -->
-                            <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
-
-                                <div class="flex items-center gap-3">
-
-                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                        <i data-lucide="shield" class="w-5 h-5 text-blue-400"></i>
-                                    </div>
-
-                                    <div>
-                                        <h3 class="text-white font-semibold">
-                                            Actualizar contraseña
-                                        </h3>
-
-                                        <p class="text-xs text-slate-400">
-                                            Cambia tu contraseña de acceso
-                                        </p>
-                                    </div>
-
-                                </div>
+        <!-- Fondo oscuro -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="modalPassword = false">
+        </div>
 
 
-                                <!-- Cerrar -->
-                                <button type="button" @click="modalPassword = false"
-                                    class="text-slate-400 hover:text-white transition">
-                                    <i data-lucide="x" class="w-5 h-5"></i>
-                                </button>
+        <!-- Contenido -->
+        <div x-show="modalPassword" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95" @click.stop
+            class="relative w-full max-w-md bg-[#0b1026] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
 
-                            </div>
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
 
+                <div class="flex items-center gap-3">
 
-                            <!-- Body -->
-                            <div class="p-6">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <i data-lucide="shield" class="w-5 h-5 text-blue-400"></i>
+                    </div>
 
-                                <form action="{{ route('perfil.password.update') }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <!-- Contraseña actual -->
-                                    <!-- Contraseña actual -->
-                                    <div class="mb-4">
+                    <div>
+                        <h3 class="text-white font-semibold">
+                            Actualizar contraseña
+                        </h3>
 
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">
-                                            Contraseña actual
-                                        </label>
+                        <p class="text-xs text-slate-400">
+                            Cambia tu contraseña de acceso
+                        </p>
+                    </div>
 
-                                        <input type="password" name="password_actual" required
-                                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                            placeholder="Ingresa tu contraseña actual">
-
-                                        @error('password_actual')
-                                            <p class="text-xs text-red-400 mt-2">
-                                                {{ $message }}
-                                            </p>
-                                        @enderror
-
-                                    </div>
+                </div>
 
 
-                                    <!-- Nueva contraseña -->
-                                    <div class="mb-4">
+                <!-- Cerrar -->
+                <button type="button" @click="modalPassword = false"
+                    class="text-slate-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
 
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">
-                                            Nueva contraseña
-                                        </label>
-
-                                        <input type="password" name="password" required minlength="8"
-                                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                            placeholder="Ingresa tu nueva contraseña">
-
-                                        @error('password')
-                                            <p class="text-xs text-red-400 mt-2">
-                                                {{ $message }}
-                                            </p>
-                                        @enderror
-
-                                    </div>
+            </div>
 
 
-                                    <!-- Confirmar contraseña -->
-                                    <div class="mb-6">
+            <!-- Body -->
+            <div class="p-6">
 
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">
-                                            Confirmar nueva contraseña
-                                        </label>
+                <form action="{{ route('perfil.password.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <!-- Contraseña actual -->
+                    <!-- Contraseña actual -->
+                    <div class="mb-4">
 
-                                        <input type="password" name="password_confirmation" required minlength="8"
-                                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                            placeholder="Confirma tu nueva contraseña">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Contraseña actual
+                        </label>
 
-                                    </div>
+                        <input type="password" name="password_actual" required
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            placeholder="Ingresa tu contraseña actual">
 
-
-                                    <!-- Botones -->
-                                    <div class="flex items-center justify-end gap-3">
-
-                                        <button type="button" @click="modalPassword = false"
-                                            class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
-                                            Cancelar
-                                        </button>
-
-                                        <button type="submit"
-                                            class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition">
-                                            Actualizar contraseña
-                                        </button>
-
-                                    </div>
-
-                                </form>
-
-                            </div>
-
-                        </div>
+                        @error('password_actual')
+                            <p class="text-xs text-red-400 mt-2">
+                                {{ $message }}
+                            </p>
+                        @enderror
 
                     </div>
-                    <div x-show="modalMFA" x-cloak x-transition.opacity
-                        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
 
-                        <div @click.outside="modalMFA = false" x-transition
-                            class="relative w-full max-w-md bg-[#0b1026] border border-blue-900/40 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.20)] p-6">
 
+                    <!-- Nueva contraseña -->
+                    <div class="mb-4">
+
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Nueva contraseña
+                        </label>
+
+                        <input type="password" name="password" required minlength="8"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            placeholder="Ingresa tu nueva contraseña">
+
+                        @error('password')
+                            <p class="text-xs text-red-400 mt-2">
+                                {{ $message }}
+                            </p>
+                        @enderror
+
+                    </div>
+
+
+                    <!-- Confirmar contraseña -->
+                    <div class="mb-6">
+
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Confirmar nueva contraseña
+                        </label>
+
+                        <input type="password" name="password_confirmation" required minlength="8"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            placeholder="Confirma tu nueva contraseña">
+
+                    </div>
+
+
+                    <!-- Botones -->
+                    <div class="flex items-center justify-end gap-3">
+
+                        <button type="button" @click="modalPassword = false"
+                            class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                            class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition">
+                            Actualizar contraseña
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+    <div x-show="modalMFA" x-cloak x-transition.opacity
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+
+        <div @click.outside="modalMFA = false" x-transition
+            class="relative w-full max-w-md bg-[#0b1026] border border-blue-900/40 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.20)] p-6">
+
+            <button type="button" @click="cerrarMFA()"
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <div class="text-center">
+                <div
+                    class="mx-auto flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20">
+                    <i data-lucide="shield-check" class="w-7 h-7 text-blue-400"></i>
+                </div>
+
+                <h3 class="mt-4 text-lg font-bold text-white">
+                    Verificación en dos pasos
+                </h3>
+
+                <p class="mt-1.5 text-sm text-slate-400 leading-relaxed">
+                    Protege tu cuenta utilizando
+                    <span class="text-white font-medium">
+                        Google Authenticator
+                    </span>.
+                </p>
+            </div>
+
+            @if (Auth::user()->mfa !== 'Y')
+                <div class="mt-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                            1
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-white">
+                                Instala Google Authenticator
+                            </p>
+
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Abre la aplicación en tu teléfono.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                            2
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-white">
+                                Escanea el código QR
+                            </p>
+
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Utiliza Google Authenticator para escanearlo.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="mt-4 flex items-center justify-center min-h-[220px] rounded-xl bg-white border border-slate-700 p-4">
+                        <div id="mfaQr" class="w-[220px] h-[220px] flex items-center justify-center"></div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                            3
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-white">
+                                Introduce el código
+                            </p>
+
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Escribe el código de 6 dígitos que aparece en Google Authenticator.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="confirmarMFA()" class="mt-4">
+                        @csrf
+
+                        <label for="codigo_mfa" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                            Código de verificación
+                        </label>
+
+                        <input id="codigo_mfa" name="codigo" type="text" x-model="mfaCodigo"
+                            inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"
+                            placeholder="000000" required
+                            class="w-full bg-[#030712] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white text-center tracking-[0.4em] focus:outline-none focus:border-blue-500">
+
+                        <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
+                        </p>
+
+                        <div class="flex items-center gap-3 mt-5">
                             <button type="button" @click="cerrarMFA()"
-                                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
-                                <i data-lucide="x" class="w-4 h-4"></i>
+                                class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
+                                Cancelar
                             </button>
 
-                            <div class="text-center">
-                                <div
-                                    class="mx-auto flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20">
-                                    <i data-lucide="shield-check" class="w-7 h-7 text-blue-400"></i>
-                                </div>
+                            <button type="submit" :disabled="cargandoMFA"
+                                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
 
-                                <h3 class="mt-4 text-lg font-bold text-white">
-                                    Verificación en dos pasos
-                                </h3>
+                                <i x-show="!cargandoMFA" data-lucide="shield-check" class="w-4 h-4"></i>
 
-                                <p class="mt-1.5 text-sm text-slate-400 leading-relaxed">
-                                    Protege tu cuenta utilizando
-                                    <span class="text-white font-medium">
-                                        Google Authenticator
-                                    </span>.
-                                </p>
-                            </div>
+                                <svg x-show="cargandoMFA" class="animate-spin w-4 h-4" viewBox="0 0 24 24"
+                                    fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4" class="opacity-25">
+                                    </circle>
 
-                            @if (Auth::user()->mfa !== 'Y')
-                                <div class="mt-6">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
-                                            1
-                                        </div>
+                                    <path fill="currentColor" class="opacity-75"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                    </path>
+                                </svg>
 
-                                        <div>
-                                            <p class="text-sm font-semibold text-white">
-                                                Instala Google Authenticator
-                                            </p>
+                                <span x-text="cargandoMFA ? 'Verificando...' : 'Verificar y activar'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @else
+                <div class="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+                        </div>
 
-                                            <p class="text-xs text-slate-500 mt-0.5">
-                                                Abre la aplicación en tu teléfono.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">
+                                Verificación en dos pasos activada
+                            </p>
 
-                                <div class="mt-5">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
-                                            2
-                                        </div>
-
-                                        <div>
-                                            <p class="text-sm font-semibold text-white">
-                                                Escanea el código QR
-                                            </p>
-
-                                            <p class="text-xs text-slate-500 mt-0.5">
-                                                Utiliza Google Authenticator para escanearlo.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        class="mt-4 flex items-center justify-center min-h-[220px] rounded-xl bg-white border border-slate-700 p-4">
-                                        <div id="mfaQr"
-                                            class="w-[220px] h-[220px] flex items-center justify-center"></div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-5">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
-                                            3
-                                        </div>
-
-                                        <div>
-                                            <p class="text-sm font-semibold text-white">
-                                                Introduce el código
-                                            </p>
-
-                                            <p class="text-xs text-slate-500 mt-0.5">
-                                                Escribe el código de 6 dígitos que aparece en Google Authenticator.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <form @submit.prevent="confirmarMFA()" class="mt-4">
-                                        @csrf
-
-                                        <label for="codigo_mfa"
-                                            class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                            Código de verificación
-                                        </label>
-
-                                        <input id="codigo_mfa" name="codigo" type="text" x-model="mfaCodigo"
-                                            inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-                                            pattern="[0-9]{6}" placeholder="000000" required
-                                            class="w-full bg-[#030712] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white text-center tracking-[0.4em] focus:outline-none focus:border-blue-500">
-
-                                        <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
-                                        </p>
-
-                                        <div class="flex items-center gap-3 mt-5">
-                                            <button type="button" @click="cerrarMFA()"
-                                                class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
-                                                Cancelar
-                                            </button>
-
-                                            <button type="submit" :disabled="cargandoMFA"
-                                                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
-
-                                                <i x-show="!cargandoMFA" data-lucide="shield-check"
-                                                    class="w-4 h-4"></i>
-
-                                                <svg x-show="cargandoMFA" class="animate-spin w-4 h-4"
-                                                    viewBox="0 0 24 24" fill="none">
-                                                    <circle cx="12" cy="12" r="10"
-                                                        stroke="currentColor" stroke-width="4" class="opacity-25">
-                                                    </circle>
-
-                                                    <path fill="currentColor" class="opacity-75"
-                                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                                                    </path>
-                                                </svg>
-
-                                                <span
-                                                    x-text="cargandoMFA ? 'Verificando...' : 'Verificar y activar'"></span>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            @else
-                                <div class="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
-                                        </div>
-
-                                        <div>
-                                            <p class="text-sm font-semibold text-white">
-                                                Verificación en dos pasos activada
-                                            </p>
-
-                                            <p class="text-xs text-slate-500 mt-0.5">
-                                                Tu cuenta está protegida con Google Authenticator.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-5">
-                                    <label for="codigo_desactivar_mfa"
-                                        class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        Código de Google Authenticator
-                                    </label>
-
-                                    <input id="codigo_desactivar_mfa" type="text" x-model="mfaCodigo"
-                                        inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-                                        pattern="[0-9]{6}" placeholder="000000"
-                                        class="w-full bg-[#030712] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white text-center tracking-[0.4em] focus:outline-none focus:border-red-500">
-
-                                    <p class="mt-2 text-[11px] text-slate-500">
-                                        Para desactivar la verificación en dos pasos debes confirmar tu identidad
-                                        utilizando el código actual.
-                                    </p>
-
-                                    <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
-                                    </p>
-                                </div>
-
-                                <div class="flex items-center gap-3 mt-5">
-                                    <button type="button" @click="cerrarMFA()"
-                                        class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
-                                        Cancelar
-                                    </button>
-
-                                    <button type="button" @click="desactivarMFA()"
-                                        :disabled="cargandoMFA || mfaCodigo.length !== 6"
-                                        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
-
-                                        <i x-show="!cargandoMFA" data-lucide="shield-off" class="w-4 h-4"></i>
-
-                                        <svg x-show="cargandoMFA" class="animate-spin w-4 h-4" viewBox="0 0 24 24"
-                                            fill="none">
-                                            <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                stroke-width="4" class="opacity-25">
-                                            </circle>
-
-                                            <path fill="currentColor" class="opacity-75"
-                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                                            </path>
-                                        </svg>
-
-                                        <span x-text="cargandoMFA ? 'Desactivando...' : 'Desactivar MFA'"></span>
-                                    </button>
-                                </div>
-
-                                <div
-                                    class="mt-5 flex items-start gap-2 rounded-xl bg-red-500/5 border border-red-500/10 p-3">
-                                    <i data-lucide="triangle-alert" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>
-
-                                    <p class="text-[11px] text-slate-500 leading-relaxed">
-                                        Al desactivar esta opción, tu cuenta dejará de solicitar el código de Google
-                                        Authenticator al iniciar sesión.
-                                    </p>
-                                </div>
-                            @endif
-
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Tu cuenta está protegida con Google Authenticator.
+                            </p>
                         </div>
                     </div>
-        <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
-        <script>
-    window.perfilSeguridadConfig = {
-        loginOriginal: @js(auth()->user()->login),
-        emailOriginal: @js(auth()->user()->email),
+                </div>
 
-        mfaConfigurar: @js(route('mfa.configurar')),
-        mfaActivar: @js(route('usuario.mfa.verificar.activacion')),
-        mfaDesactivar: @js(route('mfa.desactivar')),
-    };
-</script>
+                <div class="mt-5">
+                    <label for="codigo_desactivar_mfa" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        Código de Google Authenticator
+                    </label>
+
+                    <input id="codigo_desactivar_mfa" type="text" x-model="mfaCodigo" inputmode="numeric"
+                        autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000"
+                        class="w-full bg-[#030712] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white text-center tracking-[0.4em] focus:outline-none focus:border-red-500">
+
+                    <p class="mt-2 text-[11px] text-slate-500">
+                        Para desactivar la verificación en dos pasos debes confirmar tu identidad
+                        utilizando el código actual.
+                    </p>
+
+                    <p x-show="mfaMensaje" x-text="mfaMensaje" class="mt-2 text-xs text-red-400">
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 mt-5">
+                    <button type="button" @click="cerrarMFA()"
+                        class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">
+                        Cancelar
+                    </button>
+
+                    <button type="button" @click="desactivarMFA()" :disabled="cargandoMFA || mfaCodigo.length !== 6"
+                        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
+
+                        <i x-show="!cargandoMFA" data-lucide="shield-off" class="w-4 h-4"></i>
+
+                        <svg x-show="cargandoMFA" class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+                                class="opacity-25">
+                            </circle>
+
+                            <path fill="currentColor" class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                            </path>
+                        </svg>
+
+                        <span x-text="cargandoMFA ? 'Desactivando...' : 'Desactivar MFA'"></span>
+                    </button>
+                </div>
+
+                <div class="mt-5 flex items-start gap-2 rounded-xl bg-red-500/5 border border-red-500/10 p-3">
+                    <i data-lucide="triangle-alert" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>
+
+                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                        Al desactivar esta opción, tu cuenta dejará de solicitar el código de Google
+                        Authenticator al iniciar sesión.
+                    </p>
+                </div>
+            @endif
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+    <script>
+        window.perfilSeguridadConfig = {
+            loginOriginal: @js(auth()->user()->login),
+            emailOriginal: @js(auth()->user()->email),
+
+            mfaConfigurar: @js(route('mfa.configurar')),
+            mfaActivar: @js(route('usuario.mfa.verificar.activacion')),
+            mfaDesactivar: @js(route('mfa.desactivar')),
+        };
+    </script>
 </body>
 
 </html>

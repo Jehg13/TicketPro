@@ -513,250 +513,266 @@
 
                 <div
                     class="overflow-x-auto [::-webkit-scrollbar]:h-2 [::-webkit-scrollbar-track]:bg-[#060818] [::-webkit-scrollbar-thumb]:bg-[#1e295d] [::-webkit-scrollbar-thumb]:rounded-full">
-                    <div class="overflow-hidden rounded-2xl border border-[#1e295d]/80 bg-[#0b1024]/40 shadow-2xl shadow-black/20">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[760px]">
-            <thead>
-                <tr class="border-b border-[#1e295d]/80 bg-[#0d1430]/80">
-                    <th class="py-5 px-6 w-[17%] text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        Folio
-                    </th>
-                    <th class="py-5 px-6 w-[38%] text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        Título del ticket
-                    </th>
-                    <th class="py-5 px-6 w-[17%] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        Estado
-                    </th>
-                    <th class="py-5 px-6 w-[17%] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        Fecha de creación
-                    </th>
-                    <th class="py-5 px-6 w-[11%] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        Acciones
-                    </th>
-                </tr>
-            </thead>
+                    <div
+                        class="overflow-hidden rounded-2xl border border-[#1e295d]/80 bg-[#0b1024]/40 shadow-2xl shadow-black/20">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[760px]">
+                                <thead>
+                                    <tr class="border-b border-[#1e295d]/80 bg-[#0d1430]/80">
+                                        <th
+                                            class="py-5 px-6 w-[17%] text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                                            Folio
+                                        </th>
+                                        <th
+                                            class="py-5 px-6 w-[38%] text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                                            Título del ticket
+                                        </th>
+                                        <th
+                                            class="py-5 px-6 w-[17%] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                                            Estado
+                                        </th>
+                                        <th
+                                            class="py-5 px-6 w-[17%] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                                            Fecha de creación
+                                        </th>
+                                        <th
+                                            class="py-5 px-6 w-[11%] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                                            Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
 
-            <tbody class="divide-y divide-[#1e295d]/50">
-                @forelse ($tickets as $ticket)
-                    @php
-                        $ticket->load([
-                            'user',
-                            'user.departamento',
-                            'user.departamento.oficina',
-                            'user.departamento.oficina.empresa',
-                            'historialComentarios.usuario',
-                            'tomadoPor',
-                            'solucion',
-                        ]);
+                                <tbody class="divide-y divide-[#1e295d]/50">
+                                    @forelse ($tickets as $ticket)
+                                        @php
+                                            $ticket->load([
+                                                'user',
+                                                'user.departamento',
+                                                'user.departamento.oficina',
+                                                'user.departamento.oficina.empresa',
+                                                'historialComentarios.usuario',
+                                                'tomadoPor',
+                                                'solucion',
+                                            ]);
 
-                        $ticketData = $ticket->toArray();
+                                            $ticketData = $ticket->toArray();
 
-                        $comentariosData = $ticket->historialComentarios
-                            ->map(function ($comentario) {
-                                $usuarioComentario = $comentario->usuario;
+                                            $comentariosData = $ticket->historialComentarios
+                                                ->map(function ($comentario) {
+                                                    $usuarioComentario = $comentario->usuario;
 
-                                return [
-                                    'id' => $comentario->id,
-                                    'mensaje' => $comentario->mensaje,
-                                    'archivo' => $comentario->archivo,
-                                    'url_archivo' => $comentario->archivo
-                                        ? Storage::url($comentario->archivo)
-                                        : null,
-                                    'nombre_archivo' => $comentario->archivo
-                                        ? basename($comentario->archivo)
-                                        : null,
-                                    'extension' => $comentario->archivo
-                                        ? strtoupper(pathinfo($comentario->archivo, PATHINFO_EXTENSION))
-                                        : null,
-                                    'usuario' => [
-                                        'id' => $usuarioComentario?->id,
-                                        'login' => $usuarioComentario?->login,
-                                        'name' => $usuarioComentario?->name ?? 'Usuario',
-                                        'role' => $usuarioComentario?->role ?? 'Usuario',
-                                        'picture' => $usuarioComentario?->picture
-                                            ? Storage::url($usuarioComentario->picture)
-                                            : null,
-                                    ],
-                                    'fecha' => $comentario->created_at
-                                        ? $comentario->created_at->format('d M Y h:i A')
-                                        : '',
-                                ];
-                            })
-                            ->values();
-                    @endphp
+                                                    return [
+                                                        'id' => $comentario->id,
+                                                        'mensaje' => $comentario->mensaje,
+                                                        'archivo' => $comentario->archivo,
+                                                        'url_archivo' => $comentario->archivo
+                                                            ? Storage::url($comentario->archivo)
+                                                            : null,
+                                                        'nombre_archivo' => $comentario->archivo
+                                                            ? basename($comentario->archivo)
+                                                            : null,
+                                                        'extension' => $comentario->archivo
+                                                            ? strtoupper(
+                                                                pathinfo($comentario->archivo, PATHINFO_EXTENSION),
+                                                            )
+                                                            : null,
+                                                        'usuario' => [
+                                                            'id' => $usuarioComentario?->id,
+                                                            'login' => $usuarioComentario?->login,
+                                                            'name' => $usuarioComentario?->name ?? 'Usuario',
+                                                            'role' => $usuarioComentario?->role ?? 'Usuario',
+                                                            'picture' => $usuarioComentario?->picture
+                                                                ? Storage::url($usuarioComentario->picture)
+                                                                : null,
+                                                        ],
+                                                        'fecha' => $comentario->created_at
+                                                            ? $comentario->created_at->format('d M Y h:i A')
+                                                            : '',
+                                                    ];
+                                                })
+                                                ->values();
+                                        @endphp
 
-                    <tr
-                        x-data="{
-                            ticket: {{ Js::from([
-                                'id' => $ticket->id,
-                                'folio' => $ticket->folio,
-                                'titulo' => $ticket->titulo,
-                                'tipo_falla' => $ticket->tipo_falla,
-                                'equipo' => $ticket->equipo,
-                                'prioridad' => $ticket->prioridad,
-                                'descripcion' => $ticket->descripcion,
-                                'estado' => strtolower($ticket->estado ?? ''),
-                                'tomado_por' => $ticket->tomadoPor
-                                    ? [
-                                        'id' => $ticket->tomadoPor->id,
-                                        'name' => $ticket->tomadoPor->name,
-                                        'login' => $ticket->tomadoPor->login,
-                                        'picture' => $ticket->tomadoPor->picture
-                                            ? Storage::url($ticket->tomadoPor->picture)
-                                            : null,
-                                    ]
-                                    : null,
-                                'user' => $ticket->user
-                                    ? [
-                                        'id' => $ticket->user->id,
-                                        'name' => $ticket->user->name,
-                                        'login' => $ticket->user->login,
-                                        'picture' => $ticket->user->picture
-                                            ? Storage::url($ticket->user->picture)
-                                            : null,
-                                    ]
-                                    : null,
-                                'comentarios' => $comentariosData,
-                                'solucion' => $ticket->solucion
-                                    ? [
-                                        'id' => $ticket->solucion->id,
-                                        'ticket_id' => $ticket->solucion->ticket_id,
-                                        'solucionado_por' => $ticket->solucion->solucionado_por,
-                                        'solucion' => $ticket->solucion->solucion,
-                                        'problema_solucionado' => (bool) $ticket->solucion->problema_solucionado,
-                                        'firma' => $ticket->solucion->firma,
-                                        'url_firma' => $ticket->solucion->firma
-                                            ? Storage::url($ticket->solucion->firma)
-                                            : null,
-                                        'nombre_firmante' => $ticket->solucion->nombre_firmante,
-                                        'fecha_solucion' => $ticket->solucion->fecha_solucion,
-                                        'fecha_firma' => $ticket->solucion->fecha_firma,
-                                        'evidencia' => $ticket->solucion->evidencia,
-                                    ]
-                                    : null,
-                            ]) }}
-                        }"
-                        x-show="mostrarTicket(ticket.estado, ticket)"
-                        x-transition
-                        class="group relative transition-all duration-200 hover:bg-[#111a3a]/60"
-                    >
-                        <td class="relative py-6 px-6">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 transition group-hover:bg-blue-500/15 group-hover:border-blue-400/30">
-                                    <i data-lucide="ticket" class="w-4 h-4"></i>
-                                </div>
+                                        <tr x-data="{
+                                            ticket: {{ Js::from([
+                                                'id' => $ticket->id,
+                                                'folio' => $ticket->folio,
+                                                'titulo' => $ticket->titulo,
+                                                'tipo_falla' => $ticket->tipo_falla,
+                                                'equipo' => $ticket->equipo,
+                                                'prioridad' => $ticket->prioridad,
+                                                'descripcion' => $ticket->descripcion,
+                                                'estado' => strtolower($ticket->estado ?? ''),
+                                                'tomado_por' => $ticket->tomadoPor
+                                                    ? [
+                                                        'id' => $ticket->tomadoPor->id,
+                                                        'name' => $ticket->tomadoPor->name,
+                                                        'login' => $ticket->tomadoPor->login,
+                                                        'picture' => $ticket->tomadoPor->picture ? Storage::url($ticket->tomadoPor->picture) : null,
+                                                    ]
+                                                    : null,
+                                                'user' => $ticket->user
+                                                    ? [
+                                                        'id' => $ticket->user->id,
+                                                        'name' => $ticket->user->name,
+                                                        'login' => $ticket->user->login,
+                                                        'picture' => $ticket->user->picture ? Storage::url($ticket->user->picture) : null,
+                                                    ]
+                                                    : null,
+                                                'comentarios' => $comentariosData,
+                                                'solucion' => $ticket->solucion
+                                                    ? [
+                                                        'id' => $ticket->solucion->id,
+                                                        'ticket_id' => $ticket->solucion->ticket_id,
+                                                        'solucionado_por' => $ticket->solucion->solucionado_por,
+                                                        'solucion' => $ticket->solucion->solucion,
+                                                        'problema_solucionado' => (bool) $ticket->solucion->problema_solucionado,
+                                                        'firma' => $ticket->solucion->firma,
+                                                        'url_firma' => $ticket->solucion->firma ? Storage::url($ticket->solucion->firma) : null,
+                                                        'nombre_firmante' => $ticket->solucion->nombre_firmante,
+                                                        'fecha_solucion' => $ticket->solucion->fecha_solucion,
+                                                        'fecha_firma' => $ticket->solucion->fecha_firma,
+                                                        'evidencia' => $ticket->solucion->evidencia,
+                                                    ]
+                                                    : null,
+                                            ]) }}
+                                        }" x-show="mostrarTicket(ticket.estado, ticket)"
+                                            x-transition
+                                            class="group relative transition-all duration-200 hover:bg-[#111a3a]/60">
+                                            <td class="relative py-6 px-6">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 transition group-hover:bg-blue-500/15 group-hover:border-blue-400/30">
+                                                        <i data-lucide="ticket" class="w-4 h-4"></i>
+                                                    </div>
 
-                                <span class="font-bold text-slate-200 tracking-wide whitespace-nowrap">
-                                    TKT-{{ $ticket->created_at->format('Y') }}-{{ str_pad($ticket->id, 5, '0', STR_PAD_LEFT) }}
-                                </span>
-                            </div>
-                        </td>
+                                                    <span
+                                                        class="font-bold text-slate-200 tracking-wide whitespace-nowrap">
+                                                        TKT-{{ $ticket->created_at->format('Y') }}-{{ str_pad($ticket->id, 5, '0', STR_PAD_LEFT) }}
+                                                    </span>
+                                                </div>
+                                            </td>
 
-                        <td class="py-6 px-6">
-                            <div class="max-w-xl">
-                                <h4 class="font-semibold text-[15px] text-white truncate transition group-hover:text-blue-300">
-                                    {{ $ticket->titulo }}
-                                </h4>
+                                            <td class="py-6 px-6">
+                                                <div class="max-w-xl">
+                                                    <h4
+                                                        class="font-semibold text-[15px] text-white truncate transition group-hover:text-blue-300">
+                                                        {{ $ticket->titulo }}
+                                                    </h4>
 
-                                <p class="mt-1.5 text-xs leading-relaxed text-slate-500 line-clamp-2">
-                                    {{ Str::limit($ticket->descripcion, 100) }}
-                                </p>
-                            </div>
-                        </td>
+                                                    <p
+                                                        class="mt-1.5 text-xs leading-relaxed text-slate-500 line-clamp-2">
+                                                        {{ Str::limit($ticket->descripcion, 100) }}
+                                                    </p>
+                                                </div>
+                                            </td>
 
-                        <td class="py-6 px-6 text-center whitespace-nowrap">
-                            @if ($ticket->estado === 'solucionado')
-                                <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-bold text-emerald-300 shadow-sm shadow-emerald-950/20">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]"></span>
-                                    Solucionado
-                                </span>
-                            @elseif ($ticket->estado === 'pendiente')
-                                <span class="inline-flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3.5 py-1.5 text-[11px] font-bold text-yellow-300 shadow-sm shadow-yellow-950/20">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.7)]"></span>
-                                    Pendiente
-                                </span>
-                            @elseif ($ticket->estado === 'en proceso')
-                                <span class="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 text-[11px] font-bold text-blue-300 shadow-sm shadow-blue-950/20">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(96,165,250,0.7)]"></span>
-                                    En proceso
-                                </span>
-                            @elseif ($ticket->estado === 'cancelado')
-                                <span class="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3.5 py-1.5 text-[11px] font-bold text-red-300 shadow-sm shadow-red-950/20">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.7)]"></span>
-                                    Cancelado
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3.5 py-1.5 text-[11px] font-bold text-yellow-300">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-yellow-400"></span>
-                                    {{ $ticket->estado ?? 'Abierto' }}
-                                </span>
-                            @endif
-                        </td>
+                                            <td class="py-6 px-6 text-center whitespace-nowrap">
+                                                @if ($ticket->estado === 'solucionado')
+                                                    <span
+                                                        class="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-bold text-emerald-300 shadow-sm shadow-emerald-950/20">
+                                                        <span
+                                                            class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]"></span>
+                                                        Solucionado
+                                                    </span>
+                                                @elseif ($ticket->estado === 'pendiente')
+                                                    <span
+                                                        class="inline-flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3.5 py-1.5 text-[11px] font-bold text-yellow-300 shadow-sm shadow-yellow-950/20">
+                                                        <span
+                                                            class="h-1.5 w-1.5 rounded-full bg-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.7)]"></span>
+                                                        Pendiente
+                                                    </span>
+                                                @elseif ($ticket->estado === 'en proceso')
+                                                    <span
+                                                        class="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 text-[11px] font-bold text-blue-300 shadow-sm shadow-blue-950/20">
+                                                        <span
+                                                            class="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(96,165,250,0.7)]"></span>
+                                                        En proceso
+                                                    </span>
+                                                @elseif ($ticket->estado === 'cancelado')
+                                                    <span
+                                                        class="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3.5 py-1.5 text-[11px] font-bold text-red-300 shadow-sm shadow-red-950/20">
+                                                        <span
+                                                            class="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.7)]"></span>
+                                                        Cancelado
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="inline-flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3.5 py-1.5 text-[11px] font-bold text-yellow-300">
+                                                        <span class="h-1.5 w-1.5 rounded-full bg-yellow-400"></span>
+                                                        {{ $ticket->estado ?? 'Abierto' }}
+                                                    </span>
+                                                @endif
+                                            </td>
 
-                        <td class="py-6 px-6 text-center whitespace-nowrap">
-                            <div class="inline-flex flex-col items-center">
-                                <span class="text-sm font-semibold text-slate-200">
-                                    {{ $ticket->created_at->format('d M Y') }}
-                                </span>
+                                            <td class="py-6 px-6 text-center whitespace-nowrap">
+                                                <div class="inline-flex flex-col items-center">
+                                                    <span class="text-sm font-semibold text-slate-200">
+                                                        {{ $ticket->created_at->format('d M Y') }}
+                                                    </span>
 
-                                <span class="mt-1 text-[11px] text-slate-500">
-                                    {{ $ticket->created_at->format('h:i A') }}
-                                </span>
-                            </div>
-                        </td>
+                                                    <span class="mt-1 text-[11px] text-slate-500">
+                                                        {{ $ticket->created_at->format('h:i A') }}
+                                                    </span>
+                                                </div>
+                                            </td>
 
-                        <td class="py-6 px-6">
-                            <div class="flex items-center justify-center gap-1.5">
-                                <button
-                                    type="button"
-                                    @click="abrirTicket({{ Js::from($ticketData) }})"
-                                    class="group/action flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-slate-400 transition-all duration-200 hover:border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-400"
-                                    title="Ver ticket"
-                                >
-                                    <i data-lucide="eye" class="w-4 h-4 transition-transform duration-200 group-hover/action:scale-110"></i>
-                                </button>
+                                            <td class="py-6 px-6">
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    <button type="button"
+                                                        @click="abrirTicket({{ Js::from($ticketData) }})"
+                                                        class="group/action flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-slate-400 transition-all duration-200 hover:border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-400"
+                                                        title="Ver ticket">
+                                                        <i data-lucide="eye"
+                                                            class="w-4 h-4 transition-transform duration-200 group-hover/action:scale-110"></i>
+                                                    </button>
 
-                                <button
-                                    type="button"
-                                    @click="abrirModalSolucion(
-                                        {{ Js::from($ticketData) }},
-                                        {{ $ticket->estado === 'solucionado' ? 'true' : 'false' }}
-                                    )"
-                                    @if ($ticket->estado !== 'solucionado') disabled @endif
-                                    class="group/action flex h-9 w-9 items-center justify-center rounded-xl border border-transparent transition-all duration-200
-                                        {{ $ticket->estado !== 'solucionado'
-                                            ? 'cursor-not-allowed text-slate-700'
-                                            : 'text-emerald-400 hover:border-emerald-500/20 hover:bg-emerald-500/10 hover:text-emerald-300' }}"
-                                    title="{{ $ticket->estado === 'solucionado' ? 'Ver solución' : 'El ticket aún no está solucionado' }}"
-                                >
-                                    <i data-lucide="hand" class="w-4 h-4 transition-transform duration-200 {{ $ticket->estado === 'solucionado' ? 'group-hover/action:scale-110' : '' }}"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="py-20 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1e295d] bg-[#111a3a] text-slate-500">
-                                    <i data-lucide="inbox" class="w-6 h-6"></i>
-                                </div>
+                                                    <button type="button"
+                                                        @click="abrirModalSolucion(
+                                                                {{ Js::from($ticketData) }},
+                                                                {{ in_array($ticket->estado, ['solucionado', 'cancelado']) ? 'true' : 'false' }}
+                                                            )"
+                                                        @if (!in_array($ticket->estado, ['solucionado', 'cancelado'])) disabled @endif
+                                                        class="group/action flex h-9 w-9 items-center justify-center rounded-xl border border-transparent transition-all duration-200
+                                                        {{ !in_array($ticket->estado, ['solucionado', 'cancelado'])
+                                                            ? 'cursor-not-allowed text-slate-700'
+                                                            : 'text-emerald-400 hover:border-emerald-500/20 hover:bg-emerald-500/10 hover:text-emerald-300' }}"
+                                                        title="{{ in_array($ticket->estado, ['solucionado', 'cancelado'])
+                                                            ? 'Ver solución'
+                                                            : 'El ticket aún no está solucionado o cancelado' }}">
 
-                                <p class="mt-4 text-sm font-medium text-slate-400">
-                                    No tienes tickets registrados.
-                                </p>
+                                                        <i data-lucide="hand"
+                                                            class="w-4 h-4 transition-transform duration-200
+                                                            {{ in_array($ticket->estado, ['solucionado', 'cancelado']) ? 'group-hover/action:scale-110' : '' }}">
+                                                        </i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="py-20 text-center">
+                                                <div class="flex flex-col items-center justify-center">
+                                                    <div
+                                                        class="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1e295d] bg-[#111a3a] text-slate-500">
+                                                        <i data-lucide="inbox" class="w-6 h-6"></i>
+                                                    </div>
 
-                                <p class="mt-1 text-xs text-slate-600">
-                                    Los tickets aparecerán aquí cuando sean registrados.
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+                                                    <p class="mt-4 text-sm font-medium text-slate-400">
+                                                        No tienes tickets registrados.
+                                                    </p>
+
+                                                    <p class="mt-1 text-xs text-slate-600">
+                                                        Los tickets aparecerán aquí cuando sean registrados.
+                                                    </p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <div
@@ -830,268 +846,272 @@
 
     </main>
     <template x-teleport="body">
-    <div x-show="openModalSolucion" x-cloak x-transition.opacity
-        class="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
-        @keydown.escape.window="cerrarModalSolucion()" @click.self="cerrarModalSolucion()">
-        <div x-show="openModalSolucion" x-transition @click.stop
-            class="relative w-full max-w-3xl max-h-[90vh] bg-[#030712] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div class="shrink-0 px-6 py-5 border-b border-slate-800 bg-[#030712]">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
-                                <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
-                                Ticket
-                            </span>
-                            <span class="text-sm font-bold text-white"
-                                x-text="'#' + (ticketSolucion?.folio ?? '—')">
-                            </span>
+        <div x-show="openModalSolucion" x-cloak x-transition.opacity
+            class="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
+            @keydown.escape.window="cerrarModalSolucion()" @click.self="cerrarModalSolucion()">
+            <div x-show="openModalSolucion" x-transition @click.stop
+                class="relative w-full max-w-3xl max-h-[90vh] bg-[#030712] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                <div class="shrink-0 px-6 py-5 border-b border-slate-800 bg-[#030712]">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
+                                    <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
+                                    Ticket
+                                </span>
+                                <span class="text-sm font-bold text-white"
+                                    x-text="'#' + (ticketSolucion?.folio ?? '—')">
+                                </span>
+                            </div>
+                            <h2 class="text-xl font-bold text-white truncate"
+                                x-text="ticketSolucion?.titulo ?? 'Ticket'">
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Consulta la información y solución registrada para este ticket.
+                            </p>
                         </div>
-                        <h2 class="text-xl font-bold text-white truncate"
-                            x-text="ticketSolucion?.titulo ?? 'Ticket'">
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">
-                            Consulta la información y solución registrada para este ticket.
-                        </p>
+                        <button type="button" @click="cerrarModalSolucion()"
+                            class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition shrink-0">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
                     </div>
-                    <button type="button" @click="cerrarModalSolucion()"
-                        class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition shrink-0">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
                 </div>
-            </div>
-            <div class="flex-1 overflow-y-auto custom-scrollbar">
-                <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-                            <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                                Folio
-                            </span>
-                            <p class="text-sm font-bold text-white mt-1"
-                                x-text="ticketSolucion?.folio ?? '—'">
-                            </p>
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+                                <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                    Folio
+                                </span>
+                                <p class="text-sm font-bold text-white mt-1" x-text="ticketSolucion?.folio ?? '—'">
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+                                <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                    Título
+                                </span>
+                                <p class="text-sm font-bold text-white mt-1 truncate"
+                                    x-text="ticketSolucion?.titulo ?? '—'">
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
+                                <span class="text-[10px] text-slate-500 uppercase font-semibold">
+                                    Tomado por
+                                </span>
+                                <p class="text-sm font-bold text-white mt-1"
+                                    x-text="ticketSolucion?.tomado_por?.name ?? ticketSolucion?.tomado_por?.login ?? ticketSolucion?.tomado_por ?? '—'">
+                                </p>
+                            </div>
                         </div>
-                        <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-                            <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                                Título
-                            </span>
-                            <p class="text-sm font-bold text-white mt-1 truncate"
-                                x-text="ticketSolucion?.titulo ?? '—'">
-                            </p>
-                        </div>
-                        <div class="p-4 rounded-xl bg-[#060c21] border border-slate-800">
-                            <span class="text-[10px] text-slate-500 uppercase font-semibold">
-                                Tomado por
-                            </span>
-                            <p class="text-sm font-bold text-white mt-1"
-                                x-text="ticketSolucion?.tomado_por?.name ?? ticketSolucion?.tomado_por?.login ?? ticketSolucion?.tomado_por ?? '—'">
-                            </p>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                            Estado
-                        </label>
-                        <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs"
-                            :class="ticketSolucion?.estado === 'solucionado'
-                                ? 'text-emerald-400'
-                                : ticketSolucion?.estado === 'cancelado'
-                                    ? 'text-red-400'
-                                    : ticketSolucion?.estado === 'en proceso'
-                                        ? 'text-amber-400'
-                                        : 'text-slate-400'"
-                            x-text="ticketSolucion?.estado === 'solucionado'
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                Estado
+                            </label>
+                            <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs"
+                                :class="ticketSolucion?.estado === 'solucionado' ?
+                                    'text-emerald-400' :
+                                    ticketSolucion?.estado === 'cancelado' ?
+                                    'text-red-400' :
+                                    ticketSolucion?.estado === 'en proceso' ?
+                                    'text-amber-400' :
+                                    'text-slate-400'"
+                                x-text="ticketSolucion?.estado === 'solucionado'
                                 ? 'Solucionado'
                                 : ticketSolucion?.estado === 'cancelado'
                                     ? 'Cancelado'
                                     : ticketSolucion?.estado === 'en proceso'
                                         ? 'En proceso'
                                         : 'Pendiente'">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                            Solución aplicada
-                        </label>
-                        <div class="w-full min-h-[130px] bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white whitespace-pre-wrap break-words"
-                            x-text="(solucionForm?.solucion || 'No se ha registrado una solución.').trim()">
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <label class="block text-xs font-semibold text-slate-300">
-                                Evidencias de la solución
-                            </label>
-                            <span x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
-                                class="text-[10px] font-bold text-emerald-400"
-                                x-text="evidenciasSolucion.length + (evidenciasSolucion.length === 1 ? ' archivo' : ' archivos')">
-                            </span>
-                        </div>
-                        <div x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
-                            class="grid grid-cols-1 gap-3">
-                            <template x-for="(archivo, index) in evidenciasSolucion" :key="index">
-                                <div class="rounded-2xl bg-[#060c21] border border-slate-800 overflow-hidden">
-                                    <div x-show="esImagen(archivo)"
-                                        class="border-b border-slate-800 bg-black/20 p-3">
-                                        <div class="rounded-xl overflow-hidden bg-black/40 flex items-center justify-center min-h-[160px]">
-                                            <img :src="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
-                                                :alt="archivo.nombre || archivo.name || nombreArchivo(archivo)"
-                                                class="max-w-full max-h-[420px] object-contain">
-                                        </div>
-                                    </div>
-                                    <div x-show="esPDF(archivo)"
-                                        class="border-b border-slate-800">
-                                        <iframe
-                                            :src="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
-                                            class="w-full h-[420px] bg-white"
-                                            title="Vista previa del PDF">
-                                        </iframe>
-                                    </div>
-                                    <div x-show="esVideo(archivo)"
-                                        class="border-b border-slate-800 bg-black/20 p-3">
-                                        <div class="rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                            <video
-                                                :src="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
-                                                controls
-                                                preload="metadata"
-                                                class="w-full max-h-[420px] rounded-xl">
-                                            </video>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-between gap-3 p-4">
-                                        <div class="flex items-center gap-3 min-w-0">
-                                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                                                <i :data-lucide="esVideo(archivo)
-                                                    ? 'video'
-                                                    : esPDF(archivo)
-                                                        ? 'file-text'
-                                                        : esImagen(archivo)
-                                                            ? 'image'
-                                                            : 'file'"
-                                                    class="w-5 h-5 text-emerald-400">
-                                                </i>
-                                            </div>
-                                            <div class="min-w-0">
-                                                <p class="text-xs text-white font-medium truncate"
-                                                    x-text="archivo.nombre || archivo.name || nombreArchivo(archivo)">
-                                                </p>
-                                                <p class="text-[10px] text-slate-500 mt-1"
-                                                    x-text="tipoArchivo(archivo)">
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <a :href="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-emerald-500/10 border border-slate-700 hover:border-emerald-500/40 text-[10px] font-semibold text-slate-300 hover:text-emerald-400 transition shrink-0">
-                                            <span>Ver archivo</span>
-                                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                        <div x-show="!Array.isArray(evidenciasSolucion) || evidenciasSolucion.length === 0"
-                            class="p-5 rounded-xl bg-[#060c21] border border-slate-800 text-center">
-                            <i data-lucide="image-off" class="w-7 h-7 mx-auto mb-2 text-slate-600"></i>
-                            <p class="text-xs text-slate-500">
-                                No hay evidencias registradas.
-                            </p>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-3">
-                            ¿El problema fue solucionado?
-                        </label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border"
-                                :class="solucionForm?.problema_solucionado === true
-                                    ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                                    : 'bg-[#060c21] border-slate-800 text-slate-500'">
-                                <i data-lucide="circle-check" class="w-4 h-4"></i>
-                                <span>Sí, fue solucionado</span>
-                            </div>
-                            <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border"
-                                :class="solucionForm?.problema_solucionado === false
-                                    ? 'bg-red-500/15 border-red-500/50 text-red-300'
-                                    : 'bg-[#060c21] border-slate-800 text-slate-500'">
-                                <i data-lucide="circle-x" class="w-4 h-4"></i>
-                                <span>No fue solucionado</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-2">
-                            Fecha de solución
-                        </label>
-                        <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                            <span x-text="solucionForm?.fecha_solucion
-                                ? formatearFecha(solucionForm.fecha_solucion)
-                                : 'Sin fecha registrada'">
-                            </span>
-                        </div>
-                    </div>
-                    <div class="border-t border-slate-800 pt-6">
-                        <div class="mb-5">
-                            <h3 class="text-sm font-bold text-white mb-1">
-                                Conformidad del usuario
-                            </h3>
-                            <p class="text-[11px] text-slate-500">
-                                Información registrada al momento de cerrar el ticket.
-                            </p>
-                        </div>
-                        <div class="mb-5">
-                            <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                Persona que levantó el ticket
-                            </label>
-                            <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                                <span
-                                    x-text="ticketSolucion?.user?.name ?? solucionForm?.nombre_firmante ?? 'Sin nombre'"
-                                    class="font-medium">
-                                </span>
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                Firma
+                                Solución aplicada
                             </label>
-                            <div class="bg-white rounded-xl overflow-hidden border border-slate-700 p-3 min-h-[180px] flex items-center justify-center">
-                                <img x-show="ticketSolucion?.solucion?.firma || ticketSolucion?.solucion?.url_firma"
-                                    :src="ticketSolucion?.solucion?.url_firma ?? archivoUrl(ticketSolucion?.solucion?.firma)"
-                                    alt="Firma registrada"
-                                    class="max-w-full max-h-40 object-contain"
-                                    x-on:error="console.error('No se pudo cargar la firma:', $event.target.src)">
-                                <span x-show="!ticketSolucion?.solucion?.firma && !ticketSolucion?.solucion?.url_firma"
-                                    class="text-slate-500 text-xs">
-                                    No hay una firma registrada.
+                            <div class="w-full min-h-[130px] bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white whitespace-pre-wrap break-words"
+                                x-text="(solucionForm?.solucion || 'No se ha registrado una solución.').trim()">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-xs font-semibold text-slate-300">
+                                    Evidencias de la solución
+                                </label>
+                                <span x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
+                                    class="text-[10px] font-bold text-emerald-400"
+                                    x-text="evidenciasSolucion.length + (evidenciasSolucion.length === 1 ? ' archivo' : ' archivos')">
+                                </span>
+                            </div>
+                            <div x-show="Array.isArray(evidenciasSolucion) && evidenciasSolucion.length > 0"
+                                class="grid grid-cols-1 gap-3">
+                                <template x-for="(archivo, index) in evidenciasSolucion" :key="index">
+                                    <div class="rounded-2xl bg-[#060c21] border border-slate-800 overflow-hidden">
+                                        <div x-show="esImagen(archivo)"
+                                            class="border-b border-slate-800 bg-black/20 p-3">
+                                            <div
+                                                class="rounded-xl overflow-hidden bg-black/40 flex items-center justify-center min-h-[160px]">
+                                                <img :src="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
+                                                    :alt="archivo.nombre || archivo.name || nombreArchivo(archivo)"
+                                                    class="max-w-full max-h-[420px] object-contain">
+                                            </div>
+                                        </div>
+                                        <div x-show="esPDF(archivo)" class="border-b border-slate-800">
+                                            <iframe :src="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
+                                                class="w-full h-[420px] bg-white" title="Vista previa del PDF">
+                                            </iframe>
+                                        </div>
+                                        <div x-show="esVideo(archivo)"
+                                            class="border-b border-slate-800 bg-black/20 p-3">
+                                            <div
+                                                class="rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                                                <video :src="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
+                                                    controls preload="metadata"
+                                                    class="w-full max-h-[420px] rounded-xl">
+                                                </video>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-3 p-4">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <div
+                                                    class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                                    <i :data-lucide="esVideo(archivo) ?
+                                                        'video' :
+                                                        esPDF(archivo) ?
+                                                        'file-text' :
+                                                        esImagen(archivo) ?
+                                                        'image' :
+                                                        'file'"
+                                                        class="w-5 h-5 text-emerald-400">
+                                                    </i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="text-xs text-white font-medium truncate"
+                                                        x-text="archivo.nombre || archivo.name || nombreArchivo(archivo)">
+                                                    </p>
+                                                    <p class="text-[10px] text-slate-500 mt-1"
+                                                        x-text="tipoArchivo(archivo)">
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <a :href="archivo.url || archivo.url_archivo || archivoUrl(archivo)"
+                                                target="_blank" rel="noopener noreferrer"
+                                                class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-emerald-500/10 border border-slate-700 hover:border-emerald-500/40 text-[10px] font-semibold text-slate-300 hover:text-emerald-400 transition shrink-0">
+                                                <span>Ver archivo</span>
+                                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div x-show="!Array.isArray(evidenciasSolucion) || evidenciasSolucion.length === 0"
+                                class="p-5 rounded-xl bg-[#060c21] border border-slate-800 text-center">
+                                <i data-lucide="image-off" class="w-7 h-7 mx-auto mb-2 text-slate-600"></i>
+                                <p class="text-xs text-slate-500">
+                                    No hay evidencias registradas.
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-3">
+                                ¿El problema fue solucionado?
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border"
+                                    :class="Number(solucionForm?.solucionado) === 1 ?
+                                        'bg-emerald-500/15 border-emerald-500/50 text-emerald-300' :
+                                        'bg-[#060c21] border-slate-800 text-slate-500'">
+                                    <i data-lucide="circle-check" class="w-4 h-4"></i>
+                                    <span>Sí, fue solucionado</span>
+                                </div>
+
+                                <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border"
+                                    :class="Number(solucionForm?.solucionado) === 0 ?
+                                        'bg-red-500/15 border-red-500/50 text-red-300' :
+                                        'bg-[#060c21] border-slate-800 text-slate-500'">
+                                    <i data-lucide="circle-x" class="w-4 h-4"></i>
+                                    <span>No fue solucionado</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                Fecha de solución
+                            </label>
+                            <div
+                                class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                                <span
+                                    x-text="solucionForm?.fecha_solucion
+                                ? formatearFecha(solucionForm.fecha_solucion)
+                                : 'Sin fecha registrada'">
                                 </span>
                             </div>
                         </div>
-                        <div class="mt-5">
-                            <label class="block text-xs font-semibold text-slate-300 mb-2">
-                                Fecha de firma
-                            </label>
-                            <div class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                                <span x-text="solucionForm?.fecha_firma
+                        <div class="border-t border-slate-800 pt-6">
+                            <div class="mb-5">
+                                <h3 class="text-sm font-bold text-white mb-1">
+                                    Conformidad del usuario
+                                </h3>
+                                <p class="text-[11px] text-slate-500">
+                                    Información registrada al momento de cerrar el ticket.
+                                </p>
+                            </div>
+                            <div class="mb-5">
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Persona que levantó el ticket
+                                </label>
+                                <div
+                                    class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                                    <span
+                                        x-text="ticketSolucion?.user?.name ?? solucionForm?.nombre_firmante ?? 'Sin nombre'"
+                                        class="font-medium">
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Firma
+                                </label>
+                                <div
+                                    class="bg-white rounded-xl overflow-hidden border border-slate-700 p-3 min-h-[180px] flex items-center justify-center">
+                                    <img x-show="ticketSolucion?.solucion?.firma || ticketSolucion?.solucion?.url_firma"
+                                        :src="ticketSolucion?.solucion?.url_firma ?? archivoUrl(ticketSolucion?.solucion
+                                            ?.firma)"
+                                        alt="Firma registrada" class="max-w-full max-h-40 object-contain"
+                                        x-on:error="console.error('No se pudo cargar la firma:', $event.target.src)">
+                                    <span
+                                        x-show="!ticketSolucion?.solucion?.firma && !ticketSolucion?.solucion?.url_firma"
+                                        class="text-slate-500 text-xs">
+                                        No hay una firma registrada.
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="mt-5">
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">
+                                    Fecha de firma
+                                </label>
+                                <div
+                                    class="w-full bg-[#060c21] border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                                    <span
+                                        x-text="solucionForm?.fecha_firma
                                     ? formatearFecha(solucionForm.fecha_firma)
                                     : 'Sin fecha registrada'">
-                                </span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="shrink-0 flex items-center justify-end px-6 py-4 border-t border-slate-800 bg-[#030712]">
-                <button type="button"
-                    @click="cerrarModalSolucion()"
-                    class="inline-flex items-center justify-center gap-2 min-w-[100px] px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800/60 border border-slate-700 hover:bg-slate-700 hover:text-white transition">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                    Cerrar
-                </button>
+                <div class="shrink-0 flex items-center justify-end px-6 py-4 border-t border-slate-800 bg-[#030712]">
+                    <button type="button" @click="cerrarModalSolucion()"
+                        class="inline-flex items-center justify-center gap-2 min-w-[100px] px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800/60 border border-slate-700 hover:bg-slate-700 hover:text-white transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        Cerrar
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
     <template x-teleport="body">
 
         <div x-show="openModal" x-cloak x-transition.opacity
@@ -1636,12 +1656,12 @@
                                     <div class="shrink-0">
 
                                         <img :src="selectedTicket?.user?.picture ?
-                                                            selectedTicket.user.picture :
-                                                            '{{ asset('storage/profile-photos/user.png') }}'"
-                                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
-                                                                ?.name ?? 'Usuario'"
-                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
-                                                            x-on:error="
+                                            selectedTicket.user.picture :
+                                            '{{ asset('storage/profile-photos/user.png') }}'"
+                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
+                                                ?.name ?? 'Usuario'"
+                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
+                                            x-on:error="
         if ($event.target.dataset.fallback === 'avatar') {
             return;
         }
@@ -1794,27 +1814,16 @@
                                     <div class="flex items-start gap-3">
 
 
-                                        <img :src="selectedTicket?.user?.picture ?
-                                                            selectedTicket.user.picture :
-                                                            '{{ asset('storage/profile-photos/user.png') }}'"
-                                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
-                                                                ?.name ?? 'Usuario'"
-                                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
-                                                            x-on:error="
-        if ($event.target.dataset.fallback === 'avatar') {
-            return;
-        }
-
-        if ($event.target.dataset.fallback !== 'user') {
-            $event.target.dataset.fallback = 'user';
-            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+                                        <img src="{{ auth()->user()->picture ? Storage::url(auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
+                                            class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
+                                            alt="{{ auth()->user()->name ?? 'Usuario' }}"
+                                            onerror="
+        if (this.dataset.fallback === 'user') {
+            this.dataset.fallback = 'avatar';
+            this.src = 'https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Usuario') }}&background=0D8ABC&color=fff';
         } else {
-            $event.target.dataset.fallback = 'avatar';
-            $event.target.src = avatarUsuario(
-                selectedTicket?.user?.name ??
-                selectedTicket?.usuario?.name ??
-                'Usuario'
-            );
+            this.dataset.fallback = 'user';
+            this.src = '{{ asset('storage/profile-photos/user.png') }}';
         }
     ">
 

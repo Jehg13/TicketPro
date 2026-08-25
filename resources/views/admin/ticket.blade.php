@@ -809,13 +809,29 @@
 
                                         <template x-if="esMiTicket(ticket)">
                                             <button type="button"
-                                                @click="abrirModalSolucion(obtenerDatosTicket(ticket), ['solucionado', 'cancelado'].includes(filtro))"
-                                                :disabled="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro)"
-                                                :class="!['mis tickets', 'solucionado', 'cancelado'].includes(filtro) ?
-                                                    'opacity-40 cursor-not-allowed' :
-                                                    'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'"
+                                                @click="abrirModalSolucion(
+                                                        obtenerDatosTicket(ticket),
+                                                        ['solucionado', 'cancelado'].includes(String(ticket.estado).toLowerCase())
+                                                    )"
+                                                :disabled="!(
+                                                    ['mis tickets', 'solucionado', 'cancelado'].includes(filtro) ||
+                                                    (filtro === 'todos' && ['solucionado', 'cancelado'].includes(
+                                                        String(ticket.estado).toLowerCase()))
+                                                )"
+                                                :class="!(
+                                                    ['mis tickets', 'solucionado', 'cancelado'].includes(filtro) ||
+                                                    (
+                                                        filtro === 'todos' && ['solucionado', 'cancelado'].includes(
+                                                            String(ticket.estado).toLowerCase())
+                                                    )
+                                                ) ?
+                                                'opacity-40 cursor-not-allowed' :
+                                                'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'"
                                                 class="p-2 rounded-lg transition"
-                                                :title="filtro === 'mis tickets' ? 'Resolver ticket' : 'Ver solución'">
+                                                :title="filtro === 'mis tickets'
+                                                    ?
+                                                    'Resolver ticket' :
+                                                    'Ver solución'">
                                                 <i data-lucide="hand" class="w-4 h-4"></i>
                                             </button>
                                         </template>

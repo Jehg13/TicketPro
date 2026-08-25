@@ -1051,7 +1051,49 @@
                                             </div>
 
                                         </div>
+                                        {{-- NÚMERO DE EMPLEADO --}}
+                                        <div class="space-y-1.5">
 
+                                            <label
+                                                class="flex items-center justify-between text-xs font-semibold
+        {{ $puedeEditarPerfil ? 'text-slate-300' : 'text-slate-500' }}">
+
+                                                <span class="flex items-center gap-1.5">
+
+                                                    <i data-lucide="badge"
+                                                        class="w-3.5 h-3.5
+                {{ $puedeEditarPerfil ? 'text-blue-400' : 'text-slate-500' }}">
+                                                    </i>
+
+                                                    Número de empleado
+
+                                                </span>
+
+                                                @if ($puedeEditarPerfil)
+                                                    <span
+                                                        class="text-[10px] text-blue-400 font-normal flex items-center gap-1">
+
+                                                        <i data-lucide="pen" class="w-3 h-3"></i>
+
+                                                        Editable
+
+                                                    </span>
+                                                @else
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+                                                @endif
+
+                                            </label>
+
+                                            <input type="text" name="numero_empleado"
+                                                value="{{ $usuario->numero_empleado->numero_empleado ?? '' }}"
+                                                placeholder="Sin número de empleado"
+                                                {{ !$puedeEditarPerfil ? 'disabled' : '' }}
+                                                class="w-full rounded-xl px-4 py-2.5 text-xs transition
+
+        {{ $puedeEditarPerfil
+            ? 'bg-[#030712] border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+            : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+                                        </div>
 
                                         {{-- UBICACIÓN - FIJO
                                         <div class="space-y-1.5">
@@ -2003,15 +2045,15 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <script>
-    window.perfilSeguridadConfig = {
-        loginOriginal: @js(auth()->user()->login),
-        emailOriginal: @js(auth()->user()->email),
+        window.perfilSeguridadConfig = {
+            loginOriginal: @js(auth()->user()->login),
+            emailOriginal: @js(auth()->user()->email),
 
-        mfaConfigurar: @js(route('mfa.configurar')),
-        mfaActivar: @js(route('usuario.mfa.verificar.activacion')),
-        mfaDesactivar: @js(route('mfa.desactivar')),
-    };
-</script>
+            mfaConfigurar: @js(route('mfa.configurar')),
+            mfaActivar: @js(route('usuario.mfa.verificar.activacion')),
+            mfaDesactivar: @js(route('mfa.desactivar')),
+        };
+    </script>
 </body>
 
 </html>

@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TicketU;
-use App\Models\User;
+use App\Models\Dispositivos;
 use App\Models\Notificacion;
 use App\Models\Solucion;
+use App\Models\TicketU;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class ticketController extends Controller
 {
@@ -16,146 +18,63 @@ class ticketController extends Controller
     {
         $usuario = Auth::user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICACIONES
-        |--------------------------------------------------------------------------
-        */
-
-        $notificaciones = Notificacion::where(
-            'login',
-            $usuario->login
-        )
+        $notificaciones = Notificacion::where('login', $usuario->login)
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
-        $notificacionesNoLeidas = Notificacion::where(
-            'login',
-            $usuario->login
-        )
-            ->where(
-                'leida',
-                false
-            )
+        $notificacionesNoLeidas = Notificacion::where('login', $usuario->login)
+            ->where('leida', false)
             ->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | ÚLTIMO TICKET DEL USUARIO
-        |--------------------------------------------------------------------------
-        */
-
-        $ultimoTicketModel = TicketU::where(
-            'login',
-            $usuario->login
-        )
+        $ultimoTicketModel = TicketU::where('login', $usuario->login)
             ->orderByDesc('id')
             ->first();
 
         $ultimoTicket = null;
 
         if ($ultimoTicketModel) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | BUSCAR SOLUCIÓN DEL TICKET
-            |--------------------------------------------------------------------------
-            |
-            | Si no existe registro en soluciones:
-            | problema_solucionado = NULL
-            |
-            | Si existe:
-            | 1 = Sí
-            | 0 = No
-            |
-            */
-
-            $solucion = Solucion::where(
-                'ticket_id',
-                $ultimoTicketModel->id
-            )
+            $solucion = Solucion::where('ticket_id', $ultimoTicketModel->id)
                 ->latest('id')
                 ->first();
 
-            /*
-            |--------------------------------------------------------------------------
-            | ARMAR DATOS DEL ÚLTIMO TICKET
-            |--------------------------------------------------------------------------
-            */
-
             $ultimoTicket = [
-                'id' =>
-                    $ultimoTicketModel->id,
-
-                'folio' =>
-                    $ultimoTicketModel->folio,
-
-                'titulo' =>
-                    $ultimoTicketModel->titulo,
-
-                'tipo_falla' =>
-                    $ultimoTicketModel->tipo_falla,
-
-                'fecha_reporte' =>
-                    $ultimoTicketModel->created_at
-                        ?->format('d/m/Y'),
-
-                'departamento' =>
-                    $ultimoTicketModel->departamento ?? null,
-
-                'asignado_a' =>
-                    $ultimoTicketModel->asignado_a ?? null,
-
-                'oficina' =>
-                    $ultimoTicketModel->oficina ?? null,
-
-                'tomado_por' =>
-                    $ultimoTicketModel->tomado_por ?? null,
-
-                'estado' =>
-                    $ultimoTicketModel->estado,
-
-                'fecha_asignacion' =>
-                    $ultimoTicketModel->fecha_asignacion ?? null,
-
-                'prioridad' =>
-                    $ultimoTicketModel->prioridad,
-
-                /*
-                |--------------------------------------------------------------------------
-                | SOLUCIÓN
-                |--------------------------------------------------------------------------
-                */
-
-                'solucion_id' =>
-                    $ultimoTicketModel->solucion_id,
-
-                'solucionado' =>
-                    $solucion
-                        ? $solucion->problema_solucionado
-                        : null,
+                'id' => $ultimoTicketModel->id,
+                'folio' => $ultimoTicketModel->folio,
+                'titulo' => $ultimoTicketModel->titulo,
+                'tipo_falla' => $ultimoTicketModel->tipo_falla,
+                'fecha_reporte' => $ultimoTicketModel->created_at?->format('d/m/Y'),
+                'departamento' => $ultimoTicketModel->departamento ?? null,
+                'asignado_a' => $ultimoTicketModel->asignado_a ?? null,
+                'oficina' => $ultimoTicketModel->oficina ?? null,
+                'tomado_por' => $ultimoTicketModel->tomado_por ?? null,
+                'estado' => $ultimoTicketModel->estado,
+                'fecha_asignacion' => $ultimoTicketModel->fecha_asignacion ?? null,
+                'prioridad' => $ultimoTicketModel->prioridad,
+                'solucion_id' => $ultimoTicketModel->solucion_id,
+                'solucionado' => $solucion?->problema_solucionado,
             ];
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | VISTA
-        |--------------------------------------------------------------------------
-        */
+        $dispositivos = Dispositivos::where('login', $usuario->login)
+            ->where('estado', 'vinculado')
+            ->orderBy('nombre_equipo')
+            ->get();
 
-        return view(
-            'user.ticket',
-            compact(
-                'notificaciones',
-                'notificacionesNoLeidas',
-                'ultimoTicket'
-            )
-        );
+        return view('user.ticket', compact(
+            'notificaciones',
+            'notificacionesNoLeidas',
+            'ultimoTicket',
+            'dispositivos'
+        ));
     }
 
     public function store(Request $request)
     {
+        $usuario = Auth::user();
+
+        $loginUsuario = trim((string) $usuario->login);
+
         $validated = $request->validate([
             'titulo' => [
                 'required',
@@ -173,6 +92,11 @@ class ticketController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                Rule::exists('dispositivos', 'nombre_equipo')
+                    ->where(function ($query) use ($loginUsuario) {
+                        $query->where('login', $loginUsuario)
+                            ->where('estado', 'vinculado');
+                    }),
             ],
 
             'prioridad' => [
@@ -206,61 +130,35 @@ class ticketController extends Controller
                 'mimes:jpg,jpeg,png,pdf,mp4',
                 'max:10240',
             ],
+        ], [
+            'titulo.required' => 'Debes ingresar un título.',
+            'tipo_falla.required' => 'Debes seleccionar el tipo de falla.',
+            'equipo.required_if' => 'Debes seleccionar el equipo que presenta la falla.',
+            'equipo.exists' => 'El equipo seleccionado no es válido o ya no se encuentra vinculado a tu usuario.',
+            'prioridad.required' => 'Debes seleccionar una prioridad.',
+            'prioridad.in' => 'La prioridad seleccionada no es válida.',
+            'descripcion.required' => 'Debes ingresar una descripción.',
+            'afecta_otros.required' => 'Debes indicar si la falla afecta a otros usuarios.',
+            'es_recurrente.required' => 'Debes indicar si la falla es recurrente.',
         ]);
 
-        $usuario = Auth::user();
+        $empresaId = $usuario->departamento?->oficina?->empresa_id;
 
-        $loginUsuario = trim(
-            (string) $usuario->login
-        );
+        Log::info('========== CREANDO NUEVO TICKET ==========');
 
-        $empresaId = $usuario
-            ->departamento
-            ?->oficina
-            ?->empresa_id;
-
-        Log::info(
-            '========== CREANDO NUEVO TICKET =========='
-        );
-
-        Log::info(
-            'DATOS DEL USUARIO',
-            [
-                'id' =>
-                    $usuario->id,
-
-                'login' =>
-                    $loginUsuario,
-
-                'name' =>
-                    $usuario->name,
-
-                'role' =>
-                    $usuario->role,
-
-                'priv_admin' =>
-                    $usuario->priv_admin,
-
-                'empresa_id' =>
-                    $empresaId,
-            ]
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | EVIDENCIAS DEL TICKET
-        |--------------------------------------------------------------------------
-        */
+        Log::info('DATOS DEL USUARIO', [
+            'id' => $usuario->id,
+            'login' => $loginUsuario,
+            'name' => $usuario->name,
+            'role' => $usuario->role,
+            'priv_admin' => $usuario->priv_admin,
+            'empresa_id' => $empresaId,
+        ]);
 
         $filePaths = [];
 
         if ($request->hasFile('evidencia')) {
-
-            foreach (
-                $request->file('evidencia')
-                as $file
-            ) {
-
+            foreach ($request->file('evidencia') as $file) {
                 if (!$file->isValid()) {
                     continue;
                 }
@@ -272,16 +170,9 @@ class ticketController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | GENERAR FOLIO
-        |--------------------------------------------------------------------------
-        */
-
         $año = date('Y');
 
         do {
-
             $ultimoTicket = TicketU::where(
                 'folio',
                 'like',
@@ -291,21 +182,17 @@ class ticketController extends Controller
                 ->first();
 
             if ($ultimoTicket) {
-
                 $ultimoNumero = (int) substr(
                     $ultimoTicket->folio,
                     -5
                 );
 
                 $numero = $ultimoNumero + 1;
-
             } else {
-
                 $numero = 1;
             }
 
-            $folio =
-                'TKT-' .
+            $folio = 'TKT-' .
                 $año .
                 '-' .
                 str_pad(
@@ -314,85 +201,34 @@ class ticketController extends Controller
                     '0',
                     STR_PAD_LEFT
                 );
-
         } while (
-            TicketU::where(
-                'folio',
-                $folio
-            )->exists()
+            TicketU::where('folio', $folio)->exists()
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREAR TICKET
-        |--------------------------------------------------------------------------
-        */
 
         $ticket = TicketU::create([
-            'folio' =>
-                $folio,
-
-            'login' =>
-                $loginUsuario,
-
-            'titulo' =>
-                $validated['titulo'],
-
-            'tipo_falla' =>
-                $validated['tipo_falla'],
-
-            'equipo' =>
-                $validated['equipo'] ?? null,
-
-            'prioridad' =>
-                $validated['prioridad'],
-
-            'descripcion' =>
-                $validated['descripcion'],
-
-            'afecta_otros' =>
-                $validated['afecta_otros'],
-
-            'es_recurrente' =>
-                $validated['es_recurrente'],
-
-            'comentarios' =>
-                $validated['comentarios'] ?? null,
-
-            'evidencia' =>
-                $filePaths,
+            'folio' => $folio,
+            'login' => $loginUsuario,
+            'titulo' => $validated['titulo'],
+            'tipo_falla' => $validated['tipo_falla'],
+            'equipo' => $validated['equipo'] ?? null,
+            'prioridad' => $validated['prioridad'],
+            'descripcion' => $validated['descripcion'],
+            'afecta_otros' => $validated['afecta_otros'],
+            'es_recurrente' => $validated['es_recurrente'],
+            'comentarios' => $validated['comentarios'] ?? null,
+            'evidencia' => $filePaths,
         ]);
 
-        Log::info(
-            'TICKET CREADO',
-            [
-                'ticket_id' =>
-                    $ticket->id,
-
-                'folio' =>
-                    $ticket->folio,
-
-                'login' =>
-                    $loginUsuario,
-            ]
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | DESTINATARIOS
-        |--------------------------------------------------------------------------
-        */
+        Log::info('TICKET CREADO', [
+            'ticket_id' => $ticket->id,
+            'folio' => $ticket->folio,
+            'login' => $loginUsuario,
+            'equipo' => $ticket->equipo,
+        ]);
 
         $destinatarios = collect();
 
-        /*
-        |--------------------------------------------------------------------------
-        | TECNOLOGÍAS DE LA MISMA EMPRESA
-        |--------------------------------------------------------------------------
-        */
-
         if ($empresaId) {
-
             $tecnicos = User::query()
                 ->whereRaw(
                     'LOWER(TRIM(role)) = ?',
@@ -405,7 +241,6 @@ class ticketController extends Controller
                 ->whereHas(
                     'departamento.oficina',
                     function ($query) use ($empresaId) {
-
                         $query->where(
                             'empresa_id',
                             $empresaId
@@ -415,53 +250,23 @@ class ticketController extends Controller
                 ->get();
 
             foreach ($tecnicos as $tecnico) {
-
-                $destinatarios->push(
-                    $tecnico
-                );
+                $destinatarios->push($tecnico);
             }
 
-            Log::info(
-                'TECNICOS DE LA MISMA EMPRESA',
-                [
-                    'empresa_id' =>
-                        $empresaId,
-
-                    'cantidad' =>
-                        $tecnicos->count(),
-
-                    'usuarios' =>
-                        $tecnicos
-                            ->map(function ($tecnico) {
-
-                                return [
-                                    'id' =>
-                                        $tecnico->id,
-
-                                    'login' =>
-                                        $tecnico->login,
-
-                                    'name' =>
-                                        $tecnico->name,
-
-                                    'role' =>
-                                        $tecnico->role,
-
-                                    'priv_admin' =>
-                                        $tecnico->priv_admin,
-                                ];
-                            })
-                            ->values()
-                            ->toArray(),
-                ]
-            );
+            Log::info('TECNICOS DE LA MISMA EMPRESA', [
+                'empresa_id' => $empresaId,
+                'cantidad' => $tecnicos->count(),
+                'usuarios' => $tecnicos->map(function ($tecnico) {
+                    return [
+                        'id' => $tecnico->id,
+                        'login' => $tecnico->login,
+                        'name' => $tecnico->name,
+                        'role' => $tecnico->role,
+                        'priv_admin' => $tecnico->priv_admin,
+                    ];
+                })->values()->toArray(),
+            ]);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | GERENTE TI
-        |--------------------------------------------------------------------------
-        */
 
         $gerentes = User::query()
             ->whereRaw(
@@ -479,21 +284,11 @@ class ticketController extends Controller
             ->get();
 
         foreach ($gerentes as $gerente) {
-
-            $destinatarios->push(
-                $gerente
-            );
+            $destinatarios->push($gerente);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SOPORTE TÉCNICO
-        |--------------------------------------------------------------------------
-        */
 
         $soporte = User::query()
             ->where(function ($query) {
-
                 $query
                     ->whereRaw(
                         'LOWER(TRIM(role)) = ?',
@@ -515,17 +310,8 @@ class ticketController extends Controller
             ->get();
 
         foreach ($soporte as $usuarioSoporte) {
-
-            $destinatarios->push(
-                $usuarioSoporte
-            );
+            $destinatarios->push($usuarioSoporte);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR DUPLICADOS
-        |--------------------------------------------------------------------------
-        */
 
         $destinatarios = $destinatarios
             ->unique('login')
@@ -534,138 +320,59 @@ class ticketController extends Controller
         Log::info(
             'DESTINATARIOS FINALES DE LA NOTIFICACIÓN',
             [
-                'cantidad' =>
-                    $destinatarios->count(),
-
-                'destinatarios' =>
-                    $destinatarios
-                        ->map(function ($destinatario) {
-
-                            return [
-                                'id' =>
-                                    $destinatario->id,
-
-                                'login' =>
-                                    $destinatario->login,
-
-                                'name' =>
-                                    $destinatario->name,
-
-                                'role' =>
-                                    $destinatario->role,
-
-                                'priv_admin' =>
-                                    $destinatario->priv_admin,
-                            ];
-                        })
-                        ->toArray(),
+                'cantidad' => $destinatarios->count(),
+                'destinatarios' => $destinatarios
+                    ->map(function ($destinatario) {
+                        return [
+                            'id' => $destinatario->id,
+                            'login' => $destinatario->login,
+                            'name' => $destinatario->name,
+                            'role' => $destinatario->role,
+                            'priv_admin' => $destinatario->priv_admin,
+                        ];
+                    })
+                    ->toArray(),
             ]
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREAR NOTIFICACIONES
-        |--------------------------------------------------------------------------
-        */
-
-        foreach (
-            $destinatarios
-            as $destinatario
-        ) {
-
+        foreach ($destinatarios as $destinatario) {
             try {
-
                 $notificacion = Notificacion::create([
-
-                    'login' =>
-                        $destinatario->login,
-
-                    'tipo' =>
-                        'ticket_nuevo',
-
-                    'titulo' =>
-                        'Nuevo ticket recibido',
-
-                    'mensaje' =>
-                        "El usuario {$usuario->name} creó el ticket {$ticket->folio}: {$ticket->titulo}",
-
-                    'url' =>
-                        route(
-                            'tickettecnologias',
-                            [
-                                'ticket' =>
-                                    $ticket->id,
-                            ]
-                        ),
-
-                    'leida' =>
-                        false,
-
-                    'icono' =>
-                        'ticket',
-
-                    'color' =>
-                        'blue',
+                    'login' => $destinatario->login,
+                    'tipo' => 'ticket_nuevo',
+                    'titulo' => 'Nuevo ticket recibido',
+                    'mensaje' => "El usuario {$usuario->name} creó el ticket {$ticket->folio}: {$ticket->titulo}",
+                    'url' => route(
+                        'tickettecnologias',
+                        [
+                            'ticket' => $ticket->id,
+                        ]
+                    ),
+                    'leida' => false,
+                    'icono' => 'ticket',
+                    'color' => 'blue',
                 ]);
 
-                Log::info(
-                    'NOTIFICACIÓN CREADA',
-                    [
-                        'notificacion_id' =>
-                            $notificacion->id,
-
-                        'destinatario_id' =>
-                            $destinatario->id,
-
-                        'destinatario_login' =>
-                            $destinatario->login,
-
-                        'destinatario_nombre' =>
-                            $destinatario->name,
-
-                        'destinatario_role' =>
-                            $destinatario->role,
-
-                        'destinatario_priv_admin' =>
-                            $destinatario->priv_admin,
-
-                        'ticket_id' =>
-                            $ticket->id,
-
-                        'ticket_folio' =>
-                            $ticket->folio,
-                    ]
-                );
-
+                Log::info('NOTIFICACIÓN CREADA', [
+                    'notificacion_id' => $notificacion->id,
+                    'destinatario_id' => $destinatario->id,
+                    'destinatario_login' => $destinatario->login,
+                    'destinatario_nombre' => $destinatario->name,
+                    'destinatario_role' => $destinatario->role,
+                    'destinatario_priv_admin' => $destinatario->priv_admin,
+                    'ticket_id' => $ticket->id,
+                    'ticket_folio' => $ticket->folio,
+                ]);
             } catch (\Throwable $e) {
-
-                Log::error(
-                    'ERROR CREANDO NOTIFICACIÓN',
-                    [
-                        'destinatario' =>
-                            $destinatario->login,
-
-                        'ticket_id' =>
-                            $ticket->id,
-
-                        'error' =>
-                            $e->getMessage(),
-
-                        'archivo' =>
-                            $e->getFile(),
-
-                        'linea' =>
-                            $e->getLine(),
-                    ]
-                );
+                Log::error('ERROR CREANDO NOTIFICACIÓN', [
+                    'destinatario' => $destinatario->login,
+                    'ticket_id' => $ticket->id,
+                    'error' => $e->getMessage(),
+                    'archivo' => $e->getFile(),
+                    'linea' => $e->getLine(),
+                ]);
             }
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | FINALIZAR
-        |--------------------------------------------------------------------------
-        */
 
         Log::info(
             '========== FINALIZÓ CREACIÓN DEL TICKET =========='

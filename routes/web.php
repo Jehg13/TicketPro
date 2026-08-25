@@ -444,5 +444,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::post('/tecnologias/dispositivos',[DispositivosController::class, 'store'])->name('dispositivos.store');
     Route::delete('/tecnologias/dispositivos',[DispositivosController::class, 'destroy'])->name('dispositivos.destroy');
+    Route::put('/dispositivos/{id}', [DispositivosController::class, 'update'])
+    ->name('dispositivos.update');
 
 });

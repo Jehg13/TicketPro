@@ -1029,25 +1029,43 @@
 
                             </div>
                             <div id="campoEquipo" class="hidden">
-                                <label class="block text-sm font-medium mb-2">
+                                <label class="mb-2 block text-sm font-medium">
                                     ¿Qué equipo presenta la falla?
                                 </label>
 
-                                <input type="text" name="equipo" id="equipo" value="{{ old('equipo') }}"
-                                    placeholder="Ej. Laptop - Lenovo"
-                                    class="w-full bg-[#060818] border border-[#1e295d] rounded-lg p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500 placeholder-gray-500 transition">
+                                <select name="equipo" id="equipo"
+                                    class="w-full rounded-lg border border-[#1e295d] bg-[#060818] p-3 text-sm text-gray-200 outline-none transition focus:border-blue-500">
+                                    <option value="">Selecciona el equipo</option>
 
-                                <p class="text-xs text-gray-500 mt-2">
-                                    Especifica qué equipo presenta la falla. Si es una computadora,
-                                    PC, laptop o celular, indica también la marca.
+                                    @forelse ($dispositivos as $dispositivo)
+                                        <option value="{{ $dispositivo->nombre_equipo }}"
+                                            {{ old('equipo') == $dispositivo->nombre_equipo ? 'selected' : '' }}>
+                                            {{ $dispositivo->nombre_equipo }} — {{ $dispositivo->id_equipo }}
+                                        </option>
+                                    @empty
+                                        <option value="" disabled>
+                                            No tienes dispositivos vinculados
+                                        </option>
+                                    @endforelse
+                                </select>
+
+                                <p class="mt-2 text-xs text-gray-500">
+                                    Selecciona el equipo registrado que presenta la falla.
                                 </p>
 
-                                <p class="text-xs text-blue-400 mt-1">
-                                    Ejemplos: Laptop - Lenovo, PC - HP, Impresora - Epson, Celular - Samsung.
-                                </p>
+                                @if ($dispositivos->isEmpty())
+                                    <p class="mt-1 text-xs text-amber-400">
+                                        No tienes dispositivos vinculados. Contacta al área de soporte para registrar tu
+                                        equipo.
+                                    </p>
+                                @else
+                                    <p class="mt-1 text-xs text-blue-400">
+                                        Solo se muestran los dispositivos vinculados a tu usuario.
+                                    </p>
+                                @endif
 
                                 @error('equipo')
-                                    <p class="text-red-400 text-xs mt-1">
+                                    <p class="mt-1 text-xs text-red-400">
                                         {{ $message }}
                                     </p>
                                 @enderror
@@ -1278,26 +1296,26 @@
         </div>
 
     </main>
-    <script>
-        function mostrarCampoEquipo() {
-            const tipoFalla = document.getElementById('tipo_falla');
-            const campoEquipo = document.getElementById('campoEquipo');
-            const equipo = document.getElementById('equipo');
+   <script>
+    function mostrarCampoEquipo() {
+        const tipoFalla = document.getElementById('tipo_falla');
+        const campoEquipo = document.getElementById('campoEquipo');
+        const equipo = document.getElementById('equipo');
 
-            if (tipoFalla.value === 'Equipo') {
-                campoEquipo.classList.remove('hidden');
-                equipo.required = true;
-            } else {
-                campoEquipo.classList.add('hidden');
-                equipo.required = false;
-                equipo.value = '';
-            }
+        if (tipoFalla.value === 'Equipo') {
+            campoEquipo.classList.remove('hidden');
+            equipo.required = true;
+        } else {
+            campoEquipo.classList.add('hidden');
+            equipo.required = false;
+            equipo.value = '';
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            mostrarCampoEquipo();
-        });
-    </script>
+    document.addEventListener('DOMContentLoaded', function () {
+        mostrarCampoEquipo();
+    });
+</script>
 </body>
 
 </html>

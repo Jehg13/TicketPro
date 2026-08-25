@@ -13,6 +13,7 @@ class Dispositivos extends Model
         'login',
         'nombre_equipo',
         'id_equipo',
+        'estado'
     ];
 
     public function usuario(): BelongsTo

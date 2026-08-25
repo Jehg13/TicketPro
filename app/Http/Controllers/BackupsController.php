@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Backups;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,20 @@ class BackupsController extends Controller
         $configuracion = Backups::where('login', $usuario->login)
             ->where('es_configuracion', true)
             ->first();
+
+        if (
+            $configuracion &&
+            $configuracion->activo &&
+            !$configuracion->proxima_ejecucion
+        ) {
+            $configuracion->update([
+                'proxima_ejecucion' => $this->calcularProximaEjecucion(
+                    $configuracion
+                ),
+            ]);
+
+            $configuracion->refresh();
+        }
 
         $backups = Backups::where('login', $usuario->login)
             ->where('es_configuracion', false)
@@ -62,35 +77,27 @@ class BackupsController extends Controller
 
         $proximoBackup = 'No programado';
 
-        if ($configuracion && $configuracion->activo) {
-            if (
-                !$configuracion->proxima_ejecucion ||
-                Carbon::parse($configuracion->proxima_ejecucion)->isPast()
-            ) {
-                $configuracion->update([
-                    'proxima_ejecucion' => $this->calcularProximaEjecucion(
-                        $configuracion
-                    ),
-                ]);
-
-                $configuracion->refresh();
-            }
-
-            if ($configuracion->proxima_ejecucion) {
-                $proximoBackup = Carbon::parse(
-                    $configuracion->proxima_ejecucion
-                )->format('d/m/Y H:i');
-            }
+        if (
+            $configuracion &&
+            $configuracion->activo &&
+            $configuracion->proxima_ejecucion
+        ) {
+            $proximoBackup = Carbon::parse(
+                $configuracion->proxima_ejecucion
+            )->format('d/m/Y H:i');
         }
 
-        return view('admin.backups', compact(
-            'configuracion',
-            'backups',
-            'espacioUsado',
-            'ultimoBackup',
-            'proximoBackup',
-            'totalBackups'
-        ));
+        return view(
+            'admin.backups',
+            compact(
+                'configuracion',
+                'backups',
+                'espacioUsado',
+                'ultimoBackup',
+                'proximoBackup',
+                'totalBackups'
+            )
+        );
     }
 
     public function guardarConfiguracion(Request $request)
@@ -176,15 +183,17 @@ class BackupsController extends Controller
                 'hora' => $validated['hora'],
                 'dia_semana' => $validated['dia_semana'],
                 'dia_mes' => $validated['dia_mes'],
+                'estado' => 'pendiente',
+                'mensaje' => 'Configuración de backups automáticos.',
             ]);
         }
 
         $configuracion->refresh();
 
         $configuracion->update([
-            'proxima_ejecucion' => $this->calcularProximaEjecucion(
-                $configuracion
-            ),
+            'proxima_ejecucion' => $configuracion->activo
+                ? $this->calcularProximaEjecucion($configuracion)
+                : null,
         ]);
 
         return redirect()
@@ -228,6 +237,8 @@ class BackupsController extends Controller
         } else {
             $configuracion->update([
                 'activo' => true,
+                'estado' => 'pendiente',
+                'mensaje' => 'Configuración de backups automáticos.',
             ]);
         }
 
@@ -258,6 +269,8 @@ class BackupsController extends Controller
             ->update([
                 'activo' => false,
                 'proxima_ejecucion' => null,
+                'estado' => 'pendiente',
+                'mensaje' => 'Backups automáticos desactivados.',
             ]);
 
         return redirect()
@@ -288,13 +301,23 @@ class BackupsController extends Controller
             ->where('proxima_ejecucion', '<=', now())
             ->get();
 
+        $ejecutados = 0;
+        $errores = 0;
+
         foreach ($configuraciones as $configuracion) {
-            $usuario = \App\Models\User::where(
+            $usuario = User::where(
                 'login',
                 $configuracion->login
             )->first();
 
             if (!$usuario) {
+                $configuracion->update([
+                    'estado' => 'error',
+                    'mensaje' => 'No se encontró el usuario asociado a la configuración.',
+                ]);
+
+                $errores++;
+
                 continue;
             }
 
@@ -304,17 +327,26 @@ class BackupsController extends Controller
                     'automatico',
                     $configuracion
                 );
+
+                $ejecutados++;
             } catch (\Throwable $e) {
                 $configuracion->update([
                     'estado' => 'error',
                     'mensaje' => $e->getMessage(),
                     'fecha_finalizacion' => now(),
+                    'proxima_ejecucion' => $this->calcularProximaEjecucion(
+                        $configuracion
+                    ),
                 ]);
+
+                $errores++;
             }
         }
 
         return response()->json([
             'success' => true,
+            'ejecutados' => $ejecutados,
+            'errores' => $errores,
             'message' => 'Proceso de backups automáticos ejecutado correctamente.',
         ]);
     }
@@ -324,7 +356,11 @@ class BackupsController extends Controller
         string $tipo = 'manual',
         ?Backups $configuracion = null
     ) {
-        $nombreArchivo = 'backup_' . now()->format('Y-m-d_H-i-s') . '.sql';
+        $ahora = now();
+
+        $nombreArchivo = 'backup_' .
+            $ahora->format('Y-m-d_H-i-s') .
+            '.sql';
 
         $backup = Backups::create([
             'login' => $usuario->login,
@@ -341,7 +377,7 @@ class BackupsController extends Controller
             'dia_mes' => null,
             'estado' => 'pendiente',
             'tamaño' => null,
-            'fecha_inicio' => now(),
+            'fecha_inicio' => $ahora,
             'fecha_finalizacion' => null,
             'ultima_ejecucion' => null,
             'proxima_ejecucion' => null,
@@ -360,13 +396,9 @@ class BackupsController extends Controller
             $database = config('database.connections.mysql');
 
             $username = $database['username'] ?? 'root';
-
             $password = $database['password'] ?? '';
-
             $databaseName = $database['database'] ?? null;
-
             $host = $database['host'] ?? '127.0.0.1';
-
             $port = $database['port'] ?? 3306;
 
             if (!$databaseName) {
@@ -408,9 +440,7 @@ class BackupsController extends Controller
             ]);
 
             $process->setEnv($environment);
-
             $process->setTimeout(300);
-
             $process->run();
 
             $errorOutput = trim(
@@ -440,22 +470,31 @@ class BackupsController extends Controller
 
             $tamano = $this->formatearBytes($bytes);
 
+            $fechaFinalizacion = now();
+
             $backup->update([
                 'archivo' => $rutaRelativa,
                 'estado' => 'completado',
                 'tamaño' => $tamano,
-                'fecha_finalizacion' => now(),
-                'ultima_ejecucion' => now(),
-                'mensaje' => 'Backup generado correctamente.',
+                'fecha_finalizacion' => $fechaFinalizacion,
+                'ultima_ejecucion' => $fechaFinalizacion,
+                'mensaje' => $tipo === 'automatico'
+                    ? 'Backup automático generado correctamente.'
+                    : 'Backup generado correctamente.',
             ]);
 
-            if ($tipo === 'automatico' && $configuracion) {
+            if (
+                $tipo === 'automatico' &&
+                $configuracion
+            ) {
+                $configuracion->refresh();
+
                 $configuracion->update([
-                    'estado' => 'completado',
-                    'ultima_ejecucion' => now(),
+                    'estado' => 'pendiente',
+                    'ultima_ejecucion' => $fechaFinalizacion,
                     'proxima_ejecucion' => $this->calcularProximaEjecucion(
                         $configuracion,
-                        now()
+                        $fechaFinalizacion
                     ),
                     'mensaje' => 'Backup automático generado correctamente.',
                 ]);
@@ -482,7 +521,12 @@ class BackupsController extends Controller
                 'mensaje' => $e->getMessage(),
             ]);
 
-            if ($tipo === 'automatico' && $configuracion) {
+            if (
+                $tipo === 'automatico' &&
+                $configuracion
+            ) {
+                $configuracion->refresh();
+
                 $configuracion->update([
                     'estado' => 'error',
                     'mensaje' => $e->getMessage(),
@@ -582,10 +626,12 @@ class BackupsController extends Controller
             5
         );
 
-        if (!preg_match(
-            '/^(?:[01]\d|2[0-3]):[0-5]\d$/',
-            $hora
-        )) {
+        if (
+            !preg_match(
+                '/^(?:[01]\d|2[0-3]):[0-5]\d$/',
+                $hora
+            )
+        ) {
             return null;
         }
 
@@ -619,7 +665,8 @@ class BackupsController extends Controller
                 7
             ) % 7;
 
-            $fecha->addDays($dias)
+            $fecha
+                ->addDays($dias)
                 ->setTimeFromTimeString($hora);
 
             if ($fecha->lessThanOrEqualTo($ahora)) {

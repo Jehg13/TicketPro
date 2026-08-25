@@ -1334,32 +1334,25 @@
                                     {{-- LEVANTADO POR --}}
 
                                     <div class="flex justify-between items-start pt-1">
-
-                                        <span class="text-slate-400 font-semibold">
-                                            Levantado por:
-                                        </span>
-
+                                        <span class="text-slate-400 font-semibold">Levantado por:</span>
                                         <div class="flex items-center gap-2 text-right">
-
                                             <div>
-
                                                 <div class="text-white font-medium"
                                                     x-text="selectedTicket?.user?.name ?? selectedTicket?.usuario?.name ?? 'Usuario'">
                                                 </div>
-
                                                 <div class="text-[10px] text-slate-400"
                                                     x-text="selectedTicket?.user?.email ?? selectedTicket?.usuario?.email ?? ''">
                                                 </div>
-
                                             </div>
-
-                                            <img :src="selectedTicket?.user?.picture ?
-                                                selectedTicket.user.picture :
-                                                '{{ asset('storage/profile-photos/user.png') }}'"
-                                                :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
-                                                    ?.name ?? 'Usuario'"
-                                                class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
-                                                x-on:error="
+                                         <img
+    :src="
+        selectedTicket?.user?.picture
+            ? '/storage/' + selectedTicket.user.picture.replace(/^\/?storage\//, '')
+            : '{{ asset('storage/profile-photos/user.png') }}'
+    "
+    :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario?.name ?? 'Usuario'"
+    class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
+    x-on:error="
         if ($event.target.dataset.fallback === 'avatar') {
             return;
         }
@@ -1375,10 +1368,9 @@
                 'Usuario'
             );
         }
-    ">
-
+    "
+>
                                         </div>
-
                                     </div>
 
                                     {{-- DEPARTAMENTO --}}
@@ -1655,27 +1647,16 @@
                                     {{-- FOTO DEL USUARIO --}}
                                     <div class="shrink-0">
 
-                                        <img :src="selectedTicket?.user?.picture ?
-                                            selectedTicket.user.picture :
-                                            '{{ asset('storage/profile-photos/user.png') }}'"
-                                            :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
-                                                ?.name ?? 'Usuario'"
-                                            class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
-                                            x-on:error="
-        if ($event.target.dataset.fallback === 'avatar') {
-            return;
-        }
-
-        if ($event.target.dataset.fallback !== 'user') {
-            $event.target.dataset.fallback = 'user';
-            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+                                        <img src="{{ auth()->user()->picture ? Storage::url(auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
+                                            class="w-10 h-10 rounded-full object-cover border border-blue-400/40"
+                                            alt="{{ auth()->user()->name ?? 'Usuario' }}"
+                                            onerror="
+        if (this.dataset.fallback === 'user') {
+            this.dataset.fallback = 'avatar';
+            this.src = 'https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Usuario') }}&background=0D8ABC&color=fff';
         } else {
-            $event.target.dataset.fallback = 'avatar';
-            $event.target.src = avatarUsuario(
-                selectedTicket?.user?.name ??
-                selectedTicket?.usuario?.name ??
-                'Usuario'
-            );
+            this.dataset.fallback = 'user';
+            this.src = '{{ asset('storage/profile-photos/user.png') }}';
         }
     ">
 

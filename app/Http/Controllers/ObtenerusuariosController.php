@@ -1,5 +1,8 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\Notificacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -43,17 +46,34 @@ class ObtenerusuariosController extends Controller
                     $query->where('users.name', 'LIKE', "%{$buscar}%")
                         ->orWhere('users.login', 'LIKE', "%{$buscar}%")
                         ->orWhere('users.email', 'LIKE', "%{$buscar}%")
-                        ->orWhere('numeros_empleado.numero_empleado', 'LIKE', "%{$buscar}%")
-                        ->orWhere('empresas.empresa', 'LIKE', "%{$buscar}%")
-                        ->orWhere('oficinas.nombre', 'LIKE', "%{$buscar}%")
-                        ->orWhere('departamentos.nombre', 'LIKE', "%{$buscar}%");
+                        ->orWhere(
+                            'numeros_empleado.numero_empleado',
+                            'LIKE',
+                            "%{$buscar}%"
+                        )
+                        ->orWhere(
+                            'empresas.empresa',
+                            'LIKE',
+                            "%{$buscar}%"
+                        )
+                        ->orWhere(
+                            'oficinas.nombre',
+                            'LIKE',
+                            "%{$buscar}%"
+                        )
+                        ->orWhere(
+                            'departamentos.nombre',
+                            'LIKE',
+                            "%{$buscar}%"
+                        );
                 });
             }
         }
 
         $usuarios = $consulta
             ->orderBy('users.name', 'asc')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         $departamentos = DB::table('departamentos')
             ->whereNotNull('nombre')
@@ -77,13 +97,26 @@ class ObtenerusuariosController extends Controller
             ->whereRaw('UPPER(TRIM(priv_admin)) = ?', ['Y'])
             ->count();
 
+        $login = Auth::user()->login;
+
+        $notificaciones = Notificacion::where('login', $login)
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        $notificacionesNoLeidas = Notificacion::where('login', $login)
+            ->where('leida', false)
+            ->count();
+
         return view('admin.users', compact(
             'usuarios',
             'departamentos',
             'totalUsuarios',
             'usuariosActivos',
             'usuariosInactivos',
-            'administradores'
+            'administradores',
+            'notificaciones',
+            'notificacionesNoLeidas'
         ));
     }
 
@@ -206,7 +239,8 @@ class ObtenerusuariosController extends Controller
         $nombre = trim((string) $validated['name']);
         $email = trim((string) $validated['email']);
 
-        $phone = isset($validated['phone']) && trim((string) $validated['phone']) !== ''
+        $phone = isset($validated['phone']) &&
+            trim((string) $validated['phone']) !== ''
             ? trim((string) $validated['phone'])
             : null;
 
@@ -216,7 +250,9 @@ class ObtenerusuariosController extends Controller
         $active = $validated['active'];
         $privAdmin = $validated['priv_admin'];
         $oficinaId = (int) $validated['oficina_id'];
-        $departamentoNombre = trim((string) ($validated['departamento'] ?? ''));
+        $departamentoNombre = trim(
+            (string) ($validated['departamento'] ?? '')
+        );
 
         $numeroExiste = DB::table('numeros_empleado')
             ->where('numero_empleado', $numeroEmpleado)
@@ -340,7 +376,10 @@ class ObtenerusuariosController extends Controller
             }
 
             $picture = !empty($usuarioActualizado->picture)
-                ? asset('storage/' . ltrim($usuarioActualizado->picture, '/'))
+                ? asset(
+                    'storage/' .
+                    ltrim($usuarioActualizado->picture, '/')
+                )
                 : asset('storage/profile-photos/user.png');
 
             $usuarioActualizado = [
@@ -349,7 +388,9 @@ class ObtenerusuariosController extends Controller
                 'email' => $usuarioActualizado->email,
                 'phone' => $usuarioActualizado->phone,
                 'role' => $usuarioActualizado->role,
-                'active' => strtoupper(trim((string) $usuarioActualizado->active)) === 'Y',
+                'active' => strtoupper(
+                    trim((string) $usuarioActualizado->active)
+                ) === 'Y',
                 'picture' => $picture,
                 'numero_empleado' => $usuarioActualizado->numero_empleado,
                 'empresa_id' => $usuarioActualizado->empresa_id,
@@ -357,7 +398,9 @@ class ObtenerusuariosController extends Controller
                 'oficina_id' => $usuarioActualizado->oficina_id,
                 'oficina' => $usuarioActualizado->oficina ?? 'Sin oficina',
                 'departamento' => $usuarioActualizado->departamento ?? 'Sin departamento',
-                'priv_admin' => strtoupper(trim((string) $usuarioActualizado->priv_admin)) === 'Y'
+                'priv_admin' => strtoupper(
+                    trim((string) $usuarioActualizado->priv_admin)
+                ) === 'Y'
             ];
 
             return response()->json([
@@ -377,102 +420,103 @@ class ObtenerusuariosController extends Controller
         }
     }
 
-   public function destroy(Request $request, $login)
-{
-    if (!Auth::check()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No autenticado.'
-        ], 401);
-    }
-
-    if (!$this->tienePermiso()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No tienes permiso para eliminar usuarios.'
-        ], 403);
-    }
-
-    $login = trim((string) $login);
-
-    try {
-        $validated = $request->validate([
-            'password' => ['required', 'string']
-        ]);
-    } catch (ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Debes proporcionar tu contraseña.'
-        ], 422);
-    }
-
-    $usuarioActual = Auth::user();
-
-    try {
-        if (!Hash::check($validated['password'], $usuarioActual->pswd)) {
+    public function destroy(Request $request, $login)
+    {
+        if (!Auth::check()) {
             return response()->json([
                 'success' => false,
-                'message' => 'La contraseña es incorrecta.'
+                'message' => 'No autenticado.'
+            ], 401);
+        }
+
+        if (!$this->tienePermiso()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para eliminar usuarios.'
+            ], 403);
+        }
+
+        $login = trim((string) $login);
+
+        try {
+            $validated = $request->validate([
+                'password' => ['required', 'string']
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debes proporcionar tu contraseña.'
             ], 422);
         }
-    } catch (\Throwable $e) {
-        report($e);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'La contraseña almacenada no tiene un formato válido.'
-        ], 422);
-    }
+        $usuarioActual = Auth::user();
 
-    $usuario = DB::table('users')
-        ->where('login', $login)
-        ->first();
+        try {
+            if (!Hash::check($validated['password'], $usuarioActual->pswd)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La contraseña es incorrecta.'
+                ], 422);
+            }
+        } catch (\Throwable $e) {
+            report($e);
 
-    if (!$usuario) {
-        return response()->json([
-            'success' => false,
-            'message' => 'El usuario no existe.'
-        ], 404);
-    }
+            return response()->json([
+                'success' => false,
+                'message' => 'La contraseña almacenada no tiene un formato válido.'
+            ], 422);
+        }
 
-    if (trim((string) $usuario->login) === trim((string) $usuarioActual->login)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No puedes eliminar tu propia cuenta.'
-        ], 422);
-    }
-
-    DB::beginTransaction();
-
-    try {
-        DB::table('numeros_empleado')
+        $usuario = DB::table('users')
             ->where('login', $login)
-            ->delete();
+            ->first();
 
-        DB::table('departamentos')
-            ->where('usuario_departamento', $login)
-            ->delete();
+        if (!$usuario) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El usuario no existe.'
+            ], 404);
+        }
 
-        DB::table('users')
-            ->where('login', $login)
-            ->delete();
+        if (trim((string) $usuario->login) === trim((string) $usuarioActual->login)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puedes eliminar tu propia cuenta.'
+            ], 422);
+        }
 
-        DB::commit();
+        DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'El usuario fue eliminado correctamente.'
-        ]);
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        report($e);
+        try {
+            DB::table('numeros_empleado')
+                ->where('login', $login)
+                ->delete();
 
-        return response()->json([
-            'success' => false,
-            'message' => 'No se pudo eliminar el usuario.'
-        ], 500);
+            DB::table('departamentos')
+                ->where('usuario_departamento', $login)
+                ->delete();
+
+            DB::table('users')
+                ->where('login', $login)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'El usuario fue eliminado correctamente.'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo eliminar el usuario.'
+            ], 500);
+        }
     }
-}
+
     public function empresas()
     {
         if (!Auth::check() || !$this->tienePermiso()) {
@@ -596,6 +640,7 @@ class ObtenerusuariosController extends Controller
         }
 
         $usuarioActual = Auth::user();
+
         $role = strtolower(trim((string) $usuarioActual->role));
         $privAdmin = strtoupper(trim((string) $usuarioActual->priv_admin));
 

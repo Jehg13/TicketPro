@@ -15,11 +15,16 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="bg-[#070b19] text-white font-sans h-screen flex antialiased overflow-hidden">
+<body class="bg-[#070b19] text-white font-sans h-screen flex antialiased overflow-hidden" x-data="{ menuMovil: false }"
+    @keydown.escape.window="menuMovil = false">
 
+    <!-- SIDEBAR -->
     <aside
-        class="w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 flex flex-col justify-between hidden md:flex h-screen shrink-0 overflow-hidden">
+        class="fixed inset-y-0 left-0 z-[100000] w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 flex flex-col justify-between h-screen shrink-0 overflow-hidden transform transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0 md:flex md:z-auto"
+        :class="{ 'translate-x-0': menuMovil }">
+
         <div class="min-h-0">
+            <!-- LOGO ORIGINAL -->
             <div class="flex items-center gap-2 mb-10">
                 <span class="text-3xl font-extrabold tracking-wide text-white">
                     Ticket<span class="text-blue-500">Pro</span>
@@ -27,87 +32,109 @@
             </div>
 
             <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
-                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
-                    alt="{{ auth()->user()->name ?? 'Usuario' }}"
-                    class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
+                <img src="{{ auth()->user()->picture
+                    ? asset('storage/' . auth()->user()->picture)
+                    : asset('storage/profile-photos/user.png') }}"
+                    alt="{{ auth()->user()->name }}"
+                    class="h-12 w-12 rounded-full border-2 border-gray-500 object-cover">
+
                 <div class="overflow-hidden">
-                    <h4 class="text-sm font-semibold text-slate-200 truncate">{{ Auth::user()->name ?? 'Desconocido' }}
+                    <h4 class="text-sm font-semibold text-slate-200 truncate">
+                        {{ Auth::user()->name ?? 'Desconocido' }}
                     </h4>
+
                     <p class="text-xs text-slate-400 truncate">
                         {{ auth()->user()->role ?? 'Desconocido' }}
+                    </p>
                 </div>
             </div>
 
             <nav class="space-y-2">
-                <a href="{{ route('tecnologias') }}"
+
+                <a href="{{ route('tecnologias') }}" @click="menuMovil = false"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                     <span class="font-medium text-sm">Inicio</span>
                 </a>
 
-                <a href="{{ route('tickettecnologias') }}"
+                <a href="{{ route('tickettecnologias') }}" @click="menuMovil = false"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-600/30 transition">
                     <i data-lucide="ticket-check" class="w-5 h-5"></i>
                     <span class="text-sm">Tickets</span>
                 </a>
 
                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
-                    <a href="{{ route('cambiostecnologias') }}"
+                    <a href="{{ route('cambiostecnologias') }}" @click="menuMovil = false"
                         class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
                         <i data-lucide="git-compare-arrows" class="w-5 h-5"></i>
-
                         <span class="text-sm">
                             Cambios
                         </span>
-
                     </a>
                 @endif
 
                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
-                    <a href="{{ route('usuarios.tecnologias') }}"
+                    <a href="{{ route('usuarios.tecnologias') }}" @click="menuMovil = false"
                         class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-
                         <i data-lucide="users" class="w-5 h-5"></i>
-
                         <span class="text-sm">
                             Usuarios
                         </span>
-
                     </a>
                 @endif
 
-
-                <a href="{{ route('avisostecnologias') }}"
+                <a href="{{ route('avisostecnologias') }}" @click="menuMovil = false"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
                     <i data-lucide="megaphone" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Avisos</span>
+                    <span class="font-medium text-sm">
+                        Avisos
+                    </span>
                 </a>
 
-                <a href="{{ route('perfiltecnologias') }}"
+                <a href="{{ route('perfiltecnologias') }}" @click="menuMovil = false"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
                     <i data-lucide="circle-user-round" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Mi perfil</span>
+                    <span class="font-medium text-sm">
+                        Mi perfil
+                    </span>
                 </a>
+
             </nav>
         </div>
 
         <div class="shrink-0 pt-4">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
+
                 <button type="submit"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition">
                     <i data-lucide="log-out" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Cerrar sesión</span>
+                    <span class="font-medium text-sm">
+                        Cerrar sesión
+                    </span>
                 </button>
             </form>
         </div>
+
     </aside>
 
+
+    <!-- OVERLAY MÓVIL -->
+    <div x-show="menuMovil" x-cloak x-transition:enter="transition-opacity ease-out duration-300"
+        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-in duration-200" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0" @click="menuMovil = false"
+        class="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-[2px] md:hidden" style="display: none;">
+    </div>
+
+
+    <!-- CONTENIDO -->
     <main class="flex-1 h-screen min-w-0 overflow-y-auto overflow-x-hidden p-6 md:p-8">
+
         <div class="max-w-7xl mx-auto" x-data="ticketModal()">
 
             <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+
                 @if (session('success'))
                     <div id="successMessage"
                         class="fixed right-5 top-5 z-[9999] w-full max-w-sm rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
@@ -124,11 +151,9 @@
                                     </path>
 
                                 </svg>
-
                             </div>
 
                             <div class="flex-1">
-
                                 <p class="font-bold text-white">
                                     ¡Éxito!
                                 </p>
@@ -136,7 +161,6 @@
                                 <p class="mt-1 text-sm text-slate-400">
                                     {{ session('success') }}
                                 </p>
-
                             </div>
 
                             <button type="button" onclick="document.getElementById('successMessage')?.remove()"
@@ -145,9 +169,9 @@
                             </button>
 
                         </div>
-
                     </div>
                 @endif
+
 
                 @if (session('error'))
                     <div id="errorMessage"
@@ -165,11 +189,9 @@
                                     </path>
 
                                 </svg>
-
                             </div>
 
                             <div class="flex-1">
-
                                 <p class="font-bold text-white">
                                     ¡Error!
                                 </p>
@@ -177,7 +199,6 @@
                                 <p class="mt-1 text-sm text-slate-400">
                                     {{ session('error') }}
                                 </p>
-
                             </div>
 
                             <button type="button" onclick="document.getElementById('errorMessage')?.remove()"
@@ -186,23 +207,50 @@
                             </button>
 
                         </div>
-
                     </div>
                 @endif
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Tickets</h1>
-                    <p class="text-sm text-slate-400 mt-1">Consulta y da seguimiento a todos los tickets que se han
-                        creado</p>
+
+
+                <!-- TÍTULO + BOTÓN MÓVIL -->
+                <div class="flex items-center gap-3">
+
+                    <!-- BOTÓN HAMBURGUESA SOLO MÓVIL -->
+                    <button type="button" @click="menuMovil = true"
+                        class="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 focus:outline-none"
+                        aria-label="Abrir menú">
+
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+
+                    </button>
+
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
+                            Tickets
+                        </h1>
+
+                        <p class="text-sm text-slate-400 mt-1">
+                            Consulta y da seguimiento a todos los tickets que se han creado
+                        </p>
+                    </div>
+
                 </div>
 
+
+                <!-- NOTIFICACIONES + PERFIL -->
                 <div class="flex items-center gap-4 self-end md:self-auto">
+
                     <div class="flex items-center gap-6">
 
+                        <!-- NOTIFICACIONES -->
+
                         <div class="relative" x-data="{ notificacionesAbiertas: false }">
+
                             <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
                                 @click.outside="notificacionesAbiertas = false"
                                 class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 focus:outline-none">
+
                                 <i data-lucide="bell" class="w-5 h-5"></i>
+
                                 @if ($notificacionesNoLeidas > 0)
                                     <span
                                         class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-indigo-600 border-2 border-[#050814] text-[9px] font-bold text-white">
@@ -218,90 +266,149 @@
                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
                                 @click.outside="notificacionesAbiertas = false"
-                                class="absolute right-0 top-full mt-3 w-[360px] max-w-[calc(100vw-2rem)] bg-[#0f1535] border border-[#1e295d] rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[99999]"
+                                class="fixed left-2 right-2 top-16 w-auto max-w-none sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px] sm:max-w-[360px] bg-[#0f1535] border border-[#1e295d] rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[99999]"
                                 style="display: none;">
 
-                                <div class="flex items-center justify-between px-4 py-4 border-b border-slate-800/80">
-                                    <div class="flex items-center gap-2">
+                                <div
+                                    class="flex items-center justify-between px-4 py-4 border-b border-slate-800/80 gap-3">
+
+                                    <div class="flex items-center gap-2 min-w-0">
+
                                         <div
-                                            class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                                            class="w-8 h-8 shrink-0 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+
                                             <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
+
                                         </div>
-                                        <div>
-                                            <h3 class="text-sm font-semibold text-white">Notificaciones</h3>
-                                            <p class="text-[10px] text-slate-500">Tienes {{ $notificacionesNoLeidas }}
-                                                nuevas</p>
+
+                                        <div class="min-w-0">
+
+                                            <h3 class="text-sm font-semibold text-white truncate">
+                                                Notificaciones
+                                            </h3>
+
+                                            <p class="text-[10px] text-slate-500 truncate">
+                                                Tienes {{ $notificacionesNoLeidas }} nuevas
+                                            </p>
+
                                         </div>
+
                                     </div>
 
                                     @if ($notificacionesNoLeidas > 0)
-                                        <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
+                                        <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}"
+                                            class="shrink-0">
+
                                             @csrf
                                             @method('PATCH')
+
                                             <button type="submit"
-                                                class="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+                                                class="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors whitespace-nowrap">
+
                                                 Marcar leídas
+
                                             </button>
+
                                         </form>
                                     @endif
+
                                 </div>
 
                                 <div class="max-h-[400px] overflow-y-auto">
+
                                     @forelse ($notificaciones as $notificacion)
                                         <a href="{{ $notificacion->url ?? '#' }}"
                                             class="group flex gap-3 px-4 py-4 border-b border-slate-800/50 transition-colors hover:bg-slate-800/40 {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
+
                                             <div
                                                 class="w-10 h-10 shrink-0 rounded-xl border border-indigo-500/20 bg-indigo-500/10 flex items-center justify-center">
+
                                                 <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
-                                                    class="w-5 h-5 text-indigo-400"></i>
+                                                    class="w-5 h-5 text-indigo-400">
+                                                </i>
+
                                             </div>
 
                                             <div class="flex-1 min-w-0">
+
                                                 <div class="flex items-start justify-between gap-2">
+
                                                     <p
-                                                        class="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors">
+                                                        class="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors break-words min-w-0">
                                                         {{ $notificacion->titulo }}
                                                     </p>
+
                                                     @if (!$notificacion->leida)
                                                         <span
-                                                            class="w-2 h-2 shrink-0 mt-1.5 rounded-full bg-indigo-500"></span>
+                                                            class="w-2 h-2 shrink-0 mt-1.5 rounded-full bg-indigo-500">
+                                                        </span>
                                                     @endif
+
                                                 </div>
-                                                <p class="mt-1 text-[11px] leading-relaxed text-slate-400">
-                                                    {{ $notificacion->mensaje }}</p>
+
+                                                <p class="mt-1 text-[11px] leading-relaxed text-slate-400 break-words">
+                                                    {{ $notificacion->mensaje }}
+                                                </p>
+
                                                 <p class="mt-2 text-[10px] text-slate-500">
-                                                    {{ $notificacion->created_at->diffForHumans() }}</p>
+                                                    {{ $notificacion->created_at->diffForHumans() }}
+                                                </p>
+
                                             </div>
+
                                         </a>
+
                                     @empty
+
                                         <div class="px-6 py-10 text-center">
+
                                             <div
                                                 class="mx-auto mb-3 w-12 h-12 rounded-full bg-slate-800/50 border border-slate-800 flex items-center justify-center">
-                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500"></i>
+
+                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
+                                                </i>
+
                                             </div>
-                                            <p class="text-xs font-medium text-slate-400">No tienes notificaciones</p>
-                                            <p class="text-[10px] text-slate-600 mt-1">Aquí aparecerán tus nuevas
-                                                notificaciones.</p>
+
+                                            <p class="text-xs font-medium text-slate-400">
+                                                No tienes notificaciones
+                                            </p>
+
+                                            <p class="text-[10px] text-slate-600 mt-1">
+                                                Aquí aparecerán tus nuevas notificaciones.
+                                            </p>
+
                                         </div>
                                     @endforelse
+
                                 </div>
 
                                 @if ($notificaciones->count() > 0)
                                     <div class="px-4 py-3 border-t border-slate-800/80 bg-[#0b1026]">
-                                        <p class="text-[10px] text-center text-slate-500">Mostrando tus notificaciones
-                                            recientes</p>
+
+                                        <p class="text-[10px] text-center text-slate-500">
+                                            Mostrando tus notificaciones recientes
+                                        </p>
+
                                     </div>
                                 @endif
+
                             </div>
+
                         </div>
 
+
+                        <!-- PERFIL -->
                         <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
 
                             <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
                                 class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-                                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('images/default-avatar.png') }}"
-                                    alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                                <img src="{{ auth()->user()->picture
+                                    ? asset('storage/' . auth()->user()->picture)
+                                    : asset('storage/profile-photos/user.png') }}"
+                                    alt="{{ auth()->user()->name }}"
+                                    class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
 
                                 <div class="text-left leading-tight hidden sm:block">
 
@@ -322,33 +429,51 @@
 
                             </button>
 
+
                             <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
                                 class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
                                 style="display:none;">
 
                                 <a href="{{ route('perfiltecnologias') }}"
                                     class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
-                                    <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400"></i>
-                                    <span>Perfil</span>
+
+                                    <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400">
+                                    </i>
+
+                                    <span>
+                                        Perfil
+                                    </span>
+
                                 </a>
 
                                 <div class="border-t border-[#1e295d]"></div>
 
                                 <form method="POST" action="{{ route('logout') }}">
+
                                     @csrf
 
                                     <button type="submit"
                                         class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
-                                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                                        <span>Cerrar sesión</span>
+
+                                        <i data-lucide="log-out" class="w-5 h-5">
+                                        </i>
+
+                                        <span>
+                                            Cerrar sesión
+                                        </span>
+
                                     </button>
+
                                 </form>
 
                             </div>
 
                         </div>
+
                     </div>
+
                 </div>
+
             </header>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -1371,28 +1496,29 @@
                                                             </div>
                                                         </div>
                                                         <img :src="selectedTicket?.user?.picture ?
-                                                            selectedTicket.user.picture :
+                                                            '/storage/' + selectedTicket.user.picture.replace(
+                                                                /^\/?storage\//, '') :
                                                             '{{ asset('storage/profile-photos/user.png') }}'"
                                                             :alt="selectedTicket?.user?.name ?? selectedTicket?.usuario
                                                                 ?.name ?? 'Usuario'"
                                                             class="w-8 h-8 rounded-full object-cover border border-blue-400/40"
                                                             x-on:error="
-        if ($event.target.dataset.fallback === 'avatar') {
-            return;
-        }
+                                                            if ($event.target.dataset.fallback === 'avatar') {
+                                                                return;
+                                                            }
 
-        if ($event.target.dataset.fallback !== 'user') {
-            $event.target.dataset.fallback = 'user';
-            $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
-        } else {
-            $event.target.dataset.fallback = 'avatar';
-            $event.target.src = avatarUsuario(
-                selectedTicket?.user?.name ??
-                selectedTicket?.usuario?.name ??
-                'Usuario'
-            );
-        }
-    ">
+                                                            if ($event.target.dataset.fallback !== 'user') {
+                                                                $event.target.dataset.fallback = 'user';
+                                                                $event.target.src = '{{ asset('storage/profile-photos/user.png') }}';
+                                                            } else {
+                                                                $event.target.dataset.fallback = 'avatar';
+                                                                $event.target.src = avatarUsuario(
+                                                                    selectedTicket?.user?.name ??
+                                                                    selectedTicket?.usuario?.name ??
+                                                                    'Usuario'
+                                                                );
+                                                            }
+                                                        ">
                                                     </div>
                                                 </div>
 

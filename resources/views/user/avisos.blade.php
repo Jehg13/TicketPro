@@ -29,8 +29,10 @@
         </div>
 
         <div class="flex items-center gap-3 mb-10 px-2">
-            <img src="{{ asset('storage/' . auth()->user()->picture) }}" alt="{{ auth()->user()->name }}"
-                class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
+           <img src="{{ auth()->user()->picture
+                ? asset('storage/' . auth()->user()->picture)
+                : asset('storage/profile-photos/user.png') }}"
+                alt="{{ auth()->user()->name }}" class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
 
             <div>
                 <h3 class="text-sm font-semibold text-white">
@@ -408,7 +410,10 @@
                     <button type="button" @click="perfilAbierto = !perfilAbierto"
                         class="flex items-center gap-3 cursor-pointer rounded-xl px-2 py-1.5 hover:bg-[#151b3b] transition-all duration-200 focus:outline-none">
 
-                        <img src="{{ asset('storage/' . auth()->user()->picture) }}" alt="{{ auth()->user()->name }}"
+                        <img src="{{ auth()->user()->picture
+                            ? asset('storage/' . auth()->user()->picture)
+                            : asset('storage/profile-photos/user.png') }}"
+                            alt="{{ auth()->user()->name }}"
                             class="w-10 h-10 rounded-full border border-gray-600 object-cover">
 
                         <div class="hidden md:block text-right">

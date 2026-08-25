@@ -17,38 +17,83 @@
     </style>
 </head>
 
-<body class="bg-[#070b19] text-white font-sans min-h-screen antialiased">
+<body x-data="{ menuMovil: false }" class="min-h-screen bg-[#070b19] text-white font-sans antialiased">
 
-    <aside
-        class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0a0f24] border-r border-slate-800/60 p-6 hidden md:flex flex-col justify-between">
+    <aside :class="menuMovil
+        ?
+        'translate-x-0' :
+        '-translate-x-full md:translate-x-0'"
+        class="fixed inset-y-0 left-0 z-[99999]
+               w-[280px] max-w-[85vw]
+               border-r border-slate-800/60
+               bg-[#0a0f24]
+               p-5 sm:p-6
+               flex flex-col justify-between
+               transition-transform duration-300">
+
         <div>
-            <div class="flex items-center gap-2 mb-10">
-                <span class="text-3xl font-extrabold tracking-wide text-white">Ticket<span
-                        class="text-blue-500">Pro</span></span>
+
+            {{-- LOGO --}}
+            <div class="flex items-center justify-between mb-8 sm:mb-10">
+
+                <span class="text-2xl sm:text-3xl font-extrabold tracking-wide text-white">
+                    Ticket<span class="text-blue-500">Pro</span>
+                </span>
+
+                <button type="button" @click="menuMovil = false"
+                    class="flex md:hidden h-9 w-9 items-center justify-center
+                           rounded-lg text-slate-400
+                           hover:bg-slate-800 hover:text-white transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+
             </div>
 
-            <div class="flex items-center gap-3 mb-8 p-2 rounded-xl bg-slate-900/40 border border-slate-800/50">
-                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
+            {{-- USUARIO --}}
+            <div
+                class="flex items-center gap-3 mb-8 p-2
+                       rounded-xl bg-slate-900/40
+                       border border-slate-800/50">
+
+                <img src="{{ auth()->user()->picture
+                    ? asset('storage/' . auth()->user()->picture)
+                    : asset('storage/profile-photos/user.png') }}"
                     alt="{{ auth()->user()->name }}"
-                    class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30">
-                <div class="overflow-hidden">
+                    class="h-11 w-11 sm:h-12 sm:w-12
+                           shrink-0 rounded-full
+                           border-2 border-gray-500
+                           object-cover">
+
+                <div class="overflow-hidden min-w-0">
+
                     <h4 class="text-sm font-semibold text-slate-200 truncate">
-                        {{ auth()->user()->name ?? 'Desconocido' }}</h4>
+                        {{ auth()->user()->name ?? 'Desconocido' }}
+                    </h4>
+
                     <p class="text-xs text-slate-400 truncate">
                         {{ auth()->user()->role ?? 'Desconocido' }}
+                    </p>
+
                 </div>
+
             </div>
 
+            {{-- NAVEGACIÓN --}}
             <nav class="space-y-2">
+
                 <a href="{{ route('tecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    class="flex items-center gap-3 px-4 py-3
+                           rounded-xl text-slate-400
+                           hover:bg-slate-800/50 hover:text-white transition">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
                     <span class="font-medium text-sm">Inicio</span>
                 </a>
 
                 <a href="{{ route('tickettecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="ticket-check" class="w-5 h-5"></i>
+                    class="flex items-center gap-3 px-4 py-3
+                           rounded-xl text-slate-400
+                           hover:bg-slate-800/50 hover:text-white transition">
+                    <i data-lucide="ticket-check" class="w-5 h-5 shrink-0"></i>
                     <span class="font-medium text-sm">Tickets</span>
                 </a>
 
@@ -78,73 +123,476 @@
                     </a>
                 @endif
 
-
                 <a href="{{ route('avisostecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="megaphone" class="w-5 h-5"></i>
+                    class="flex items-center gap-3 px-4 py-3
+                           rounded-xl text-slate-400
+                           hover:bg-slate-800/50 hover:text-white transition">
+                    <i data-lucide="megaphone" class="w-5 h-5 shrink-0"></i>
                     <span class="font-medium text-sm">Avisos</span>
                 </a>
 
                 <a href="{{ route('perfiltecnologias') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="circle-user-round" class="w-5 h-5"></i>
+                    class="flex items-center gap-3 px-4 py-3
+                           rounded-xl text-slate-400
+                           hover:bg-slate-800/50 hover:text-white transition">
+                    <i data-lucide="circle-user-round" class="w-5 h-5 shrink-0"></i>
                     <span class="font-medium text-sm">Mi perfil</span>
                 </a>
+
             </nav>
+
         </div>
 
+        {{-- LOGOUT --}}
         <form method="POST" action="{{ route('logout') }}">
             @csrf
+
             <button type="submit"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition">
-                <i data-lucide="log-out" class="w-5 h-5"></i>
-                <span class="font-medium text-sm">Cerrar sesión</span>
+                class="w-full flex items-center gap-3
+                       px-4 py-3 rounded-xl
+                       text-slate-400
+                       hover:bg-red-500/10
+                       hover:text-red-400 transition">
+                <i data-lucide="log-out" class="w-5 h-5 shrink-0"></i>
+                <span class="font-medium text-sm">
+                    Cerrar sesión
+                </span>
             </button>
         </form>
+
     </aside>
 
-    <main class="md:ml-64 min-h-screen p-6 md:p-8">
-        <div class="max-w-[1400px] mx-auto">
 
-            <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Usuarios</h1>
-                    <p class="text-sm text-slate-400 mt-1">Consulta y administra la información de los usuarios del
-                        sistema</p>
+    {{-- OVERLAY MOBILE --}}
+    <div x-show="menuMovil" x-cloak x-transition.opacity @click="menuMovil = false"
+        class="fixed inset-0 z-[99998]
+               bg-black/70 backdrop-blur-sm md:hidden"></div>
+
+
+    {{-- =========================================================
+        CONTENIDO PRINCIPAL
+    ========================================================== --}}
+
+    <main
+        class="md:ml-[280px]
+               min-h-screen
+               px-4 py-5
+               sm:px-6 sm:py-6
+               lg:px-8 lg:py-8
+               pt-20 md:pt-8">
+
+        <div class="max-w-[1500px] mx-auto">
+
+            {{-- =================================================
+                BOTÓN MENÚ MOBILE
+            ================================================== --}}
+
+            <button type="button" @click="menuMovil = true"
+                class="md:hidden fixed
+                       top-4 left-4
+                       z-[99997]
+                       flex h-10 w-10
+                       items-center justify-center
+                       rounded-xl
+                       bg-[#0f1535]
+                       border border-slate-800
+                       text-slate-300
+                       hover:bg-slate-800
+                       hover:text-white transition">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+
+            <header
+                class="flex flex-col
+                       gap-5
+                       mb-6 sm:mb-8
+                       md:flex-row
+                       md:items-center
+                       md:justify-between">
+
+                <div class="min-w-0">
+
+                    <h1
+                        class="text-2xl
+                               sm:text-3xl
+                               font-bold
+                               tracking-tight
+                               text-white">
+                        Usuarios
+                    </h1>
+
+                    <p
+                        class="text-xs
+                               sm:text-sm
+                               text-slate-400
+                               mt-1
+                               max-w-2xl">
+                        Consulta y administra la información de los usuarios del
+                        sistema
+                    </p>
+
                 </div>
 
-                <div class="relative" x-data="{ perfilAbierto: false }">
-                    <button type="button" @click="perfilAbierto=!perfilAbierto"
-                        class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200">
-                        <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
-                            class="w-8 h-8 rounded-full object-cover">
-                        <div class="text-left leading-tight hidden sm:block">
-                            <p class="text-xs font-semibold text-white">{{ auth()->user()->name ?? 'Desconocido' }}</p>
-                            <p class="text-[10px] text-blue-400 font-medium">{{ auth()->user()->role ?? 'Sin rol' }}
-                            </p>
+
+                {{-- HEADER DERECHA --}}
+                <div class="flex items-center gap-3 sm:gap-4
+                           self-end md:self-auto">
+
+                    {{-- NOTIFICACIONES --}}
+                    <div class="relative" x-data="{ notificacionesAbiertas: false }">
+
+                        <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                            class="relative
+                                   flex items-center justify-center
+                                   w-10 h-10
+                                   rounded-xl
+                                   bg-slate-900/80
+                                   border border-slate-800
+                                   text-slate-400
+                                   hover:text-white
+                                   hover:bg-slate-800
+                                   transition">
+
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+
+                            @if ($notificacionesNoLeidas > 0)
+                                <span
+                                    class="absolute -top-1 -right-1
+                                           min-w-[18px] h-[18px]
+                                           px-1
+                                           flex items-center justify-center
+                                           rounded-full
+                                           bg-indigo-600
+                                           border-2 border-[#050814]
+                                           text-[9px]
+                                           font-bold text-white">
+                                    {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
+                                </span>
+                            @endif
+
+                        </button>
+
+
+                        {{-- DROPDOWN NOTIFICACIONES --}}
+                        <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                            @click.outside="notificacionesAbiertas = false"
+                            class="fixed
+                                   left-3 right-3
+                                   top-16
+                                   sm:absolute
+                                   sm:left-auto
+                                   sm:right-0
+                                   sm:top-full
+                                   sm:mt-3
+                                   w-auto
+                                   sm:w-[360px]
+                                   max-h-[calc(100vh-80px)]
+                                   bg-[#0f1535]
+                                   border border-[#1e295d]
+                                   rounded-2xl
+                                   shadow-2xl
+                                   shadow-black/40
+                                   overflow-hidden
+                                   z-[99999]"
+                            style="display:none;">
+
+                            <div
+                                class="flex items-center justify-between
+                                       px-4 py-4
+                                       border-b border-slate-800/80
+                                       gap-3">
+
+                                <div class="flex items-center gap-2 min-w-0">
+
+                                    <div
+                                        class="w-8 h-8 shrink-0
+                                               rounded-lg
+                                               bg-indigo-500/10
+                                               border border-indigo-500/20
+                                               flex items-center justify-center">
+                                        <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
+                                    </div>
+
+                                    <div class="min-w-0">
+
+                                        <h3
+                                            class="text-sm font-semibold
+                                                   text-white truncate">
+                                            Notificaciones
+                                        </h3>
+
+                                        <p
+                                            class="text-[10px]
+                                                   text-slate-500 truncate">
+                                            Tienes {{ $notificacionesNoLeidas }} nuevas
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                @if ($notificacionesNoLeidas > 0)
+                                    <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}"
+                                        class="shrink-0">
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button type="submit"
+                                            class="text-[11px]
+                                                   font-medium
+                                                   text-indigo-400
+                                                   hover:text-indigo-300
+                                                   transition
+                                                   whitespace-nowrap">
+                                            Marcar leídas
+                                        </button>
+
+                                    </form>
+                                @endif
+
+                            </div>
+
+
+                            <div class="max-h-[400px] overflow-y-auto">
+
+                                @forelse ($notificaciones as $notificacion)
+                                    <a href="{{ $notificacion->url ?? '#' }}"
+                                        class="group flex gap-3
+                                               px-4 py-4
+                                               border-b border-slate-800/50
+                                               transition-colors
+                                               hover:bg-slate-800/40
+                                               {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
+
+                                        <div
+                                            class="w-10 h-10 shrink-0
+                                                   rounded-xl
+                                                   border border-indigo-500/20
+                                                   bg-indigo-500/10
+                                                   flex items-center justify-center">
+
+                                            <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                class="w-5 h-5 text-indigo-400"></i>
+
+                                        </div>
+
+                                        <div class="flex-1 min-w-0">
+
+                                            <div
+                                                class="flex items-start
+                                                       justify-between
+                                                       gap-2">
+
+                                                <p
+                                                    class="text-xs
+                                                           font-semibold
+                                                           text-white
+                                                           group-hover:text-indigo-400
+                                                           transition
+                                                           break-words
+                                                           min-w-0">
+                                                    {{ $notificacion->titulo }}
+                                                </p>
+
+                                                @if (!$notificacion->leida)
+                                                    <span
+                                                        class="w-2 h-2
+                                                               shrink-0
+                                                               mt-1.5
+                                                               rounded-full
+                                                               bg-indigo-500"></span>
+                                                @endif
+
+                                            </div>
+
+                                            <p
+                                                class="mt-1
+                                                       text-[11px]
+                                                       leading-relaxed
+                                                       text-slate-400
+                                                       break-words">
+                                                {{ $notificacion->mensaje }}
+                                            </p>
+
+                                            <p
+                                                class="mt-2
+                                                       text-[10px]
+                                                       text-slate-500">
+                                                {{ $notificacion->created_at->diffForHumans() }}
+                                            </p>
+
+                                        </div>
+
+                                    </a>
+
+                                @empty
+
+                                    <div class="px-6 py-10 text-center">
+
+                                        <div
+                                            class="mx-auto mb-3
+                                                   w-12 h-12
+                                                   rounded-full
+                                                   bg-slate-800/50
+                                                   border border-slate-800
+                                                   flex items-center justify-center">
+                                            <i data-lucide="bell-off" class="w-5 h-5 text-slate-500"></i>
+                                        </div>
+
+                                        <p
+                                            class="text-xs
+                                                   font-medium
+                                                   text-slate-400">
+                                            No tienes notificaciones
+                                        </p>
+
+                                        <p
+                                            class="text-[10px]
+                                                   text-slate-600
+                                                   mt-1">
+                                            Aquí aparecerán tus nuevas notificaciones.
+                                        </p>
+
+                                    </div>
+                                @endforelse
+
+                            </div>
+
+
+                            @if ($notificaciones->count() > 0)
+                                <div
+                                    class="px-4 py-3
+                                           border-t border-slate-800/80
+                                           bg-[#0b1026]">
+                                    <p
+                                        class="text-[10px]
+                                               text-center
+                                               text-slate-500">
+                                        Mostrando tus notificaciones recientes
+                                    </p>
+                                </div>
+                            @endif
+
                         </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform"
-                            :class="{ 'rotate-180': perfilAbierto }"></i>
-                    </button>
 
-                    <div x-cloak x-show="perfilAbierto" @click.outside="perfilAbierto=false" x-transition
-                        class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]">
-                        <a href="{{ route('perfiltecnologias') }}"
-                            class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition">
-                            <i data-lucide="circle-user-round" class="w-5 h-5"></i>
-                            Perfil
-                        </a>
-                        <div class="border-t border-[#1e295d]"></div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition text-left">
-                                <i data-lucide="log-out" class="w-5 h-5"></i>
-                                Cerrar sesión
-                            </button>
-                        </form>
                     </div>
+
+
+                    {{-- PERFIL --}}
+                    <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
+
+                        <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
+                            class="relative
+                                   flex items-center gap-2 sm:gap-3
+                                   bg-slate-900/80
+                                   border border-slate-800
+                                   rounded-full
+                                   p-1.5
+                                   pr-2 sm:pr-4
+                                   hover:bg-slate-800
+                                   transition">
+
+                            <img src="{{ auth()->user()->picture
+                                ? asset('storage/' . auth()->user()->picture)
+                                : asset('storage/profile-photos/user.png') }}"
+                                alt="{{ auth()->user()->name }}"
+                                class="w-9 h-9 sm:w-12 sm:h-12
+                                       rounded-full
+                                       border-2 border-gray-500
+                                       object-cover">
+
+                            <div class="text-left leading-tight hidden sm:block">
+
+                                <p
+                                    class="text-xs
+                                           font-semibold
+                                           text-white
+                                           max-w-[130px]
+                                           truncate">
+                                    {{ auth()->user()->name ?? 'Desconocido' }}
+                                </p>
+
+                                <p
+                                    class="text-[10px]
+                                           text-blue-400
+                                           font-medium">
+                                    {{ auth()->user()->role ?? 'Desconocido' }}
+                                </p>
+
+                            </div>
+
+                            <i data-lucide="chevron-down"
+                                class="hidden sm:block
+                                       w-4 h-4
+                                       text-slate-400
+                                       ml-1
+                                       transition-transform duration-200"
+                                :class="{ 'rotate-180': perfilAbierto }"></i>
+
+                        </button>
+
+
+                        <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
+                            class="absolute
+                                   right-0
+                                   top-full
+                                   mt-3
+                                   w-56
+                                   bg-[#0f1535]
+                                   border border-[#1e295d]
+                                   rounded-xl
+                                   shadow-2xl
+                                   overflow-hidden
+                                   z-[99999]"
+                            style="display:none;">
+
+                            <a href="{{ route('perfiltecnologias') }}"
+                                class="flex items-center gap-3
+                                       px-4 py-3
+                                       text-sm
+                                       text-slate-300
+                                       hover:bg-[#151b3b]
+                                       hover:text-white
+                                       transition">
+                                <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400"></i>
+
+                                <span>Perfil</span>
+                            </a>
+
+                            <div class="border-t border-[#1e295d]"></div>
+
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+
+                                <button type="submit"
+                                    class="w-full
+                                           flex items-center gap-3
+                                           px-4 py-3
+                                           text-sm
+                                           text-slate-300
+                                           hover:bg-red-500/10
+                                           hover:text-red-400
+                                           transition
+                                           text-left">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+
+                                    <span>Cerrar sesión</span>
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
                 </div>
+
             </header>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
@@ -280,15 +728,33 @@
 
                 <div class="lg:col-span-2 bg-[#070e27] border border-slate-800/80 rounded-2xl p-5 flex flex-col">
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
+                    <div class="w-full overflow-x-auto">
+
+                        <table class="w-full min-w-[650px] text-left text-xs">
+
                             <thead>
                                 <tr class="text-slate-400 border-b border-slate-800/80">
-                                    <th class="pb-3 font-semibold">Usuario</th>
-                                    <th class="pb-3 font-semibold">Rol</th>
-                                    <th class="pb-3 font-semibold text-center">Estado</th>
-                                    <th class="pb-3 font-semibold">Departamento</th>
-                                    <th class="pb-3 text-center">Acción</th>
+
+                                    <th class="pb-3 px-2 sm:px-3 font-semibold whitespace-nowrap">
+                                        Usuario
+                                    </th>
+
+                                    <th class="pb-3 px-2 sm:px-3 font-semibold whitespace-nowrap">
+                                        Rol
+                                    </th>
+
+                                    <th class="pb-3 px-2 sm:px-3 font-semibold text-center whitespace-nowrap">
+                                        Estado
+                                    </th>
+
+                                    <th class="pb-3 px-2 sm:px-3 font-semibold whitespace-nowrap">
+                                        Departamento
+                                    </th>
+
+                                    <th class="pb-3 px-2 sm:px-3 font-semibold text-center whitespace-nowrap">
+                                        Acción
+                                    </th>
+
                                 </tr>
                             </thead>
 
@@ -296,90 +762,181 @@
 
                                 @forelse($usuarios as $usuario)
                                     <tr class="hover:bg-slate-800/20 transition"
-                                        :class="usuarioSeleccionado && usuarioSeleccionado.login ===
-                                            @js($usuario->login) ? 'bg-blue-500/5' : ''">
+                                        :class="usuarioSeleccionado &&
+                                            usuarioSeleccionado.login === @js($usuario->login) ?
+                                            'bg-blue-500/5' :
+                                            ''">
 
-                                        <td class="py-4">
-                                            <div class="flex items-center gap-3">
+                                        {{-- USUARIO --}}
+                                        <td class="py-3 sm:py-4 px-2 sm:px-3">
+
+                                            <div class="flex items-center gap-2 sm:gap-3 min-w-[180px]">
+
                                                 <img src="{{ $usuario->picture ? asset('storage/' . $usuario->picture) : asset('storage/profile-photos/user.png') }}"
-                                                    class="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/20">
+                                                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover
+                                ring-2 ring-blue-500/20 flex-shrink-0">
+
                                                 <div class="min-w-0">
-                                                    <p class="text-white font-medium truncate">{{ $usuario->name }}
+
+                                                    <p
+                                                        class="text-white font-medium truncate max-w-[150px] sm:max-w-[220px]">
+                                                        {{ $usuario->name }}
                                                     </p>
-                                                    <p class="text-[10px] text-slate-500 truncate">
-                                                        {{ $usuario->email }}</p>
+
+                                                    <p
+                                                        class="text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[150px] sm:max-w-[220px]">
+                                                        {{ $usuario->email }}
+                                                    </p>
+
                                                 </div>
+
                                             </div>
+
                                         </td>
 
-                                        <td class="py-4">
-                                            @php $rol=strtolower(trim($usuario->role??'')); @endphp
+
+                                        {{-- ROL --}}
+                                        <td class="py-3 sm:py-4 px-2 sm:px-3">
+
+                                            @php
+                                                $rol = strtolower(trim($usuario->role ?? ''));
+                                            @endphp
 
                                             @if ($rol === 'gerente ti')
                                                 <span
-                                                    class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20">Gerente
-                                                    TI</span>
+                                                    class="inline-flex px-2 sm:px-2.5 py-1 rounded-full
+                                text-[9px] sm:text-[10px] font-medium
+                                bg-purple-500/10 text-purple-400
+                                border border-purple-500/20 whitespace-nowrap">
+                                                    Gerente TI
+                                                </span>
                                             @elseif(in_array($rol, ['tecnico', 'técnico']))
                                                 <span
-                                                    class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">Técnico</span>
+                                                    class="inline-flex px-2 sm:px-2.5 py-1 rounded-full
+                                text-[9px] sm:text-[10px] font-medium
+                                bg-blue-500/10 text-blue-400
+                                border border-blue-500/20 whitespace-nowrap">
+                                                    Técnico
+                                                </span>
                                             @else
                                                 <span
-                                                    class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{{ $usuario->role ?: 'Usuario' }}</span>
+                                                    class="inline-flex px-2 sm:px-2.5 py-1 rounded-full
+                                text-[9px] sm:text-[10px] font-medium
+                                bg-indigo-500/10 text-indigo-400
+                                border border-indigo-500/20 whitespace-nowrap">
+                                                    {{ $usuario->role ?: 'Usuario' }}
+                                                </span>
                                             @endif
+
                                         </td>
 
-                                        <td class="py-4 text-center">
+
+                                        {{-- ESTADO --}}
+                                        <td class="py-3 sm:py-4 px-2 sm:px-3 text-center">
+
                                             @if (strtoupper(trim((string) $usuario->active)) === 'Y')
                                                 <span
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Activa
+                                                    class="inline-flex items-center gap-1 sm:gap-1.5
+                                px-2 sm:px-2.5 py-1 rounded-full
+                                text-[9px] sm:text-[10px] font-medium
+                                bg-emerald-500/10 text-emerald-400
+                                border border-emerald-500/20 whitespace-nowrap">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                                    Activa
                                                 </span>
                                             @else
                                                 <span
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Inactiva
+                                                    class="inline-flex items-center gap-1 sm:gap-1.5
+                                px-2 sm:px-2.5 py-1 rounded-full
+                                text-[9px] sm:text-[10px] font-medium
+                                bg-rose-500/10 text-rose-400
+                                border border-rose-500/20 whitespace-nowrap">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                                    Inactiva
                                                 </span>
                                             @endif
+
                                         </td>
 
-                                        <td class="py-4 text-slate-400">
-                                            {{ $usuario->departamento ?: 'Sin departamento' }}</td>
 
-                                        <td class="py-4">
-                                            <div class="flex items-center justify-center gap-2">
+                                        {{-- DEPARTAMENTO --}}
+                                        <td class="py-3 sm:py-4 px-2 sm:px-3 text-slate-400">
 
+                                            <span class="block truncate max-w-[130px] sm:max-w-[200px]">
+                                                {{ $usuario->departamento ?: 'Sin departamento' }}
+                                            </span>
+
+                                        </td>
+
+
+                                        {{-- ACCIONES --}}
+                                        <td class="py-3 sm:py-4 px-2 sm:px-3">
+
+                                            <div class="flex items-center justify-center gap-1.5 sm:gap-2">
+
+                                                {{-- VER --}}
                                                 <button type="button" title="Ver usuario"
                                                     @click.prevent="seleccionarUsuario(@js($usuario->login))"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/70 text-slate-400 hover:bg-blue-500/10 hover:text-blue-400 border border-slate-700/50 transition-all">
-                                                    <i data-lucide="eye" class="w-4 h-4 pointer-events-none"></i>
+                                                    class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg
+                                flex items-center justify-center
+                                bg-slate-800/70 text-slate-400
+                                hover:bg-blue-500/10 hover:text-blue-400
+                                border border-slate-700/50
+                                transition-all flex-shrink-0">
+                                                    <i data-lucide="eye"
+                                                        class="w-3.5 h-3.5 sm:w-4 sm:h-4 pointer-events-none"></i>
                                                 </button>
 
+
+                                                {{-- EDITAR --}}
                                                 <button type="button" title="Editar usuario"
                                                     @click.prevent="abrirModalEditar(@js($usuario->login))"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/70 text-slate-400 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-700/50 transition-all">
-                                                    <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
+                                                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg
+                                                        flex items-center justify-center
+                                                        bg-slate-800/70 text-slate-400
+                                                        hover:bg-amber-500/10 hover:text-amber-400
+                                                        border border-slate-700/50
+                                                        transition-all flex-shrink-0">
+                                                        <i data-lucide="pencil"
+                                                        class="w-3.5 h-3.5 sm:w-4 sm:h-4 pointer-events-none"></i>
                                                 </button>
 
+
+                                                {{-- ELIMINAR --}}
                                                 <button type="button" title="Eliminar usuario"
-                                                    @click.prevent="abrirModalEliminar(@js($usuario->login),@js($usuario->name))"
-                                                    class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/70 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 border border-slate-700/50 transition-all">
-                                                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                                                    @click.prevent="abrirModalEliminar(
+                                    @js($usuario->login),
+                                    @js($usuario->name)
+                                )"
+                                                    class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg
+                                flex items-center justify-center
+                                bg-slate-800/70 text-slate-400
+                                hover:bg-rose-500/10 hover:text-rose-400
+                                border border-slate-700/50
+                                transition-all flex-shrink-0">
+                                                    <i data-lucide="trash-2"
+                                                        class="w-3.5 h-3.5 sm:w-4 sm:h-4 pointer-events-none"></i>
                                                 </button>
 
                                             </div>
+
                                         </td>
+
                                     </tr>
 
                                 @empty
 
                                     <tr>
-                                        <td colspan="5" class="py-12 text-center text-slate-500">No se encontraron
-                                            usuarios.</td>
+                                        <td colspan="5" class="py-12 text-center text-slate-500">
+                                            No se encontraron usuarios.
+                                        </td>
                                     </tr>
                                 @endforelse
 
                             </tbody>
+
                         </table>
+
                     </div>
 
                     <div

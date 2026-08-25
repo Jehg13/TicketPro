@@ -19,6 +19,7 @@ use App\Http\Controllers\TecnologiasController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\MfaController;
+use App\Http\Controllers\DispositivosController;
 use App\Http\Controllers\ObtenerusuariosController;
 
 
@@ -437,5 +438,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         '/tecnologias/departamentos/{oficinaId}',
         [ObtenerusuariosController::class, 'departamentosPorOficina']
     )->name('tecnologias.departamentos');
+
+    Route::get('/tecnologias/dispositivos/',
+    [DispositivosController::class, 'dispositivos'])->name('dispositivos');
+
+    Route::post('/tecnologias/dispositivos',[DispositivosController::class, 'store'])->name('dispositivos.store');
+    Route::delete('/tecnologias/dispositivos',[DispositivosController::class, 'destroy'])->name('dispositivos.destroy');
 
 });

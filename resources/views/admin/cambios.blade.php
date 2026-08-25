@@ -127,21 +127,16 @@
                     </a>
 
                 @endif
-
                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
-
                     <a
                         href="{{ route('usuarios.tecnologias') }}"
                         class="flex items-center gap-3 px-4 py-3
                                rounded-xl text-slate-400
-                               hover:bg-slate-800/50 hover:text-white transition"
-                    >
+                               hover:bg-slate-800/50 hover:text-white transition">
                         <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
                         <span class="text-sm">Usuarios</span>
                     </a>
-
                 @endif
-
                 <a
                     href="{{ route('avisostecnologias') }}"
                     class="flex items-center gap-3 px-4 py-3

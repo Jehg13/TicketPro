@@ -20,6 +20,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\MfaController;
 use App\Http\Controllers\DispositivosController;
+use App\Http\Controllers\BackupsController;
 use App\Http\Controllers\ObtenerusuariosController;
 
 
@@ -447,4 +448,27 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/dispositivos/{id}', [DispositivosController::class, 'update'])
     ->name('dispositivos.update');
 
-});
+Route::get('/tecnologias/backups', [BackupsController::class, 'index'])
+    ->name('backups');
+
+Route::post('/tecnologias/backups/configurar', [BackupsController::class, 'guardarConfiguracion'])
+    ->name('backups.configurar');
+
+Route::post('/tecnologias/backups/activar', [BackupsController::class, 'activar'])
+    ->name('backups.activar');
+
+Route::post('/tecnologias/backups/desactivar', [BackupsController::class, 'desactivar'])
+    ->name('backups.desactivar');
+
+Route::post('/tecnologias/backups/crear', [BackupsController::class, 'crearManual'])
+    ->name('backups.crear');
+
+Route::post('/tecnologias/backups/manual', [BackupsController::class, 'crearManual'])
+    ->name('backups.manual');
+
+Route::get('/tecnologias/backups/{id}/descargar', [BackupsController::class, 'descargar'])
+    ->name('backups.descargar');
+
+Route::delete('/tecnologias/backups/{id}', [BackupsController::class, 'destroy'])
+    ->name('backups.eliminar');
+    });

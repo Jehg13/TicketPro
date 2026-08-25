@@ -80,10 +80,9 @@ class DispositivosController extends Controller
             'estado' => 'vinculado',
         ]);
 
-        return $this->redirectWithFilters(
-            $request,
-            'Dispositivo vinculado correctamente.'
-        );
+        return redirect()
+            ->route('dispositivos')
+            ->with('success', 'Dispositivo vinculado correctamente.');
     }
 
     public function update(Request $request, $id)
@@ -133,10 +132,12 @@ class DispositivosController extends Controller
             ? 'Dispositivo vinculado correctamente.'
             : 'Dispositivo desvinculado correctamente.';
 
-        return $this->redirectWithFilters($request, $mensaje);
+        return redirect()
+            ->route('dispositivos')
+            ->with('success', $mensaje);
     }
 
-    public function cambiarEstado(Request $request, $id)
+    public function cambiarEstado($id)
     {
         $dispositivo = Dispositivos::findOrFail($id);
 
@@ -152,33 +153,19 @@ class DispositivosController extends Controller
             ? 'Dispositivo vinculado correctamente.'
             : 'Dispositivo desvinculado correctamente.';
 
-        return $this->redirectWithFilters($request, $mensaje);
+        return redirect()
+            ->route('dispositivos')
+            ->with('success', $mensaje);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
         $dispositivo = Dispositivos::findOrFail($id);
 
         $dispositivo->delete();
 
-        return $this->redirectWithFilters(
-            $request,
-            'Dispositivo eliminado correctamente.'
-        );
-    }
-
-    private function redirectWithFilters(Request $request, string $mensaje)
-    {
-        $params = array_filter([
-            'buscar' => trim($request->input('buscar', '')),
-            'estado' => $request->input('estado', ''),
-            'page' => $request->input('page'),
-        ], function ($value) {
-            return $value !== null && $value !== '';
-        });
-
         return redirect()
-            ->route('dispositivos', $params)
-            ->with('success', $mensaje);
+            ->route('dispositivos')
+            ->with('success', 'Dispositivo eliminado correctamente.');
     }
 }

@@ -82,7 +82,13 @@
                         </span>
                     </a>
                 @endif
-
+                    <a href="{{ route('dispositivos') }}"
+                    class="flex items-center gap-3 px-4 py-3
+                           rounded-xl text-slate-400
+                           hover:bg-slate-800/50 hover:text-white transition">
+                    <i data-lucide="monitor-smartphone" class="h-5 w-5 shrink-0"></i>
+                    <span class="text-sm font-medium">Dispositivos</span>
+                </a>
                 <a href="{{ route('avisostecnologias') }}" @click="menuMovil = false"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
                     <i data-lucide="megaphone" class="w-5 h-5"></i>

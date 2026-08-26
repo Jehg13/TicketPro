@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -472,3 +473,4 @@ Route::get('/tecnologias/backups/{id}/descargar', [BackupsController::class, 'de
 Route::delete('/tecnologias/backups/{id}', [BackupsController::class, 'destroy'])
     ->name('backups.eliminar');
     });
+

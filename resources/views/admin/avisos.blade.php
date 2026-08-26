@@ -96,7 +96,7 @@
 
                 @if (auth()->check() && auth()->user()->role === 'Gerente Ti' && auth()->user()->priv_admin === 'Y')
                     <a href="{{ route('cambiostecnologias') }}"
-                       class="flex items-center gap-3 px-4 py-3
+                        class="flex items-center gap-3 px-4 py-3
                            rounded-xl text-slate-400
                            hover:bg-slate-800/50 hover:text-white transition">
                         <i data-lucide="git-compare-arrows" class="w-5 h-5 shrink-0"></i>
@@ -114,7 +114,7 @@
                     </a>
                 @endif
 
-                 <a href="{{ route('dispositivos') }}"
+                <a href="{{ route('dispositivos') }}"
                     class="flex items-center gap-3 px-4 py-3
                            rounded-xl text-slate-400
                            hover:bg-slate-800/50 hover:text-white transition">
@@ -123,7 +123,7 @@
                 </a>
 
                 <a href="{{ route('avisostecnologias') }}"
-                        class="flex items-center gap-3 px-4 py-3
+                    class="flex items-center gap-3 px-4 py-3
                                rounded-xl
                                bg-gradient-to-r from-blue-600 to-indigo-600
                                text-white font-semibold
@@ -484,111 +484,60 @@
 
 
                     {{-- PERFIL --}}
-                    <div class="relative z-[100]" x-data="{ perfilAbierto: false }">
-
+                    <div class="relative z-[100]" x-data="{ perfilAbierto: false, configuracionAbierta: false }">
                         <button id="profile-button" type="button" @click="perfilAbierto = !perfilAbierto"
-                            class="relative
-                                   flex items-center gap-2 sm:gap-3
-                                   bg-slate-900/80
-                                   border border-slate-800
-                                   rounded-full
-                                   p-1.5
-                                   pr-2 sm:pr-4
-                                   hover:bg-slate-800
-                                   transition">
-
-                            <img src="{{ auth()->user()->picture
-                                ? asset('storage/' . auth()->user()->picture)
-                                : asset('storage/profile-photos/user.png') }}"
+                            class="relative flex items-center gap-2 sm:gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-2 sm:pr-4 hover:bg-slate-800 transition">
+                            <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
                                 alt="{{ auth()->user()->name }}"
-                                class="w-9 h-9 sm:w-12 sm:h-12
-                                       rounded-full
-                                       border-2 border-gray-500
-                                       object-cover">
-
+                                class="w-9 h-9 sm:w-12 sm:h-12 rounded-full border-2 border-gray-500 object-cover">
                             <div class="text-left leading-tight hidden sm:block">
-
-                                <p
-                                    class="text-xs
-                                           font-semibold
-                                           text-white
-                                           max-w-[130px]
-                                           truncate">
-                                    {{ auth()->user()->name ?? 'Desconocido' }}
-                                </p>
-
-                                <p
-                                    class="text-[10px]
-                                           text-blue-400
-                                           font-medium">
-                                    {{ auth()->user()->role ?? 'Desconocido' }}
-                                </p>
-
+                                <p class="text-xs font-semibold text-white max-w-[130px] truncate">
+                                    {{ auth()->user()->name ?? 'Desconocido' }}</p>
+                                <p class="text-[10px] text-blue-400 font-medium">
+                                    {{ auth()->user()->role ?? 'Desconocido' }}</p>
                             </div>
-
                             <i data-lucide="chevron-down"
-                                class="hidden sm:block
-                                       w-4 h-4
-                                       text-slate-400
-                                       ml-1
-                                       transition-transform duration-200"
+                                class="hidden sm:block w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
                                 :class="{ 'rotate-180': perfilAbierto }"></i>
-
                         </button>
-
-
                         <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
-                            class="absolute
-                                   right-0
-                                   top-full
-                                   mt-3
-                                   w-56
-                                   bg-[#0f1535]
-                                   border border-[#1e295d]
-                                   rounded-xl
-                                   shadow-2xl
-                                   overflow-hidden
-                                   z-[99999]"
+                            class="absolute right-0 top-full mt-3 w-60 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
                             style="display:none;">
-
-                            <a href="{{ route('perfiltecnologias') }}"
-                                class="flex items-center gap-3
-                                       px-4 py-3
-                                       text-sm
-                                       text-slate-300
-                                       hover:bg-[#151b3b]
-                                       hover:text-white
-                                       transition">
-                                <i data-lucide="circle-user-round" class="w-5 h-5 text-slate-400"></i>
-
-                                <span>Perfil</span>
-                            </a>
-
+                            <button type="button" @click="configuracionAbierta = !configuracionAbierta"
+                                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition text-left">
+                                <i data-lucide="settings" class="w-5 h-5 text-slate-400"></i>
+                                <span class="flex-1">Configuración</span>
+                                <i data-lucide="chevron-down"
+                                    class="w-4 h-4 text-slate-500 transition-transform duration-200"
+                                    :class="{ 'rotate-180': configuracionAbierta }"></i>
+                            </button>
+                            <div x-show="configuracionAbierta" x-transition
+                                class="border-t border-[#1e295d] bg-[#0b1026]/50">
+                                <a href="{{ route('perfiltecnologias') }}"
+                                    class="flex items-center gap-3 px-5 py-3 text-sm text-slate-400 hover:bg-[#151b3b] hover:text-white transition">
+                                    <i data-lucide="circle-user-round" class="w-4 h-4 text-blue-400"></i>
+                                    <span>Mi perfil</span>
+                                </a>
+                                @if (auth()->check() &&
+                                        trim((string) auth()->user()->role) === 'Gerente Ti' &&
+                                        strtoupper(trim((string) auth()->user()->priv_admin)) === 'Y')
+                                    <a href="{{ route('backups') }}"
+                                        class="flex items-center gap-3 px-5 py-3 text-sm text-slate-400 hover:bg-[#151b3b] hover:text-white transition">
+                                        <i data-lucide="database-backup" class="w-4 h-4 text-emerald-400"></i>
+                                        <span>Backups</span>
+                                    </a>
+                                @endif
+                            </div>
                             <div class="border-t border-[#1e295d]"></div>
-
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-
                                 <button type="submit"
-                                    class="w-full
-                                           flex items-center gap-3
-                                           px-4 py-3
-                                           text-sm
-                                           text-slate-300
-                                           hover:bg-red-500/10
-                                           hover:text-red-400
-                                           transition
-                                           text-left">
+                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition text-left">
                                     <i data-lucide="log-out" class="w-5 h-5"></i>
-
                                     <span>Cerrar sesión</span>
-
                                 </button>
-
                             </form>
-
                         </div>
-
                     </div>
 
                 </div>

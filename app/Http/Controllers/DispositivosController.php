@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Dispositivos;
 use App\Models\User;
+use App\Models\Notificacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DispositivosController extends Controller
 {
     public function dispositivos(Request $request)
     {
+        $usuario = Auth::user();
+
         $buscar = trim($request->input('buscar', ''));
         $estado = $request->input('estado', '');
 
@@ -37,11 +41,21 @@ class DispositivosController extends Controller
 
         $usuarios = User::orderBy('name')->get();
 
+        $notificaciones = Notificacion::where('login', $usuario->login)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $notificacionesNoLeidas = $notificaciones
+            ->where('leida', false)
+            ->count();
+
         return view('admin.dispositivos', compact(
             'dispositivos',
             'usuarios',
             'buscar',
-            'estado'
+            'estado',
+            'notificaciones',
+            'notificacionesNoLeidas'
         ));
     }
 

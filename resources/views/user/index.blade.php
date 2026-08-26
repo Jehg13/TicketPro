@@ -11,28 +11,20 @@
     <title>TicketPro | Dashboard</title>
 </head>
 
-<body class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden">
+<body x-data="{ menuMovil: false }" class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden">
     <div class="flex min-h-screen w-full">
-        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 z-40 hidden bg-black/60 lg:hidden">
-        </div>
         <aside
             class="hidden md:flex flex-col w-64 bg-[#0a0e27] border-r border-[#1e295d] px-4 py-6 overflow-y-auto [::-webkit-scrollbar]:w-2 [::-webkit-scrollbar-track]:bg-[#060818] [::-webkit-scrollbar-thumb]:bg-[#1e295d] [::-webkit-scrollbar-thumb]:rounded-full">
             <div class="mb-8 px-2 text-3xl font-bold tracking-wide">
                 Ticket<span class="text-blue-500">Pro</span>
             </div>
             <div class="mb-10 flex items-center gap-3 px-2">
-                <img src="{{ auth()->user()->picture
-                    ? asset('storage/' . auth()->user()->picture)
-                    : asset('storage/profile-photos/user.png') }}"
+                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
                     alt="{{ auth()->user()->name }}"
                     class="h-12 w-12 rounded-full border-2 border-gray-500 object-cover">
                 <div>
-                    <h3 class="text-sm font-semibold text-white">
-                        {{ Auth::user()->name ?? 'Desconocido' }}
-                    </h3>
-                    <p class="text-xs text-gray-400">
-                        {{ Auth::user()->departamento->nombre ?? 'Desconocido' }}
-                    </p>
+                    <h3 class="text-sm font-semibold text-white">{{ Auth::user()->name ?? 'Desconocido' }}</h3>
+                    <p class="text-xs text-gray-400">{{ Auth::user()->departamento->nombre ?? 'Desconocido' }}</p>
                 </div>
             </div>
             <nav class="flex-1 space-y-2">
@@ -43,9 +35,7 @@
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
                         </path>
                     </svg>
-                    <span class="text-sm font-medium">
-                        Inicio
-                    </span>
+                    <span class="text-sm font-medium">Inicio</span>
                 </a>
                 <a href="{{ route('misticketusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
@@ -54,9 +44,7 @@
                             d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
                         </path>
                     </svg>
-                    <span class="text-sm font-medium">
-                        Mis tickets
-                    </span>
+                    <span class="text-sm font-medium">Mis tickets</span>
                 </a>
                 <a href="{{ route('ticketusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
@@ -65,34 +53,24 @@
                             d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
                         </path>
                     </svg>
-                    <span class="text-sm font-medium">
-                        Crear ticket
-                    </span>
+                    <span class="text-sm font-medium">Crear ticket</span>
                 </a>
                 <a href="{{ route('avisosusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
-
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
                         </path>
                     </svg>
-
-                    <span class="text-sm font-medium">
-                        Avisos
-                    </span>
+                    <span class="text-sm font-medium">Avisos</span>
                 </a>
                 <a href="{{ route('perfilusuario') }}"
                     class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
-
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                        </path>
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    <span class="text-sm font-medium">
-                        Mi perfil
-                    </span>
+                    <span class="text-sm font-medium">Mi perfil</span>
                 </a>
             </nav>
             <div class="mt-auto pt-6">
@@ -100,16 +78,96 @@
                     @csrf
                     <button type="submit"
                         class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
-
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                             </path>
                         </svg>
-
-                        <span class="text-sm font-medium">
-                            Cerrar sesión
-                        </span>
+                        <span class="text-sm font-medium">Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+        <div x-show="menuMovil" x-cloak x-transition.opacity @click="menuMovil = false"
+            class="fixed inset-0 z-[99998] bg-black/70 backdrop-blur-sm md:hidden"></div>
+        <aside x-show="menuMovil" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full"
+            class="fixed inset-y-0 left-0 z-[99999] w-[280px] max-w-[85vw] border-r border-[#1e295d] bg-[#0a0e27] px-4 py-6 overflow-y-auto md:hidden [::-webkit-scrollbar]:w-2 [::-webkit-scrollbar-track]:bg-[#060818] [::-webkit-scrollbar-thumb]:bg-[#1e295d] [::-webkit-scrollbar-thumb]:rounded-full">
+            <div class="mb-8 flex items-center justify-between px-2">
+                <div class="text-3xl font-bold tracking-wide">Ticket<span class="text-blue-500">Pro</span></div>
+                <button type="button" @click="menuMovil = false"
+                    class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition hover:bg-[#151b3b] hover:text-white">
+                    <i data-lucide="x" class="h-5 w-5"></i>
+                </button>
+            </div>
+            <div class="mb-10 flex items-center gap-3 px-2">
+                <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
+                    alt="{{ auth()->user()->name }}"
+                    class="h-12 w-12 rounded-full border-2 border-gray-500 object-cover">
+                <div>
+                    <h3 class="text-sm font-semibold text-white">{{ Auth::user()->name ?? 'Desconocido' }}</h3>
+                    <p class="text-xs text-gray-400">{{ Auth::user()->departamento->nombre ?? 'Desconocido' }}</p>
+                </div>
+            </div>
+            <nav class="space-y-2">
+                <a href="{{ route('dashboard') }}" @click="menuMovil = false"
+                    class="flex items-center gap-3 rounded-lg bg-blue-600 px-4 py-3 font-medium text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    <span class="text-sm font-medium">Inicio</span>
+                </a>
+                <a href="{{ route('misticketusuario') }}" @click="menuMovil = false"
+                    class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
+                        </path>
+                    </svg>
+                    <span class="text-sm font-medium">Mis tickets</span>
+                </a>
+                <a href="{{ route('ticketusuario') }}" @click="menuMovil = false"
+                    class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z">
+                        </path>
+                    </svg>
+                    <span class="text-sm font-medium">Crear ticket</span>
+                </a>
+                <a href="{{ route('avisosusuario') }}" @click="menuMovil = false"
+                    class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77-1.333.192-3 1.732-3z">
+                        </path>
+                    </svg>
+                    <span class="text-sm font-medium">Avisos</span>
+                </a>
+                <a href="{{ route('perfilusuario') }}" @click="menuMovil = false"
+                    class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Mi perfil</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-6">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"
+                        class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-300 transition hover:bg-[#151b3b] hover:text-white">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                        <span class="text-sm font-medium">Cerrar sesión</span>
                     </button>
                 </form>
             </div>
@@ -118,168 +176,262 @@
             class="flex-1 flex flex-col h-screen overflow-y-auto px-6 py-6 md:py-8 [::-webkit-scrollbar]:w-2 [::-webkit-scrollbar-track]:bg-[#060818] [::-webkit-scrollbar-thumb]:bg-[#1e295d] [::-webkit-scrollbar-thumb]:rounded-full">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div class="flex items-center gap-3">
-                    <button type="button" onclick="toggleSidebar()"
-                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#151b3b] text-white transition hover:bg-[#1c244d] lg:hidden">
+                    <button type="button" @click="menuMovil = true"
+                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#151b3b] text-white transition hover:bg-[#1c244d] md:hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 7h16M4 12h16M4 17h16" />
                         </svg>
                     </button>
                     <div>
-                        <h1 class="text-2xl font-extrabold text-white sm:text-3xl">
-                            Bienvenido, {{ Auth::user()->name ?? 'Desconocido' }}
-                        </h1>
-                        <p class="mt-1 text-sm text-gray-400 sm:text-base">
-                            Inicio /
-                            <span class="font-bold text-white">
-                                Dashboard
-                            </span>
-                        </p>
+                        <h1 class="text-2xl font-extrabold text-white sm:text-3xl">Bienvenido,
+                            {{ Auth::user()->name ?? 'Desconocido' }}</h1>
+                        <p class="mt-1 text-sm text-gray-400 sm:text-base">Inicio / <span
+                                class="font-bold text-white">Dashboard</span></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 sm:gap-4">
-                    <div class="relative inline-block text-left">
-                        <div class="relative" x-data="{ notificacionesAbiertas: false }">
-                            <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
-                                @click.outside="notificacionesAbiertas = false"
-                                class="relative flex items-center justify-center w-10 h-10 rounded-xl
-                       bg-slate-900/80 border border-slate-800
-                       text-slate-400 hover:text-white hover:bg-slate-800
-                       transition-all duration-200 focus:outline-none">
-                                <i data-lucide="bell" class="w-5 h-5"></i>
-                                @if ($notificacionesNoLeidas > 0)
-                                    <span
-                                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px]
-                               px-1 flex items-center justify-center
-                               rounded-full bg-indigo-600
-                               border-2 border-[#050814]
-                               text-[9px] font-bold text-white">
-                                        {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
-                                    </span>
-                                @endif
-                            </button>
-                            <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
-                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                                @click.outside="notificacionesAbiertas = false"
-                                class="absolute right-0 top-full mt-3
-                       w-[360px] max-w-[calc(100vw-2rem)]
-                       bg-[#0f1535]
-                       border border-[#1e295d]
-                       rounded-2xl
-                       shadow-2xl shadow-black/40
-                       overflow-hidden z-[99999]"
-                                style="display: none;">
-                                <div
-                                    class="flex items-center justify-between
-                           px-4 py-4
-                           border-b border-slate-800/80">
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-8 h-8 rounded-lg
-                                   bg-indigo-500/10
-                                   border border-indigo-500/20
-                                   flex items-center justify-center">
-                                            <i data-lucide="bell" class="w-4 h-4 text-indigo-400">
-                                            </i>
-                                        </div>
-                                        <div>
+                    <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-                                            <h3 class="text-sm font-semibold text-white">
-                                                Notificaciones
-                                            </h3>
-                                            <p class="text-[10px] text-slate-500">
-                                                Tienes {{ $notificacionesNoLeidas }} nuevas
-                                            </p>
-                                        </div>
-                                    </div>
-                                    @if ($notificacionesNoLeidas > 0)
-                                        <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                class="text-[11px] font-medium
-                                       text-indigo-400
-                                       hover:text-indigo-300
-                                       transition-colors">
-                                                Marcar leídas
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-                                <div class="max-h-[400px] overflow-y-auto">
-                                    @forelse ($notificaciones as $notificacion)
-                                        <a href="{{ $notificacion->url ?? '#' }}"
-                                            class="group flex gap-3 px-4 py-4
-                                   border-b border-slate-800/50
-                                   transition-colors
-                                   hover:bg-slate-800/40
-                                   {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
-                                            <div
-                                                class="w-10 h-10 shrink-0
-                                       rounded-xl
-                                       border border-indigo-500/20
-                                       bg-indigo-500/10
-                                       flex items-center justify-center">
-                                                <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
-                                                    class="w-5 h-5 text-indigo-400">
-                                                </i>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="flex items-start justify-between gap-2">
-                                                    <p
-                                                        class="text-xs font-semibold
-                                               text-white
-                                               group-hover:text-indigo-400
-                                               transition-colors">
-                                                        {{ $notificacion->titulo }}
-                                                    </p>
-                                                    @if (!$notificacion->leida)
-                                                        <span
-                                                            class="w-2 h-2 shrink-0 mt-1.5
-                                                   rounded-full
-                                                   bg-indigo-500">
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                <p class="mt-1 text-[11px] leading-relaxed text-slate-400">
-                                                    {{ $notificacion->mensaje }}
-                                                </p>
-                                                <p class="mt-2 text-[10px] text-slate-500">
-                                                    {{ $notificacion->created_at->diffForHumans() }}
-                                                </p>
-                                            </div>
-                                        </a>
-                                    @empty
-                                        <div class="px-6 py-10 text-center">
-                                            <div
-                                                class="mx-auto mb-3 w-12 h-12 rounded-full bg-slate-800/50 border border-slate-800 flex items-center justify-center">
-                                                <i data-lucide="bell-off" class="w-5 h-5 text-slate-500"></i>
-                                            </div>
-                                            <p class="text-xs font-medium text-slate-400">
-                                                No tienes notificaciones
-                                            </p>
-                                            <p class="text-[10px] text-slate-600 mt-1">
-                                                Aquí aparecerán tus nuevas notificaciones.
-                                            </p>
-                                        </div>
-                                    @endforelse
-                                </div>
-                                @if ($notificaciones->count() > 0)
+                        <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                            class="relative
+                                   flex items-center justify-center
+                                   w-10 h-10
+                                   rounded-xl
+                                   bg-slate-900/80
+                                   border border-slate-800
+                                   text-slate-400
+                                   hover:text-white
+                                   hover:bg-slate-800
+                                   transition">
+
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+
+                            @if ($notificacionesNoLeidas > 0)
+                                <span
+                                    class="absolute -top-1 -right-1
+                                           min-w-[18px] h-[18px]
+                                           px-1
+                                           flex items-center justify-center
+                                           rounded-full
+                                           bg-indigo-600
+                                           border-2 border-[#050814]
+                                           text-[9px]
+                                           font-bold text-white">
+                                    {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
+                                </span>
+                            @endif
+
+                        </button>
+
+
+                        {{-- DROPDOWN NOTIFICACIONES --}}
+                        <div x-show="notificacionesAbiertas" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                            @click.outside="notificacionesAbiertas = false"
+                            class="fixed
+                                   left-3 right-3
+                                   top-16
+                                   sm:absolute
+                                   sm:left-auto
+                                   sm:right-0
+                                   sm:top-full
+                                   sm:mt-3
+                                   w-auto
+                                   sm:w-[360px]
+                                   max-h-[calc(100vh-80px)]
+                                   bg-[#0f1535]
+                                   border border-[#1e295d]
+                                   rounded-2xl
+                                   shadow-2xl
+                                   shadow-black/40
+                                   overflow-hidden
+                                   z-[99999]"
+                            style="display:none;">
+
+                            <div
+                                class="flex items-center justify-between
+                                       px-4 py-4
+                                       border-b border-slate-800/80
+                                       gap-3">
+
+                                <div class="flex items-center gap-2 min-w-0">
+
                                     <div
-                                        class="px-4 py-3
-                               border-t border-slate-800/80
-                               bg-[#0b1026]">
-                                        <p class="text-[10px] text-center text-slate-500">
-                                            Mostrando tus notificaciones recientes
-                                        </p>
+                                        class="w-8 h-8 shrink-0
+                                               rounded-lg
+                                               bg-indigo-500/10
+                                               border border-indigo-500/20
+                                               flex items-center justify-center">
+                                        <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
                                     </div>
+
+                                    <div class="min-w-0">
+
+                                        <h3
+                                            class="text-sm font-semibold
+                                                   text-white truncate">
+                                            Notificaciones
+                                        </h3>
+
+                                        <p
+                                            class="text-[10px]
+                                                   text-slate-500 truncate">
+                                            Tienes {{ $notificacionesNoLeidas }} nuevas
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                @if ($notificacionesNoLeidas > 0)
+                                    <form method="POST" action="{{ route('notificaciones.marcarLeidas') }}"
+                                        class="shrink-0">
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button type="submit"
+                                            class="text-[11px]
+                                                   font-medium
+                                                   text-indigo-400
+                                                   hover:text-indigo-300
+                                                   transition
+                                                   whitespace-nowrap">
+                                            Marcar leídas
+                                        </button>
+
+                                    </form>
                                 @endif
+
                             </div>
+
+
+                            <div class="max-h-[400px] overflow-y-auto">
+
+                                @forelse ($notificaciones as $notificacion)
+                                    <a href="{{ $notificacion->url ?? '#' }}"
+                                        class="group flex gap-3
+                                               px-4 py-4
+                                               border-b border-slate-800/50
+                                               transition-colors
+                                               hover:bg-slate-800/40
+                                               {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
+
+                                        <div
+                                            class="w-10 h-10 shrink-0
+                                                   rounded-xl
+                                                   border border-indigo-500/20
+                                                   bg-indigo-500/10
+                                                   flex items-center justify-center">
+
+                                            <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                class="w-5 h-5 text-indigo-400"></i>
+
+                                        </div>
+
+                                        <div class="flex-1 min-w-0">
+
+                                            <div
+                                                class="flex items-start
+                                                       justify-between
+                                                       gap-2">
+
+                                                <p
+                                                    class="text-xs
+                                                           font-semibold
+                                                           text-white
+                                                           group-hover:text-indigo-400
+                                                           transition
+                                                           break-words
+                                                           min-w-0">
+                                                    {{ $notificacion->titulo }}
+                                                </p>
+
+                                                @if (!$notificacion->leida)
+                                                    <span
+                                                        class="w-2 h-2
+                                                               shrink-0
+                                                               mt-1.5
+                                                               rounded-full
+                                                               bg-indigo-500"></span>
+                                                @endif
+
+                                            </div>
+
+                                            <p
+                                                class="mt-1
+                                                       text-[11px]
+                                                       leading-relaxed
+                                                       text-slate-400
+                                                       break-words">
+                                                {{ $notificacion->mensaje }}
+                                            </p>
+
+                                            <p
+                                                class="mt-2
+                                                       text-[10px]
+                                                       text-slate-500">
+                                                {{ $notificacion->created_at->diffForHumans() }}
+                                            </p>
+
+                                        </div>
+
+                                    </a>
+
+                                @empty
+
+                                    <div class="px-6 py-10 text-center">
+
+                                        <div
+                                            class="mx-auto mb-3
+                                                   w-12 h-12
+                                                   rounded-full
+                                                   bg-slate-800/50
+                                                   border border-slate-800
+                                                   flex items-center justify-center">
+                                            <i data-lucide="bell-off" class="w-5 h-5 text-slate-500"></i>
+                                        </div>
+
+                                        <p
+                                            class="text-xs
+                                                   font-medium
+                                                   text-slate-400">
+                                            No tienes notificaciones
+                                        </p>
+
+                                        <p
+                                            class="text-[10px]
+                                                   text-slate-600
+                                                   mt-1">
+                                            Aquí aparecerán tus nuevas notificaciones.
+                                        </p>
+
+                                    </div>
+                                @endforelse
+
+                            </div>
+
+
+                            @if ($notificaciones->count() > 0)
+                                <div
+                                    class="px-4 py-3
+                                           border-t border-slate-800/80
+                                           bg-[#0b1026]">
+                                    <p
+                                        class="text-[10px]
+                                               text-center
+                                               text-slate-500">
+                                        Mostrando tus notificaciones recientes
+                                    </p>
+                                </div>
+                            @endif
+
                         </div>
+
                     </div>
                     <a href="{{ route('ticketusuario') }}"
                         class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] transition hover:bg-blue-700 sm:text-base">
@@ -453,20 +605,6 @@
                                         {{ Auth::user()->phone ?? 'No proporcionado' }}
                                     </dd>
                                 </div>
-                                {{-- <div class="flex items-start gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 21s7-6.5 7-11a7 7 0 10-14 0c0 4.5 7 11 7 11z" />
-                                        <circle cx="12" cy="10" r="2.3" />
-                                    </svg>
-                                    <dt class="font-semibold text-gray-400">
-                                        Ubicación:
-                                    </dt>
-                                    <dd class="ml-auto text-right font-bold text-white">
-                                        {{ $usuario['ubicacion'] ?? 'Edificio A, piso 2 Area administrativa' }}
-                                    </dd>
-                                </div> --}}
                             </dl>
                         </div>
                         <div class="mt-4 border-t border-[#1e295d] pt-4">

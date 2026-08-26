@@ -114,12 +114,12 @@
                         </a>
                     @endif
                     <a href="{{ route('dispositivos') }}"
-                    class="flex items-center gap-3 px-4 py-3
+                        class="flex items-center gap-3 px-4 py-3
                            rounded-xl text-slate-400
                            hover:bg-slate-800/50 hover:text-white transition">
-                    <i data-lucide="monitor-smartphone" class="h-5 w-5 shrink-0"></i>
-                    <span class="text-sm font-medium">Dispositivos</span>
-                </a>
+                        <i data-lucide="monitor-smartphone" class="h-5 w-5 shrink-0"></i>
+                        <span class="text-sm font-medium">Dispositivos</span>
+                    </a>
 
                     <a href="{{ route('avisostecnologias') }}" @click="menuMovil = false"
                         class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition">
@@ -211,277 +211,233 @@
 
                     <div class="flex items-center gap-3 self-end md:self-auto">
 
-<!-- NOTIFICACIONES + PERFIL -->
-                <div class="flex items-center gap-4 self-end md:self-auto">
+                        <!-- NOTIFICACIONES + PERFIL -->
+                        <div class="flex items-center gap-4 self-end md:self-auto">
 
-                    <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-6">
 
-                        <!-- NOTIFICACIONES -->
+                                <!-- NOTIFICACIONES -->
 
-<div
-    class="relative"
-    x-data="{ notificacionesAbiertas: false }">
+                                <div class="relative" x-data="{ notificacionesAbiertas: false }">
 
-    <button
-        type="button"
-        @click="notificacionesAbiertas = !notificacionesAbiertas"
-        @click.outside="notificacionesAbiertas = false"
-        class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 focus:outline-none">
+                                    <button type="button" @click="notificacionesAbiertas = !notificacionesAbiertas"
+                                        @click.outside="notificacionesAbiertas = false"
+                                        class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 focus:outline-none">
 
-        <i data-lucide="bell" class="w-5 h-5"></i>
+                                        <i data-lucide="bell" class="w-5 h-5"></i>
 
-        @if ($notificacionesNoLeidas > 0)
-            <span
-                class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-indigo-600 border-2 border-[#050814] text-[9px] font-bold text-white">
-                {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
-            </span>
-        @endif
-    </button>
+                                        @if ($notificacionesNoLeidas > 0)
+                                            <span
+                                                class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-indigo-600 border-2 border-[#050814] text-[9px] font-bold text-white">
+                                                {{ $notificacionesNoLeidas > 99 ? '99+' : $notificacionesNoLeidas }}
+                                            </span>
+                                        @endif
+                                    </button>
 
-    <div
-        x-show="notificacionesAbiertas"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
-        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-        x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-        @click.outside="notificacionesAbiertas = false"
-        class="fixed left-2 right-2 top-16 w-auto max-w-none sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px] sm:max-w-[360px] bg-[#0f1535] border border-[#1e295d] rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[99999]"
-        style="display: none;">
+                                    <div x-show="notificacionesAbiertas"
+                                        x-transition:enter="transition ease-out duration-200"
+                                        x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                        x-transition:leave="transition ease-in duration-150"
+                                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                        x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                                        @click.outside="notificacionesAbiertas = false"
+                                        class="fixed left-2 right-2 top-16 w-auto max-w-none sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[360px] sm:max-w-[360px] bg-[#0f1535] border border-[#1e295d] rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[99999]"
+                                        style="display: none;">
 
-        <div class="flex items-center justify-between px-4 py-4 border-b border-slate-800/80 gap-3">
+                                        <div
+                                            class="flex items-center justify-between px-4 py-4 border-b border-slate-800/80 gap-3">
 
-            <div class="flex items-center gap-2 min-w-0">
+                                            <div class="flex items-center gap-2 min-w-0">
 
-                <div
-                    class="w-8 h-8 shrink-0 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                                                <div
+                                                    class="w-8 h-8 shrink-0 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
 
-                    <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
+                                                    <i data-lucide="bell" class="w-4 h-4 text-indigo-400"></i>
 
-                </div>
+                                                </div>
 
-                <div class="min-w-0">
+                                                <div class="min-w-0">
 
-                    <h3 class="text-sm font-semibold text-white truncate">
-                        Notificaciones
-                    </h3>
+                                                    <h3 class="text-sm font-semibold text-white truncate">
+                                                        Notificaciones
+                                                    </h3>
 
-                    <p class="text-[10px] text-slate-500 truncate">
-                        Tienes {{ $notificacionesNoLeidas }} nuevas
-                    </p>
+                                                    <p class="text-[10px] text-slate-500 truncate">
+                                                        Tienes {{ $notificacionesNoLeidas }} nuevas
+                                                    </p>
 
-                </div>
+                                                </div>
 
-            </div>
+                                            </div>
 
-            @if ($notificacionesNoLeidas > 0)
-                <form
-                    method="POST"
-                    action="{{ route('notificaciones.marcarLeidas') }}"
-                    class="shrink-0">
+                                            @if ($notificacionesNoLeidas > 0)
+                                                <form method="POST"
+                                                    action="{{ route('notificaciones.marcarLeidas') }}"
+                                                    class="shrink-0">
 
-                    @csrf
-                    @method('PATCH')
+                                                    @csrf
+                                                    @method('PATCH')
 
-                    <button
-                        type="submit"
-                        class="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors whitespace-nowrap">
+                                                    <button type="submit"
+                                                        class="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors whitespace-nowrap">
 
-                        Marcar leídas
+                                                        Marcar leídas
 
-                    </button>
+                                                    </button>
 
-                </form>
-            @endif
+                                                </form>
+                                            @endif
 
-        </div>
+                                        </div>
 
-        <div class="max-h-[400px] overflow-y-auto">
+                                        <div class="max-h-[400px] overflow-y-auto">
 
-            @forelse ($notificaciones as $notificacion)
+                                            @forelse ($notificaciones as $notificacion)
+                                                <a href="{{ $notificacion->url ?? '#' }}"
+                                                    class="group flex gap-3 px-4 py-4 border-b border-slate-800/50 transition-colors hover:bg-slate-800/40 {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
 
-                <a
-                    href="{{ $notificacion->url ?? '#' }}"
-                    class="group flex gap-3 px-4 py-4 border-b border-slate-800/50 transition-colors hover:bg-slate-800/40 {{ !$notificacion->leida ? 'bg-indigo-500/[0.04]' : '' }}">
+                                                    <div
+                                                        class="w-10 h-10 shrink-0 rounded-xl border border-indigo-500/20 bg-indigo-500/10 flex items-center justify-center">
 
-                    <div
-                        class="w-10 h-10 shrink-0 rounded-xl border border-indigo-500/20 bg-indigo-500/10 flex items-center justify-center">
+                                                        <i data-lucide="{{ $notificacion->icono ?? 'bell' }}"
+                                                            class="w-5 h-5 text-indigo-400">
+                                                        </i>
 
-                        <i
-                            data-lucide="{{ $notificacion->icono ?? 'bell' }}"
-                            class="w-5 h-5 text-indigo-400">
-                        </i>
+                                                    </div>
 
-                    </div>
+                                                    <div class="flex-1 min-w-0">
 
-                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-start justify-between gap-2">
 
-                        <div class="flex items-start justify-between gap-2">
+                                                            <p
+                                                                class="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors break-words min-w-0">
+                                                                {{ $notificacion->titulo }}
+                                                            </p>
 
-                            <p
-                                class="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors break-words min-w-0">
-                                {{ $notificacion->titulo }}
-                            </p>
+                                                            @if (!$notificacion->leida)
+                                                                <span
+                                                                    class="w-2 h-2 shrink-0 mt-1.5 rounded-full bg-indigo-500">
+                                                                </span>
+                                                            @endif
 
-                            @if (!$notificacion->leida)
+                                                        </div>
 
-                                <span
-                                    class="w-2 h-2 shrink-0 mt-1.5 rounded-full bg-indigo-500">
-                                </span>
+                                                        <p
+                                                            class="mt-1 text-[11px] leading-relaxed text-slate-400 break-words">
+                                                            {{ $notificacion->mensaje }}
+                                                        </p>
 
-                            @endif
+                                                        <p class="mt-2 text-[10px] text-slate-500">
+                                                            {{ $notificacion->created_at->diffForHumans() }}
+                                                        </p>
 
-                        </div>
+                                                    </div>
 
-                        <p class="mt-1 text-[11px] leading-relaxed text-slate-400 break-words">
-                            {{ $notificacion->mensaje }}
-                        </p>
+                                                </a>
 
-                        <p class="mt-2 text-[10px] text-slate-500">
-                            {{ $notificacion->created_at->diffForHumans() }}
-                        </p>
+                                            @empty
 
-                    </div>
+                                                <div class="px-6 py-10 text-center">
 
-                </a>
+                                                    <div
+                                                        class="mx-auto mb-3 w-12 h-12 rounded-full bg-slate-800/50 border border-slate-800 flex items-center justify-center">
 
-            @empty
+                                                        <i data-lucide="bell-off" class="w-5 h-5 text-slate-500">
+                                                        </i>
 
-                <div class="px-6 py-10 text-center">
+                                                    </div>
 
-                    <div
-                        class="mx-auto mb-3 w-12 h-12 rounded-full bg-slate-800/50 border border-slate-800 flex items-center justify-center">
+                                                    <p class="text-xs font-medium text-slate-400">
+                                                        No tienes notificaciones
+                                                    </p>
 
-                        <i
-                            data-lucide="bell-off"
-                            class="w-5 h-5 text-slate-500">
-                        </i>
+                                                    <p class="text-[10px] text-slate-600 mt-1">
+                                                        Aquí aparecerán tus nuevas notificaciones.
+                                                    </p>
 
-                    </div>
+                                                </div>
+                                            @endforelse
 
-                    <p class="text-xs font-medium text-slate-400">
-                        No tienes notificaciones
-                    </p>
+                                        </div>
 
-                    <p class="text-[10px] text-slate-600 mt-1">
-                        Aquí aparecerán tus nuevas notificaciones.
-                    </p>
+                                        @if ($notificaciones->count() > 0)
+                                            <div class="px-4 py-3 border-t border-slate-800/80 bg-[#0b1026]">
 
-                </div>
+                                                <p class="text-[10px] text-center text-slate-500">
+                                                    Mostrando tus notificaciones recientes
+                                                </p>
 
-            @endforelse
+                                            </div>
+                                        @endif
 
-        </div>
-
-        @if ($notificaciones->count() > 0)
-
-            <div class="px-4 py-3 border-t border-slate-800/80 bg-[#0b1026]">
-
-                <p class="text-[10px] text-center text-slate-500">
-                    Mostrando tus notificaciones recientes
-                </p>
-
-            </div>
-
-        @endif
-
-    </div>
-
-</div>
-
-
-                        <!-- PERFIL -->
-                        <div
-                            class="relative z-[100]"
-                            x-data="{ perfilAbierto: false }">
-
-                            <button
-                                id="profile-button"
-                                type="button"
-                                @click="perfilAbierto = !perfilAbierto"
-                                class="relative flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-4 hover:bg-slate-800 transition-all duration-200 focus:outline-none">
-
-                                <img
-                                    src="{{ auth()->user()->picture
-                                        ? asset('storage/' . auth()->user()->picture)
-                                        : asset('storage/profile-photos/user.png') }}"
-                                    alt="{{ auth()->user()->name }}"
-                                    class="w-12 h-12 rounded-full border-2 border-gray-500 object-cover">
-
-                                <div class="text-left leading-tight hidden sm:block">
-
-                                    <p class="text-xs font-semibold text-white">
-                                        {{ auth()->user()->name ?? 'Desconocido' }}
-                                    </p>
-
-                                    <p class="text-[10px] text-blue-400 font-medium">
-                                        {{ auth()->user()->role ?? 'Desconocido' }}
-                                    </p>
+                                    </div>
 
                                 </div>
 
-                                <i
-                                    data-lucide="chevron-down"
-                                    class="w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
-                                    :class="{ 'rotate-180': perfilAbierto }">
-                                </i>
 
-                            </button>
-
-
-                            <div
-                                x-show="perfilAbierto"
-                                @click.outside="perfilAbierto = false"
-                                x-transition
-                                class="absolute right-0 top-full mt-3 w-56 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
-                                style="display:none;">
-
-                                <a
-                                    href="{{ route('perfiltecnologias') }}"
-                                    class="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition-colors">
-
-                                    <i
-                                        data-lucide="circle-user-round"
-                                        class="w-5 h-5 text-slate-400">
-                                    </i>
-
-                                    <span>
-                                        Perfil
-                                    </span>
-
-                                </a>
-
-                                <div class="border-t border-[#1e295d]"></div>
-
-                                <form method="POST" action="{{ route('logout') }}">
-
-                                    @csrf
-
-                                    <button
-                                        type="submit"
-                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors text-left">
-
-                                        <i
-                                            data-lucide="log-out"
-                                            class="w-5 h-5">
-                                        </i>
-
-                                        <span>
-                                            Cerrar sesión
-                                        </span>
-
+                                <!-- PERFIL -->
+                                <div class="relative z-[100]" x-data="{ perfilAbierto: false, configuracionAbierta: false }">
+                                    <button id="profile-button" type="button"
+                                        @click="perfilAbierto = !perfilAbierto"
+                                        class="relative flex items-center gap-2 sm:gap-3 bg-slate-900/80 border border-slate-800 rounded-full p-1.5 pr-2 sm:pr-4 hover:bg-slate-800 transition">
+                                        <img src="{{ auth()->user()->picture ? asset('storage/' . auth()->user()->picture) : asset('storage/profile-photos/user.png') }}"
+                                            alt="{{ auth()->user()->name }}"
+                                            class="w-9 h-9 sm:w-12 sm:h-12 rounded-full border-2 border-gray-500 object-cover">
+                                        <div class="text-left leading-tight hidden sm:block">
+                                            <p class="text-xs font-semibold text-white max-w-[130px] truncate">
+                                                {{ auth()->user()->name ?? 'Desconocido' }}</p>
+                                            <p class="text-[10px] text-blue-400 font-medium">
+                                                {{ auth()->user()->role ?? 'Desconocido' }}</p>
+                                        </div>
+                                        <i data-lucide="chevron-down"
+                                            class="hidden sm:block w-4 h-4 text-slate-400 ml-1 transition-transform duration-200"
+                                            :class="{ 'rotate-180': perfilAbierto }"></i>
                                     </button>
-
-                                </form>
+                                    <div x-show="perfilAbierto" @click.outside="perfilAbierto = false" x-transition
+                                        class="absolute right-0 top-full mt-3 w-60 bg-[#0f1535] border border-[#1e295d] rounded-xl shadow-2xl overflow-hidden z-[99999]"
+                                        style="display:none;">
+                                        <button type="button" @click="configuracionAbierta = !configuracionAbierta"
+                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-[#151b3b] hover:text-white transition text-left">
+                                            <i data-lucide="settings" class="w-5 h-5 text-slate-400"></i>
+                                            <span class="flex-1">Configuración</span>
+                                            <i data-lucide="chevron-down"
+                                                class="w-4 h-4 text-slate-500 transition-transform duration-200"
+                                                :class="{ 'rotate-180': configuracionAbierta }"></i>
+                                        </button>
+                                        <div x-show="configuracionAbierta" x-transition
+                                            class="border-t border-[#1e295d] bg-[#0b1026]/50">
+                                            <a href="{{ route('perfiltecnologias') }}"
+                                                class="flex items-center gap-3 px-5 py-3 text-sm text-slate-400 hover:bg-[#151b3b] hover:text-white transition">
+                                                <i data-lucide="circle-user-round" class="w-4 h-4 text-blue-400"></i>
+                                                <span>Mi perfil</span>
+                                            </a>
+                                            @if (auth()->check() &&
+                                                    trim((string) auth()->user()->role) === 'Gerente Ti' &&
+                                                    strtoupper(trim((string) auth()->user()->priv_admin)) === 'Y')
+                                                <a href="{{ route('backups') }}"
+                                                    class="flex items-center gap-3 px-5 py-3 text-sm text-slate-400 hover:bg-[#151b3b] hover:text-white transition">
+                                                    <i data-lucide="database-backup"
+                                                        class="w-4 h-4 text-emerald-400"></i>
+                                                    <span>Backups</span>
+                                                </a>
+                                            @endif
+                                        </div>
+                                        <div class="border-t border-[#1e295d]"></div>
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit"
+                                                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition text-left">
+                                                <i data-lucide="log-out" class="w-5 h-5"></i>
+                                                <span>Cerrar sesión</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
 
                             </div>
 
                         </div>
-
-                    </div>
-
-                </div>
 
 
                 </header>

@@ -26,6 +26,10 @@ class AuthController extends Controller
 
         $usuario = User::where('email', $usuarioIngresado)
             ->orWhere('login', $usuarioIngresado)
+            ->with([
+                'departamento.oficina.empresa',
+                'numero_empleado',
+            ])
             ->first();
 
         if (!$usuario) {
@@ -34,6 +38,14 @@ class AuthController extends Controller
                 'message' => 'El usuario o la contraseña son incorrectos.',
             ], 401);
         }
+
+        Log::info('DATOS API FLUTTER', [
+    'login' => $usuario->login,
+    'empresa' => $usuario->departamento?->oficina?->empresa?->empresa,
+    'departamento' => $usuario->departamento?->nombre,
+    'oficina' => $usuario->departamento?->oficina?->nombre,
+    'numero_empleado' => $usuario->numero_empleado?->numero_empleado,
+]);
 
         $estadoUsuario = strtoupper(
             trim((string) $usuario->active)
@@ -61,6 +73,7 @@ class AuthController extends Controller
                 trim((string) $usuario->mfa)
             ) === 'Y'
         ) {
+            
             return response()->json([
                 'success' => true,
                 'mfa_required' => true,
@@ -93,6 +106,11 @@ class AuthController extends Controller
                 'message' => 'Usuario no autenticado.',
             ], 401);
         }
+
+        $usuario->load([
+            'departamento.oficina.empresa',
+            'numero_empleado',
+        ]);
 
         return response()->json([
             'success' => true,
@@ -133,6 +151,10 @@ class AuthController extends Controller
             'priv_admin' => $usuario->priv_admin,
             'active' => $usuario->active,
             'mfa' => $usuario->mfa,
+            'departamento' => $usuario->departamento?->nombre,
+            'oficina' => $usuario->departamento?->oficina?->nombre,
+            'empresa' => $usuario->departamento?->oficina?->empresa?->empresa,
+            'numero_empleado' => $usuario->numero_empleado?->numero_empleado,
         ];
     }
 }

@@ -20,7 +20,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden" x-data="{ ...avisosUsuario(), menuMovilAbierto: false }">    
+<body class="bg-[#060818] text-white font-sans antialiased flex h-screen overflow-hidden" x-data="avisosUsuario()">
     <aside class="hidden md:flex flex-col w-64 bg-[#0a0e27] border-r border-[#1e295d] px-4 py-6 overflow-y-auto">
         <div class="text-3xl font-bold mb-8 px-2 tracking-wide">
             Ticket<span class="text-blue-500">Pro</span>
@@ -1132,9 +1132,5 @@
         </div>
 
     </div>
-
-  
-
 </body>
-
 </html>

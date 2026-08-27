@@ -2,6 +2,7 @@ function avisosUsuario() {
     return {
         modalAbierto: false,
         avisoSeleccionado: {},
+        menuMovilAbierto: false,
 
         filtroTipo: String(
             window.filtroTipoAvisos ||
@@ -31,29 +32,214 @@ function avisosUsuario() {
         porPagina: 5,
         cargando: false,
 
-        get avisosPagina() {
-            const inicio = (this.paginaActual - 1) * this.porPagina;
+        // ============================================================
+        // GETTERS
+        // ============================================================
+actualizarAvisos(data) {
 
-            return this.avisosTotales.slice(
-                inicio,
-                inicio + this.porPagina
-            );
-        },
+    console.log('======================================');
+    console.log('🔄 [AVISOS] actualizarAvisos');
+    console.log('📥 Data recibida:', data);
+
+    const avisos = this.normalizarAvisos(data);
+
+    console.log('📦 Avisos extraídos:', avisos);
+    console.log('📦 Cantidad extraída:', avisos.length);
+    console.log(
+        '📦 IDs extraídos:',
+        avisos.map(aviso => aviso.id)
+    );
+
+    const avisosNormalizados = avisos
+        .map(aviso => this.normalizarAviso(aviso))
+        .filter(aviso =>
+            Object.keys(aviso).length > 0
+        );
+
+    console.log(
+        '🔧 Avisos normalizados:',
+        avisosNormalizados
+    );
+
+    console.log(
+        '🔧 Cantidad normalizados:',
+        avisosNormalizados.length
+    );
+
+    console.log(
+        '🔧 IDs normalizados:',
+        avisosNormalizados.map(aviso => aviso.id)
+    );
+
+    console.log(
+        '🔴 ANTES de asignar avisosTotales:',
+        this.avisosTotales
+    );
+
+    this.avisosTotales = avisosNormalizados;
+
+    console.log(
+        '🟢 DESPUÉS de asignar avisosTotales:',
+        this.avisosTotales
+    );
+
+    console.log(
+        '🟢 Cantidad DESPUÉS:',
+        this.avisosTotales.length
+    );
+
+    console.log(
+        '🟢 IDs DESPUÉS:',
+        this.avisosTotales.map(aviso => aviso.id)
+    );
+
+    console.log(
+        '🟢 página actual:',
+        this.paginaActual
+    );
+
+    console.log(
+        '🟢 total páginas:',
+        this.totalPaginas
+    );
+
+    console.log('======================================');
+
+    if (
+        this.paginaActual < 1 ||
+        this.paginaActual > this.totalPaginas
+    ) {
+        this.paginaActual = 1;
+    }
+},
+     get avisosPagina() {
+
+    console.log('======================================');
+    console.log('📄 [GETTER] avisosPagina');
+    console.log('📄 paginaActual:', this.paginaActual);
+    console.log('📄 porPagina:', this.porPagina);
+    console.log('📄 avisosTotales:', this.avisosTotales);
+    console.log(
+        '📄 cantidad:',
+        this.avisosTotales.length
+    );
+
+    const inicio =
+        (this.paginaActual - 1) *
+        this.porPagina;
+
+    const resultado =
+        this.avisosTotales.slice(
+            inicio,
+            inicio + this.porPagina
+        );
+
+    console.log('📄 resultado:', resultado);
+    console.log(
+        '📄 cantidad resultado:',
+        resultado.length
+    );
+
+    console.log(
+        '📄 IDs resultado:',
+        resultado.map(aviso => aviso.id)
+    );
+
+    console.log('======================================');
+
+    return resultado;
+},
 
         get totalPaginas() {
-            return Math.max(
+            const total = Math.max(
                 1,
                 Math.ceil(
-                    this.avisosTotales.length / this.porPagina
+                    this.avisosTotales.length /
+                    this.porPagina
                 )
             );
+
+            console.log(
+                '📄 [AVISOS] totalPaginas:',
+                total
+            );
+
+            return total;
         },
 
         get hayResultados() {
-            return this.avisosTotales.length > 0;
+            const resultado =
+                this.avisosTotales.length > 0;
+
+            console.log(
+                '📄 [AVISOS] hayResultados:',
+                resultado
+            );
+
+            return resultado;
         },
 
+        // ============================================================
+        // INIT
+        // ============================================================
+
         init() {
+            console.group(
+                '🚀 [AVISOS] INICIANDO avisosUsuario'
+            );
+
+            console.log(
+                'window.location.href:',
+                window.location.href
+            );
+
+            console.log(
+                'window.location.search:',
+                window.location.search
+            );
+
+            console.log(
+                'window.filtroTipoAvisos:',
+                window.filtroTipoAvisos
+            );
+
+            console.log(
+                'window.busquedaAvisos:',
+                window.busquedaAvisos
+            );
+
+            console.log(
+                'window.avisosTotales:',
+                window.avisosTotales
+            );
+
+            console.log(
+                'window.avisosTotales es array:',
+                Array.isArray(window.avisosTotales)
+            );
+
+            console.log(
+                'avisosTotales inicial:',
+                this.avisosTotales
+            );
+
+            console.log(
+                'IDs iniciales:',
+                this.avisosTotales.map(a => a?.id)
+            );
+
+            console.log(
+                'Filtro inicial:',
+                this.filtroTipo
+            );
+
+            console.log(
+                'Búsqueda inicial:',
+                this.busqueda
+            );
+
+            console.groupEnd();
+
             this.filtroTipo = String(
                 this.filtroTipo || 'todos'
             ).trim().toLowerCase();
@@ -65,11 +251,24 @@ function avisosUsuario() {
             this.paginaActual = 1;
 
             this.$nextTick(() => {
+                console.group(
+                    '🔄 [AVISOS] Ejecutando carga inicial'
+                );
+
                 const url = new URL(
                     window.location.href
                 );
 
-                url.searchParams.delete('tipo');
+                console.log(
+                    'URL antes de modificar:',
+                    window.location.href
+                );
+
+                /*
+                 * IMPORTANTE:
+                 * Ya no forzamos filtroTipo = todos.
+                 */
+
                 url.searchParams.delete('page');
 
                 if (this.busqueda) {
@@ -83,36 +282,65 @@ function avisosUsuario() {
                     );
                 }
 
-                this.filtroTipo = 'todos';
+                if (
+                    this.filtroTipo &&
+                    this.filtroTipo !== 'todos'
+                ) {
+                    url.searchParams.set(
+                        'tipo',
+                        this.filtroTipo
+                    );
+                } else {
+                    url.searchParams.delete(
+                        'tipo'
+                    );
+                }
+
+                console.log(
+                    'Filtro que se enviará:',
+                    this.filtroTipo
+                );
+
+                console.log(
+                    'Búsqueda que se enviará:',
+                    this.busqueda
+                );
+
+                console.log(
+                    'URL final:',
+                    url.toString()
+                );
+
+                console.groupEnd();
 
                 this.cargarAvisos(url);
             });
         },
 
-        actualizarPaginaInicial() {
-            const paginaUrl = Number(
-                new URLSearchParams(
-                    window.location.search
-                ).get('page')
+        // ============================================================
+        // NORMALIZAR AVISO
+        // ============================================================
+
+        normalizarAviso(aviso) {
+            console.group(
+                '🔧 [AVISOS] normalizarAviso'
+            );
+
+            console.log(
+                'Aviso recibido:',
+                aviso
             );
 
             if (
-                Number.isInteger(paginaUrl) &&
-                paginaUrl > 0
+                !aviso ||
+                typeof aviso !== 'object'
             ) {
-                this.paginaActual = paginaUrl;
-            }
+                console.warn(
+                    '⚠️ Aviso inválido'
+                );
 
-            if (
-                this.paginaActual < 1 ||
-                this.paginaActual > this.totalPaginas
-            ) {
-                this.paginaActual = 1;
-            }
-        },
+                console.groupEnd();
 
-        normalizarAviso(aviso) {
-            if (!aviso || typeof aviso !== 'object') {
                 return {};
             }
 
@@ -120,12 +348,30 @@ function avisosUsuario() {
                 ...aviso
             };
 
-            if (typeof item.afecta_a === 'string') {
+            console.log(
+                'Copia del aviso:',
+                item
+            );
+
+            if (
+                typeof item.afecta_a === 'string'
+            ) {
                 try {
-                    item.afecta_a = JSON.parse(
+                    item.afecta_a =
+                        JSON.parse(
+                            item.afecta_a
+                        );
+
+                    console.log(
+                        'afecta_a convertido desde JSON:',
                         item.afecta_a
                     );
                 } catch (error) {
+                    console.error(
+                        '❌ Error parseando afecta_a:',
+                        error
+                    );
+
                     item.afecta_a = {};
                 }
             }
@@ -135,6 +381,10 @@ function avisosUsuario() {
                 typeof item.afecta_a !== 'object' ||
                 Array.isArray(item.afecta_a)
             ) {
+                console.warn(
+                    '⚠️ afecta_a inválido, usando {}'
+                );
+
                 item.afecta_a = {};
             }
 
@@ -144,18 +394,72 @@ function avisosUsuario() {
             ) {
                 item.tipo = String(
                     item.tipo
-                ).trim().toLowerCase();
+                )
+                    .trim()
+                    .toLowerCase();
             }
+
+            console.log(
+                'Aviso normalizado:',
+                item
+            );
+
+            console.groupEnd();
 
             return item;
         },
 
+        // ============================================================
+        // NORMALIZAR RESPUESTA
+        // ============================================================
+
         normalizarAvisos(data) {
+            console.group(
+                '📦 [AVISOS] normalizarAvisos'
+            );
+
+            console.log(
+                'Respuesta completa:',
+                data
+            );
+
+            console.log(
+                'Tipo respuesta:',
+                typeof data
+            );
+
+            console.log(
+                'Es array:',
+                Array.isArray(data)
+            );
+
             if (!data) {
+                console.warn(
+                    '⚠️ data está vacío'
+                );
+
+                console.groupEnd();
+
                 return [];
             }
 
             if (Array.isArray(data)) {
+                console.log(
+                    'Formato detectado: ARRAY'
+                );
+
+                console.log(
+                    'Cantidad:',
+                    data.length
+                );
+
+                console.log(
+                    'IDs:',
+                    data.map(a => a?.id)
+                );
+
+                console.groupEnd();
+
                 return data;
             }
 
@@ -163,6 +467,22 @@ function avisosUsuario() {
                 data.avisos &&
                 Array.isArray(data.avisos)
             ) {
+                console.log(
+                    'Formato detectado: data.avisos'
+                );
+
+                console.log(
+                    'Cantidad:',
+                    data.avisos.length
+                );
+
+                console.log(
+                    'IDs:',
+                    data.avisos.map(a => a?.id)
+                );
+
+                console.groupEnd();
+
                 return data.avisos;
             }
 
@@ -170,6 +490,22 @@ function avisosUsuario() {
                 data.avisos &&
                 Array.isArray(data.avisos.data)
             ) {
+                console.log(
+                    'Formato detectado: data.avisos.data'
+                );
+
+                console.log(
+                    'Cantidad:',
+                    data.avisos.data.length
+                );
+
+                console.log(
+                    'IDs:',
+                    data.avisos.data.map(a => a?.id)
+                );
+
+                console.groupEnd();
+
                 return data.avisos.data;
             }
 
@@ -177,6 +513,12 @@ function avisosUsuario() {
                 data.data &&
                 Array.isArray(data.data)
             ) {
+                console.log(
+                    'Formato detectado: data.data'
+                );
+
+                console.groupEnd();
+
                 return data.data;
             }
 
@@ -185,6 +527,12 @@ function avisosUsuario() {
                 data.data.avisos &&
                 Array.isArray(data.data.avisos)
             ) {
+                console.log(
+                    'Formato detectado: data.data.avisos'
+                );
+
+                console.groupEnd();
+
                 return data.data.avisos;
             }
 
@@ -192,6 +540,12 @@ function avisosUsuario() {
                 data.resultado &&
                 Array.isArray(data.resultado)
             ) {
+                console.log(
+                    'Formato detectado: data.resultado'
+                );
+
+                console.groupEnd();
+
                 return data.resultado;
             }
 
@@ -199,35 +553,305 @@ function avisosUsuario() {
                 data.resultado &&
                 Array.isArray(data.resultado.data)
             ) {
+                console.log(
+                    'Formato detectado: data.resultado.data'
+                );
+
+                console.groupEnd();
+
                 return data.resultado.data;
             }
+
+            console.error(
+                '❌ NO SE ENCONTRÓ UNA ESTRUCTURA DE AVISOS'
+            );
+
+            console.groupEnd();
 
             return [];
         },
 
+        // ============================================================
+        // ACTUALIZAR AVISOS
+        // ============================================================
+
         actualizarAvisos(data) {
-            const avisos = this.normalizarAvisos(data);
+            console.group(
+                '🔄 [AVISOS] actualizarAvisos'
+            );
+
+            console.log(
+                'Data recibida:',
+                data
+            );
+
+            const avisos =
+                this.normalizarAvisos(data);
+
+            console.log(
+                'Avisos extraídos:',
+                avisos
+            );
+
+            console.log(
+                'Cantidad extraída:',
+                avisos.length
+            );
+
+            console.log(
+                'IDs extraídos:',
+                avisos.map(a => a?.id)
+            );
 
             this.avisosTotales = avisos
                 .map(aviso =>
-                    this.normalizarAviso(aviso)
+                    this.normalizarAviso(
+                        aviso
+                    )
                 )
                 .filter(aviso =>
                     Object.keys(aviso).length > 0
                 );
 
+            console.log(
+                'avisosTotales después de normalizar:',
+                this.avisosTotales
+            );
+
+            console.log(
+                'Cantidad final:',
+                this.avisosTotales.length
+            );
+
+            console.log(
+                'IDs finales:',
+                this.avisosTotales.map(
+                    aviso => aviso.id
+                )
+            );
+
+            console.log(
+                'Tipos finales:',
+                this.avisosTotales.map(
+                    aviso => ({
+                        id: aviso.id,
+                        tipo: aviso.tipo,
+                        titulo: aviso.titulo
+                    })
+                )
+            );
+
             if (
                 this.paginaActual < 1 ||
                 this.paginaActual > this.totalPaginas
             ) {
+                console.warn(
+                    '⚠️ Página fuera de rango. Regresando a 1.'
+                );
+
                 this.paginaActual = 1;
             }
+
+            console.log(
+                'Página actual final:',
+                this.paginaActual
+            );
+
+            console.groupEnd();
         },
+
+        // ============================================================
+        // CARGAR AVISOS
+        // ============================================================
+
+        async cargarAvisos(url) {
+            console.group(
+                '🌐 [AVISOS] cargarAvisos'
+            );
+
+            console.log(
+                'URL solicitada:',
+                url.toString()
+            );
+
+            console.log(
+                'Filtro actual:',
+                this.filtroTipo
+            );
+
+            console.log(
+                'Búsqueda actual:',
+                this.busqueda
+            );
+
+            this.cargando = true;
+
+            try {
+                console.log(
+                    'Enviando fetch...'
+                );
+
+                const response =
+                    await fetch(
+                        url.toString(),
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Accept':
+                                    'application/json',
+
+                                'X-Requested-With':
+                                    'XMLHttpRequest'
+                            },
+                            credentials:
+                                'same-origin',
+
+                            cache:
+                                'no-store'
+                        }
+                    );
+
+                console.log(
+                    'Response:',
+                    response
+                );
+
+                console.log(
+                    'HTTP status:',
+                    response.status
+                );
+
+                console.log(
+                    'HTTP OK:',
+                    response.ok
+                );
+
+                const contentType =
+                    response.headers.get(
+                        'content-type'
+                    ) || '';
+
+                console.log(
+                    'Content-Type:',
+                    contentType
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Error HTTP ${response.status}`
+                    );
+                }
+
+                if (
+                    !contentType.includes(
+                        'application/json'
+                    )
+                ) {
+                    const texto =
+                        await response.text();
+
+                    console.error(
+                        '❌ Respuesta NO JSON:',
+                        texto
+                    );
+
+                    throw new Error(
+                        'El servidor no devolvió JSON'
+                    );
+                }
+
+                const data =
+                    await response.json();
+
+                console.log(
+                    '📥 JSON recibido del servidor:',
+                    data
+                );
+
+                console.log(
+                    'Total enviado por Laravel:',
+                    data?.total
+                );
+
+                console.log(
+                    'Avisos enviados por Laravel:',
+                    data?.avisos
+                );
+
+                console.log(
+                    'IDs enviados por Laravel:',
+                    Array.isArray(data?.avisos)
+                        ? data.avisos.map(
+                            aviso => aviso?.id
+                        )
+                        : 'NO ES ARRAY'
+                );
+
+                this.actualizarAvisos(
+                    data
+                );
+
+                console.log(
+                    '✅ Estado Alpine después de actualizar:',
+                    this.avisosTotales
+                );
+
+                console.log(
+                    'IDs Alpine:',
+                    this.avisosTotales.map(
+                        aviso => aviso.id
+                    )
+                );
+
+                window.history.replaceState(
+                    {},
+                    '',
+                    url.toString()
+                );
+
+                console.log(
+                    'URL del navegador actualizada:',
+                    window.location.href
+                );
+
+                console.groupEnd();
+
+                return true;
+
+            } catch (error) {
+                console.error(
+                    '❌ Error al cargar avisos:',
+                    error
+                );
+
+                console.groupEnd();
+
+                return false;
+
+            } finally {
+                this.cargando = false;
+
+                console.log(
+                    '🏁 cargarAvisos finalizado'
+                );
+            }
+        },
+
+        // ============================================================
+        // PAGINACIÓN
+        // ============================================================
 
         irPagina(pagina) {
             pagina = Number(pagina);
 
-            if (!Number.isInteger(pagina)) {
+            console.log(
+                '📄 [AVISOS] irPagina:',
+                pagina
+            );
+
+            if (
+                !Number.isInteger(pagina)
+            ) {
                 return;
             }
 
@@ -263,7 +887,9 @@ function avisosUsuario() {
         },
 
         paginaAnterior() {
-            if (this.paginaActual > 1) {
+            if (
+                this.paginaActual > 1
+            ) {
                 this.irPagina(
                     this.paginaActual - 1
                 );
@@ -272,7 +898,8 @@ function avisosUsuario() {
 
         paginaSiguiente() {
             if (
-                this.paginaActual < this.totalPaginas
+                this.paginaActual <
+                this.totalPaginas
             ) {
                 this.irPagina(
                     this.paginaActual + 1
@@ -280,79 +907,25 @@ function avisosUsuario() {
             }
         },
 
-        async cargarAvisos(url) {
-            this.cargando = true;
-
-            try {
-                const response = await fetch(
-                    url.toString(),
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        credentials: 'same-origin',
-                        cache: 'no-store'
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error(
-                        `Error HTTP ${response.status}`
-                    );
-                }
-
-                const contentType =
-                    response.headers.get(
-                        'content-type'
-                    ) || '';
-
-                if (
-                    !contentType.includes(
-                        'application/json'
-                    )
-                ) {
-                    const texto = await response.text();
-
-                    console.error(
-                        'Respuesta del servidor:',
-                        texto
-                    );
-
-                    throw new Error(
-                        'El servidor no devolvió JSON'
-                    );
-                }
-
-                const data =
-                    await response.json();
-
-                this.actualizarAvisos(data);
-
-                window.history.replaceState(
-                    {},
-                    '',
-                    url.toString()
-                );
-
-                return true;
-            } catch (error) {
-                console.error(
-                    'Error al cargar avisos:',
-                    error
-                );
-
-                return false;
-            } finally {
-                this.cargando = false;
-            }
-        },
+        // ============================================================
+        // FILTROS
+        // ============================================================
 
         async cambiarFiltro(tipo) {
+            console.group(
+                '🔎 [AVISOS] cambiarFiltro'
+            );
+
+            console.log(
+                'Filtro recibido:',
+                tipo
+            );
+
             tipo = String(
                 tipo || 'todos'
-            ).trim().toLowerCase();
+            )
+                .trim()
+                .toLowerCase();
 
             const tiposPermitidos = [
                 'todos',
@@ -363,8 +936,15 @@ function avisosUsuario() {
             ];
 
             if (
-                !tiposPermitidos.includes(tipo)
+                !tiposPermitidos.includes(
+                    tipo
+                )
             ) {
+                console.warn(
+                    '⚠️ Tipo no permitido:',
+                    tipo
+                );
+
                 tipo = 'todos';
             }
 
@@ -375,7 +955,9 @@ function avisosUsuario() {
                 window.location.href
             );
 
-            if (tipo === 'todos') {
+            if (
+                tipo === 'todos'
+            ) {
                 url.searchParams.delete(
                     'tipo'
                 );
@@ -390,7 +972,9 @@ function avisosUsuario() {
                 this.busqueda || ''
             ).trim();
 
-            if (texto !== '') {
+            if (
+                texto !== ''
+            ) {
                 url.searchParams.set(
                     'buscar',
                     texto
@@ -405,21 +989,44 @@ function avisosUsuario() {
                 'page'
             );
 
+            console.log(
+                'Filtro final:',
+                this.filtroTipo
+            );
+
+            console.log(
+                'URL final:',
+                url.toString()
+            );
+
             await this.cargarAvisos(
                 url
             );
+
+            console.groupEnd();
         },
 
         async buscarAvisos() {
+            console.group(
+                '🔍 [AVISOS] buscarAvisos'
+            );
+
             const texto = String(
                 this.busqueda || ''
             ).trim();
+
+            console.log(
+                'Texto búsqueda:',
+                texto
+            );
 
             const url = new URL(
                 window.location.href
             );
 
-            if (texto !== '') {
+            if (
+                texto !== ''
+            ) {
                 url.searchParams.set(
                     'buscar',
                     texto
@@ -432,7 +1039,9 @@ function avisosUsuario() {
 
             const tipo = String(
                 this.filtroTipo || 'todos'
-            ).trim().toLowerCase();
+            )
+                .trim()
+                .toLowerCase();
 
             if (
                 tipo &&
@@ -454,12 +1063,23 @@ function avisosUsuario() {
 
             this.paginaActual = 1;
 
+            console.log(
+                'URL búsqueda:',
+                url.toString()
+            );
+
             await this.cargarAvisos(
                 url
             );
+
+            console.groupEnd();
         },
 
         async limpiarBusqueda() {
+            console.log(
+                '🧹 [AVISOS] limpiarBusqueda'
+            );
+
             this.busqueda = '';
             this.paginaActual = 1;
 
@@ -477,7 +1097,9 @@ function avisosUsuario() {
 
             const tipo = String(
                 this.filtroTipo || 'todos'
-            ).trim().toLowerCase();
+            )
+                .trim()
+                .toLowerCase();
 
             if (
                 tipo &&
@@ -499,6 +1121,10 @@ function avisosUsuario() {
         },
 
         limpiarFiltros() {
+            console.log(
+                '🧹 [AVISOS] limpiarFiltros'
+            );
+
             this.filtroTipo = 'todos';
             this.busqueda = '';
             this.paginaActual = 1;
@@ -523,23 +1149,38 @@ function avisosUsuario() {
                 url.toString();
         },
 
+        // ============================================================
+        // VISIBILIDAD
+        // ============================================================
+
         mostrarAviso(tipo) {
             const filtro = String(
                 this.filtroTipo || 'todos'
-            ).trim().toLowerCase();
+            )
+                .trim()
+                .toLowerCase();
 
             const tipoAviso = String(
                 tipo || ''
-            ).trim().toLowerCase();
+            )
+                .trim()
+                .toLowerCase();
 
-            if (
+            const visible =
                 !filtro ||
-                filtro === 'todos'
-            ) {
-                return true;
-            }
+                filtro === 'todos' ||
+                tipoAviso === filtro;
 
-            return tipoAviso === filtro;
+            console.log(
+                '👁️ [AVISOS] mostrarAviso:',
+                {
+                    filtro,
+                    tipoAviso,
+                    visible
+                }
+            );
+
+            return visible;
         },
 
         hayAvisosVisibles() {
@@ -551,34 +1192,58 @@ function avisosUsuario() {
                 return false;
             }
 
-            return this.avisosTotales.some(
-                aviso =>
-                    this.mostrarAviso(
-                        aviso.tipo
-                    )
+            const resultado =
+                this.avisosTotales.some(
+                    aviso =>
+                        this.mostrarAviso(
+                            aviso.tipo
+                        )
+                );
+
+            console.log(
+                '👁️ [AVISOS] hayAvisosVisibles:',
+                resultado
             );
+
+            return resultado;
         },
 
         hayAvisos() {
-            return Array.isArray(
-                this.avisosTotales
-            ) &&
+            const resultado =
+                Array.isArray(
+                    this.avisosTotales
+                ) &&
                 this.avisosTotales.length > 0;
+
+            console.log(
+                '📋 [AVISOS] hayAvisos:',
+                resultado,
+                'cantidad:',
+                this.avisosTotales.length
+            );
+
+            return resultado;
         },
 
         hayBusqueda() {
             return String(
                 this.busqueda || ''
-            ).trim().length > 0;
+            )
+                .trim()
+                .length > 0;
         },
 
         nombreFiltro() {
             const nombres = {
                 todos: 'todos los avisos',
-                mantenimiento: 'avisos de mantenimiento',
-                incidente: 'avisos de falla o incidente',
-                informativo: 'avisos informativos',
-                general: 'avisos generales'
+                mantenimiento:
+                    'avisos de mantenimiento',
+                incidente:
+                    'avisos de falla o incidente',
+                informativo:
+                    'avisos informativos',
+                general:
+                    'avisos generales'
             };
 
             return nombres[
@@ -587,15 +1252,23 @@ function avisosUsuario() {
         },
 
         tipoLabel(tipo) {
-            const tipoNormalizado = String(
-                tipo || ''
-            ).trim().toLowerCase();
+            const tipoNormalizado =
+                String(tipo || '')
+                    .trim()
+                    .toLowerCase();
 
             const tipos = {
-                mantenimiento: 'MANTENIMIENTO',
-                incidente: 'FALLA / INCIDENTE',
-                informativo: 'INFORMATIVO',
-                general: 'GENERAL'
+                mantenimiento:
+                    'MANTENIMIENTO',
+
+                incidente:
+                    'FALLA / INCIDENTE',
+
+                informativo:
+                    'INFORMATIVO',
+
+                general:
+                    'GENERAL'
             };
 
             return tipos[
@@ -611,9 +1284,7 @@ function avisosUsuario() {
                 return '';
             }
 
-            texto = String(
-                texto
-            );
+            texto = String(texto);
 
             if (!texto) {
                 return '';
@@ -628,18 +1299,14 @@ function avisosUsuario() {
                 return 'No especificada';
             }
 
-            const date = new Date(
-                fecha
-            );
+            const date = new Date(fecha);
 
             if (
                 isNaN(
                     date.getTime()
                 )
             ) {
-                return String(
-                    fecha
-                );
+                return String(fecha);
             }
 
             return new Intl.DateTimeFormat(
@@ -651,9 +1318,7 @@ function avisosUsuario() {
                     hour: '2-digit',
                     minute: '2-digit'
                 }
-            ).format(
-                date
-            );
+            ).format(date);
         },
 
         formatearHora(fecha) {
@@ -661,9 +1326,7 @@ function avisosUsuario() {
                 return 'No disponible';
             }
 
-            const date = new Date(
-                fecha
-            );
+            const date = new Date(fecha);
 
             if (
                 isNaN(
@@ -679,12 +1342,19 @@ function avisosUsuario() {
                     hour: '2-digit',
                     minute: '2-digit'
                 }
-            ).format(
-                date
-            );
+            ).format(date);
         },
 
+        // ============================================================
+        // MODAL
+        // ============================================================
+
         abrirAviso(aviso) {
+            console.log(
+                '📖 [AVISOS] abrirAviso:',
+                aviso
+            );
+
             if (
                 !aviso ||
                 typeof aviso !== 'object'
@@ -708,6 +1378,10 @@ function avisosUsuario() {
         },
 
         cerrarAviso() {
+            console.log(
+                '❌ [AVISOS] cerrarAviso'
+            );
+
             this.modalAbierto = false;
 
             document.body.classList.remove(
@@ -715,11 +1389,17 @@ function avisosUsuario() {
             );
 
             setTimeout(() => {
-                if (!this.modalAbierto) {
+                if (
+                    !this.modalAbierto
+                ) {
                     this.avisoSeleccionado = {};
                 }
             }, 200);
         },
+
+        // ============================================================
+        // ARCHIVOS
+        // ============================================================
 
         urlArchivo(archivo) {
             if (!archivo) {
@@ -735,21 +1415,15 @@ function avisosUsuario() {
             }
 
             if (
-                archivo.startsWith(
-                    'http://'
-                ) ||
-                archivo.startsWith(
-                    'https://'
-                ) ||
+                archivo.startsWith('http://') ||
+                archivo.startsWith('https://') ||
                 archivo.startsWith('/')
             ) {
                 return archivo;
             }
 
             if (
-                archivo.startsWith(
-                    'storage/'
-                )
+                archivo.startsWith('storage/')
             ) {
                 return '/' + archivo;
             }
@@ -762,9 +1436,7 @@ function avisosUsuario() {
                 return '';
             }
 
-            return String(
-                archivo
-            )
+            return String(archivo)
                 .split('?')[0]
                 .split('#')[0]
                 .split('.')
@@ -808,7 +1480,16 @@ function avisosUsuario() {
             );
         },
 
+        // ============================================================
+        // DEPARTAMENTOS
+        // ============================================================
+
         obtenerDepartamentos(ids) {
+            console.log(
+                '🏢 [AVISOS] obtenerDepartamentos:',
+                ids
+            );
+
             if (!Array.isArray(ids)) {
                 return [];
             }
@@ -835,9 +1516,7 @@ function avisosUsuario() {
                         nombre =>
                             nombre !== null &&
                             nombre !== undefined &&
-                            String(
-                                nombre
-                            ).trim() !== ''
+                            String(nombre).trim() !== ''
                     );
             }
 
@@ -863,16 +1542,23 @@ function avisosUsuario() {
                         nombre =>
                             nombre !== null &&
                             nombre !== undefined &&
-                            String(
-                                nombre
-                            ).trim() !== ''
+                            String(nombre).trim() !== ''
                     );
             }
 
             return [];
         },
 
+        // ============================================================
+        // USUARIOS
+        // ============================================================
+
         obtenerUsuarios(ids) {
+            console.log(
+                '👤 [AVISOS] obtenerUsuarios:',
+                ids
+            );
+
             if (
                 !Array.isArray(ids) ||
                 !Array.isArray(
@@ -903,9 +1589,17 @@ function avisosUsuario() {
 document.addEventListener(
     'alpine:init',
     () => {
+        console.log(
+            '🟢 [AVISOS] alpine:init detectado'
+        );
+
         Alpine.data(
             'avisosUsuario',
             avisosUsuario
+        );
+
+        console.log(
+            '🟢 [AVISOS] Alpine.data avisosUsuario registrado'
         );
     }
 );

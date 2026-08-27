@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\TicketComentario;
 use App\Models\Solucion;
 use App\Models\Oficina;
+use App\Models\Departamento;
 
 class TicketU extends Model
 {
@@ -48,10 +49,24 @@ class TicketU extends Model
         );
     }
 
-    public function oficina()
+    public function departamento()
     {
         return $this->belongsTo(
-            Oficina::class
+            Departamento::class,
+            'login',
+            'usuario_departamento'
+        );
+    }
+
+    public function oficina()
+    {
+        return $this->hasOneThrough(
+            Oficina::class,
+            Departamento::class,
+            'usuario_departamento',
+            'id',
+            'login',
+            'oficina_id'
         );
     }
 

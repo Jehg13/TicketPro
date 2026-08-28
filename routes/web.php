@@ -494,3 +494,50 @@ Route::get('/archivo-aviso/{path}', function ($path) {
         ->header('Access-Control-Allow-Headers', '*')
         ->header('Cache-Control', 'public, max-age=3600');
 })->where('path', '.*');
+
+
+Route::get('/archivo-perfil/{path}', function ($path) {
+    $path = ltrim($path, '/');
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    $contenido = Storage::disk('public')->get($path);
+    $mime = Storage::disk('public')->mimeType($path);
+    return response($contenido, 200)
+        ->header('Content-Type', $mime ?: 'application/octet-stream')
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        ->header('Access-Control-Allow-Headers', '*')
+        ->header('Cache-Control', 'public, max-age=3600');
+})->where('path', '.*');
+
+Route::get('/archivo/{path}', function ($path) {
+    $path = ltrim($path, '/');
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    $contenido = Storage::disk('public')->get($path);
+    $mime = Storage::disk('public')->mimeType($path);
+
+    return response($contenido, 200)
+        ->header(
+            'Content-Type',
+            $mime ?: 'application/octet-stream'
+        )
+        ->header(
+            'Access-Control-Allow-Origin',
+            '*'
+        )
+        ->header(
+            'Access-Control-Allow-Methods',
+            'GET, OPTIONS'
+        )
+        ->header(
+            'Access-Control-Allow-Headers',
+            '*'
+        )
+        ->header(
+            'Cache-Control',
+            'public, max-age=3600'
+        );
+})->where('path', '.*');

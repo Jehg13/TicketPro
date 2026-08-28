@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\AvisosusuarioController;
@@ -8,12 +9,31 @@ use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Api\MisTicketsUsuarioController;
 
 
+/*
+|--------------------------------------------------------------------------
+| AUTENTICACIÓN
+|--------------------------------------------------------------------------
+*/
+
 Route::post('/login', [
     AuthController::class,
     'login'
 ]);
 
+
+/*
+|--------------------------------------------------------------------------
+| RUTAS PROTEGIDAS
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth:sanctum')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | USUARIO
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/user', [
         AuthController::class,
@@ -25,6 +45,13 @@ Route::middleware('auth:sanctum')->group(function () {
         'logout'
     ]);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | TICKETS GENERALES
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/tickets', [
         TicketController::class,
         'index'
@@ -35,37 +62,117 @@ Route::middleware('auth:sanctum')->group(function () {
         'show'
     ])->name('api.tickets.show');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | AVISOS
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/avisos', [
         AvisosusuarioController::class,
         'index'
     ]);
 
-Route::get('/equipos', [
-    TicketApiController::class,
-    'equipos',
-]);
 
-Route::post('/ticketscrear', [
-    TicketApiController::class,
-    'store',
-]);
+    /*
+    |--------------------------------------------------------------------------
+    | EQUIPOS
+    |--------------------------------------------------------------------------
+    */
 
-Route::get(
-        '/mis-tickets', [
-    MisTicketsUsuarioController::class,
-    'index'
-]);
+    Route::get('/equipos', [
+        TicketApiController::class,
+        'equipos',
+    ]);
 
-Route::get(
-        '/mis-tickets/{id}', [
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREAR TICKET
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/ticketscrear', [
+        TicketApiController::class,
+        'store',
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MIS TICKETS - USUARIO
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/mis-tickets', [
+        MisTicketsUsuarioController::class,
+        'index'
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DETALLE DE MI TICKET
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/mis-tickets/{id}', [
         MisTicketsUsuarioController::class,
         'show'
-]);
+    ]);
 
-Route::get(
-        '/mis-tickets-resumen', [
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESUMEN DE MIS TICKETS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/mis-tickets-resumen', [
         MisTicketsUsuarioController::class,
         'resumen'
-]);
+    ]);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | NOTIFICACIONES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/mis-tickets-notificaciones', [
+        MisTicketsUsuarioController::class,
+        'notificaciones'
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MARCAR UNA NOTIFICACIÓN COMO LEÍDA
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/mis-tickets-notificaciones/{id}/leida',
+        [
+            MisTicketsUsuarioController::class,
+            'marcarNotificacionLeida'
+        ]
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MARCAR TODAS LAS NOTIFICACIONES COMO LEÍDAS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/mis-tickets-notificaciones-leer-todas',
+        [
+            MisTicketsUsuarioController::class,
+            'marcarTodasNotificacionesLeidas'
+        ]
+    );
 });

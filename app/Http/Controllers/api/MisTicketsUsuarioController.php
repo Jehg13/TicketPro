@@ -91,6 +91,59 @@ class MisTicketsUsuarioController extends Controller
         $notificacion->update(['leida'=>true]);
         return response()->json(['success'=>true,'message'=>'Notificación marcada como leída.']);
     }
+
+    public function agregarComentario(Request $request, $id)
+{
+    $usuario = Auth::user();
+
+    if (!$usuario) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Sesión no válida.'
+        ], 401);
+    }
+
+    $request->validate([
+        'mensaje' => 'required|string|max:2000',
+        'archivo' => 'nullable|file|max:10240'
+    ]);
+
+    $login = trim((string) $usuario->login);
+
+    $ticket = TicketU::where('id', $id)
+        ->where('login', $login)
+        ->first();
+
+    if (!$ticket) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Ticket no encontrado o no tienes permiso para comentar.'
+        ], 404);
+    }
+
+    $archivo = null;
+
+    if ($request->hasFile('archivo')) {
+        $archivo = $request->file('archivo')->store(
+            'ticket_comentarios',
+            'public'
+        );
+    }
+
+    $comentario = $ticket->historialComentarios()->create([
+        'login' => $login,
+        'mensaje' => trim($request->input('mensaje')),
+        'archivo' => $archivo
+    ]);
+
+    $comentario->load('usuario');
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Comentario agregado correctamente.',
+        'comentario' => $comentario
+    ], 201);
+}
     public function marcarTodasNotificacionesLeidas()
     {
         $usuario=Auth::user();

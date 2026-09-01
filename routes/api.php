@@ -7,10 +7,14 @@ use App\Http\Controllers\Api\AvisosusuarioController;
 use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Api\MisTicketsUsuarioController;
 use App\Http\Controllers\Api\PerfilController;
-use App\Http\Controllers\Api\TecnologiasController;
-use App\Http\Controllers\Api\TicketsadminController;
+use App\Http\Controllers\api\TecnologiasController;
+use App\Http\Controllers\api\TicketsadminController;
+use App\Http\Controllers\api\AvisosController;
 use App\Http\Controllers\SolucionController;
 use App\Http\Controllers\TicketComentarioController;
+use App\Http\Controllers\Api\DispositivosController;
+use App\Http\Controllers\Api\CambiosController;
+use App\Http\Controllers\Api\ObtenerusuariosController;
 
 Route::post('/login', [
     AuthController::class,
@@ -37,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/perfil/password', [
         PerfilController::class,
         'actualizarPassword'
+    ]);
+
+    Route::put('/perfil/admin', [
+        PerfilController::class,
+        'actualizarPerfilAdmin'
     ]);
 
     Route::post('/perfil/foto', [
@@ -68,6 +77,31 @@ Route::middleware('auth:sanctum')->group(function () {
         AvisosusuarioController::class,
         'index'
     ]);
+
+    Route::get('/admin/avisos', [
+        AvisosController::class,
+        'index'
+    ]);
+
+    Route::post('/admin/avisos', [
+        AvisosController::class,
+        'store'
+    ])->name('avisos.store');
+
+    Route::get('/admin/avisos/{aviso}', [
+        AvisosController::class,
+        'show'
+    ])->name('avisos.show');
+
+    Route::put('/admin/avisos/{aviso}', [
+        AvisosController::class,
+        'update'
+    ])->name('avisos.update');
+
+    Route::delete('/admin/avisos/{aviso}', [
+        AvisosController::class,
+        'destroy'
+    ])->name('avisos.destroy');
 
     Route::get('/equipos', [
         TicketApiController::class,
@@ -141,4 +175,26 @@ Route::middleware('auth:sanctum')->group(function () {
         TicketComentarioController::class,
         'store'
     ]);
+Route::get('/cambios', [CambiosController::class, 'index']);
+    Route::get('/cambios/{id}', [CambiosController::class, 'show']);
+    Route::patch('/cambios/{id}/aprobar', [CambiosController::class, 'aprobar']);
+    Route::patch('/cambios/{id}/rechazar', [CambiosController::class, 'rechazar']);
+    Route::get('/', [PerfilController::class, 'show']);
+    Route::put('/', [PerfilController::class, 'update']);
+    Route::put('/password', [PerfilController::class, 'actualizarPassword']);
+    Route::post('/foto', [PerfilController::class, 'updateFoto']);
+    Route::delete('/foto', [PerfilController::class, 'deleteFoto']);
+    Route::get('/dispositivos', [DispositivosController::class, 'index']);
+Route::post('/dispositivos', [DispositivosController::class, 'store']);
+Route::get('/dispositivos/{id}', [DispositivosController::class, 'show']);
+Route::put('/dispositivos/{id}', [DispositivosController::class, 'update']);
+Route::patch('/dispositivos/{id}/estado', [DispositivosController::class, 'cambiarEstado']);
+Route::delete('/dispositivos/{id}', [DispositivosController::class, 'destroy']);
+Route::get('/usuarios', [ObtenerusuariosController::class, 'index']);
+Route::get('/usuarios/empresas', [ObtenerusuariosController::class, 'empresas']);
+Route::get('/usuarios/empresas/{empresaId}/oficinas', [ObtenerusuariosController::class, 'oficinasPorEmpresa']);
+Route::get('/usuarios/oficinas/{oficinaId}/departamentos', [ObtenerusuariosController::class, 'departamentosPorOficina']);
+Route::get('/usuarios/{login}', [ObtenerusuariosController::class, 'show']);
+Route::put('/usuarios/{login}', [ObtenerusuariosController::class, 'update']);
+Route::delete('/usuarios/{login}', [ObtenerusuariosController::class, 'destroy']);
 });

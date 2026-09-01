@@ -617,13 +617,6 @@ class SolicitudCambioController extends Controller
                 'red';
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREAR NOTIFICACIÓN
-        |--------------------------------------------------------------------------
-        */
-
         Notificacion::create([
             'login' =>
                 $login,

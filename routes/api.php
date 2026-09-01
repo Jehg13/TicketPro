@@ -7,6 +7,10 @@ use App\Http\Controllers\Api\AvisosusuarioController;
 use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Api\MisTicketsUsuarioController;
 use App\Http\Controllers\Api\PerfilController;
+use App\Http\Controllers\Api\TecnologiasController;
+use App\Http\Controllers\Api\TicketsadminController;
+use App\Http\Controllers\SolucionController;
+use App\Http\Controllers\TicketComentarioController;
 
 Route::post('/login', [
     AuthController::class,
@@ -108,5 +112,33 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/mis-tickets-notificaciones-leer-todas', [
         MisTicketsUsuarioController::class,
         'marcarTodasNotificacionesLeidas'
+    ]);
+
+    Route::get('/tecnologias', [TecnologiasController::class, 'index']);
+    Route::get('/tecnologias/evolucion', [TecnologiasController::class, 'evolucion']);
+
+    Route::get('/admin/tickets', [
+        TicketsadminController::class,
+        'tecnologias'
+    ]);
+
+    Route::get('/admin/tickets/{id}', [
+        TicketsadminController::class,
+        'show'
+    ]);
+
+    Route::post('/admin/tickets/{id}/tomar', [
+        TicketsadminController::class,
+        'tomar'
+    ]);
+
+    Route::post('/admin/tickets/{ticket}/solucion', [
+        SolucionController::class,
+        'store'
+    ]);
+
+    Route::post('/admin/tickets/{ticket}/comentarios', [
+        TicketComentarioController::class,
+        'store'
     ]);
 });

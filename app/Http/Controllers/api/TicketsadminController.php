@@ -32,6 +32,22 @@ class TicketsadminController extends Controller
         $ticketData['departamento'] = $departamento?->nombre;
         $ticketData['oficina'] = $oficina?->nombre;
         $ticketData['empresa'] = $empresa?->nombre;
+        $fotoTecnico = $ticket->tomadoPor?->picture;
+        if (
+            !$fotoTecnico ||
+            $fotoTecnico === 'profile-photos/user.png'
+        ) {
+            $fotoTecnico = $ticket->tomadoPor?->foto;
+        }
+        $ticketData['tomado_por'] = $ticket->tomadoPor
+            ? [
+                'login' => $ticket->tomadoPor->login,
+                'name' => $ticket->tomadoPor->name,
+                'email' => $ticket->tomadoPor->email,
+                'picture' => $fotoTecnico,
+                'foto' => $fotoTecnico,
+            ]
+            : null;
 
         return response()->json([
             'success' => true,
@@ -145,11 +161,33 @@ class TicketsadminController extends Controller
             ->withQueryString();
 
         if ($request->ajax()) {
+            $ticketItems = collect($tickets->items())->map(function ($ticket) {
+                $item = $ticket->toArray();
+                $tecnico = $ticket->tomadoPor;
+                $foto = $tecnico?->picture;
+
+                if (!$foto || $foto === 'profile-photos/user.png') {
+                    $foto = null;
+                }
+
+                $item['tomado_por'] = $tecnico
+                    ? [
+                        'login' => $tecnico->login,
+                        'name' => $tecnico->name,
+                        'email' => $tecnico->email,
+                        'picture' => $foto,
+                        'departamento' => $tecnico->departamento?->nombre,
+                    ]
+                    : null;
+
+                return $item;
+            })->values()->all();
+
             return response()->json([
                 'success' => true,
                 'filtro' => $filtro,
                 'buscar' => $buscar,
-                'tickets' => $tickets->items(),
+                'tickets' => $ticketItems,
                 'pagination' => [
                     'current_page' => $tickets->currentPage(),
                     'last_page' => $tickets->lastPage(),
@@ -395,9 +433,12 @@ class TicketsadminController extends Controller
                 'tomado_por' => [
                     'login' => $usuario->login,
                     'name' => $usuario->name,
-                    'foto' => $usuario->foto
-                        ? asset('storage/' . $usuario->foto)
-                        : asset('images/user.png'),
+                    'foto' => $usuario->picture &&
+                        $usuario->picture !== 'profile-photos/user.png'
+                        ? asset('storage/' . $usuario->picture)
+                        : ($usuario->foto
+                            ? asset('storage/' . $usuario->foto)
+                            : asset('images/user.png')),
                 ],
                 'fecha_tomado' => $ticket->fecha_tomado,
                 'estado' => $ticket->estado,
@@ -458,9 +499,12 @@ class TicketsadminController extends Controller
             'tomado_por' => [
                 'login' => $usuario->login,
                 'name' => $usuario->name,
-                'foto' => $usuario->foto
-                    ? asset('storage/' . $usuario->foto)
-                    : asset('images/user.png'),
+                'foto' => $usuario->picture &&
+                    $usuario->picture !== 'profile-photos/user.png'
+                    ? asset('storage/' . $usuario->picture)
+                    : ($usuario->foto
+                        ? asset('storage/' . $usuario->foto)
+                        : asset('images/user.png')),
             ],
             'fecha_tomado' => $ticket->fecha_tomado,
             'estado' => $ticket->estado,

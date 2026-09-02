@@ -26,6 +26,7 @@ Homestead.json
 # Build
 /public/build
 /storage/pail
+/storage/certificates/cacert.pem
 
 # PHP tools
 .phpactor.json

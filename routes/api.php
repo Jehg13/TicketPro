@@ -17,6 +17,7 @@ use App\Http\Controllers\TicketComentarioController;
 use App\Http\Controllers\Api\DispositivosController;
 use App\Http\Controllers\Api\CambiosController;
 use App\Http\Controllers\Api\ObtenerusuariosController;
+use App\Http\Controllers\Api\DeviceTokenController;
 
 Route::post('/login', [
     AuthController::class,
@@ -97,6 +98,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [
         AuthController::class,
         'logout'
+    ]);
+
+    Route::post('/device-tokens', [
+        DeviceTokenController::class,
+        'store'
+    ]);
+
+    Route::delete('/device-tokens', [
+        DeviceTokenController::class,
+        'destroy'
     ]);
 
     Route::get('/perfil', [

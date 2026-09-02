@@ -77,6 +77,25 @@
         </div>
     </aside>
     <main class="flex-1 flex flex-col h-screen overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#060818] [&::-webkit-scrollbar-thumb]:bg-[#1e295d] [&::-webkit-scrollbar-thumb]:rounded-full">
+        @if (session('success'))
+            <div id="successMessage"
+                class="fixed left-4 right-4 top-5 z-[9999] w-auto rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)] sm:left-auto sm:right-5 sm:w-full sm:max-w-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-bold text-white">¡Éxito!</p>
+                        <p class="mt-1 break-words text-sm text-slate-400">{{ session('success') }}</p>
+                    </div>
+                    <button type="button" onclick="document.getElementById('successMessage')?.remove()" class="shrink-0 text-slate-500 hover:text-white">
+                        ✕
+                    </button>
+                </div>
+            </div>
+        @endif
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center px-6 py-6 md:py-8 gap-4">
             <div class="flex items-center gap-3">
                 <button type="button" @click="menuMovilAbierto = !menuMovilAbierto" class="md:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 focus:outline-none">

@@ -46,8 +46,19 @@ class User extends Authenticatable
     }
     public function sendPasswordResetNotification($token)
     {
-        $url=url('/reset-password/'.$token.'?email='.urlencode($this->email));
-        $this->notify(new ResetPasswordNotification($url,$this));
+        $mode = strtolower(env('PASSWORD_RESET_URL_MODE', 'web'));
+        $email = urlencode($this->email);
+
+        if ($mode === 'mobile') {
+            $url = 'ticketpro://reset-password?token=' . urlencode($token) . '&email=' . $email;
+        } else {
+            $url = route('password.reset', [
+                'token' => $token,
+                'email' => $this->email,
+            ], false);
+        }
+
+        $this->notify(new ResetPasswordNotification($token, $url));
     }
     public function departamento()
     {

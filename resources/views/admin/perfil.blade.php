@@ -784,13 +784,17 @@
                                             </label>
 
 
-                                            <input type="text" name="login" value="{{ $usuario->login }}"
+                                            <input type="text" name="login" value="{{ old('login', $usuario->login) }}"
                                                 {{ !$puedeEditarPerfil ? 'disabled' : '' }}
                                                 class="w-full rounded-xl px-4 py-2.5 text-xs transition
 
                             {{ $puedeEditarPerfil
                                 ? 'bg-[#030712] border border-slate-700/80 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
                                 : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                            @error('login')
+                                                <p class="text-xs text-red-400 mt-2">{{ $message }}</p>
+                                            @enderror
 
                                         </div>
 
@@ -1127,7 +1131,7 @@
                                             </label>
 
                                             <input type="text" name="numero_empleado"
-                                                value="{{ $usuario->numero_empleado->numero_empleado ?? '' }}"
+                                                value="{{ old('numero_empleado', $usuario->numero_empleado->numero_empleado ?? '') }}"
                                                 placeholder="Sin número de empleado"
                                                 {{ !$puedeEditarPerfil ? 'disabled' : '' }}
                                                 class="w-full rounded-xl px-4 py-2.5 text-xs transition
@@ -1135,6 +1139,11 @@
         {{ $puedeEditarPerfil
             ? 'bg-[#030712] border border-slate-700/80 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
             : 'bg-[#030712]/50 border border-slate-800/80 text-slate-500 cursor-not-allowed' }}">
+
+                                            @error('numero_empleado')
+                                                <p class="text-xs text-red-400 mt-2">{{ $message }}</p>
+                                            @enderror
+
                                         </div>
 
                                         {{-- UBICACIÓN - FIJO
@@ -1782,7 +1791,8 @@
                             <!-- Body -->
                             <div class="p-6">
 
-                                <form action="{{ route('perfil.password.update') }}" method="POST">
+                                <form action="{{ route('perfil.password.update') }}" method="POST"
+                                    x-data="{ passwordNueva: '', passwordConfirmacion: '' }">
                                     @csrf
                                     @method('PUT')
                                     <!-- Contraseña actual -->
@@ -1814,8 +1824,34 @@
                                         </label>
 
                                         <input type="password" name="password" required minlength="8"
+                                            x-model="passwordNueva"
+                                            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}"
+                                            title="Debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
                                             class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                             placeholder="Ingresa tu nueva contraseña">
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-2 text-[10px]">
+                                            <p class="flex items-center gap-1.5"
+                                                :class="passwordNueva.length >= 8 ? 'text-emerald-400' : 'text-slate-500'">
+                                                <span x-text="passwordNueva.length >= 8 ? '✓' : '○'"></span>
+                                                8 caracteres mínimo
+                                            </p>
+                                            <p class="flex items-center gap-1.5"
+                                                :class="/[A-Z]/.test(passwordNueva) ? 'text-emerald-400' : 'text-slate-500'">
+                                                <span x-text="/[A-Z]/.test(passwordNueva) ? '✓' : '○'"></span>
+                                                Una mayúscula
+                                            </p>
+                                            <p class="flex items-center gap-1.5"
+                                                :class="/[a-z]/.test(passwordNueva) ? 'text-emerald-400' : 'text-slate-500'">
+                                                <span x-text="/[a-z]/.test(passwordNueva) ? '✓' : '○'"></span>
+                                                Una minúscula
+                                            </p>
+                                            <p class="flex items-center gap-1.5"
+                                                :class="/[0-9]/.test(passwordNueva) ? 'text-emerald-400' : 'text-slate-500'">
+                                                <span x-text="/[0-9]/.test(passwordNueva) ? '✓' : '○'"></span>
+                                                Un número
+                                            </p>
+                                        </div>
 
                                         @error('password')
                                             <p class="text-xs text-red-400 mt-2">
@@ -1834,8 +1870,18 @@
                                         </label>
 
                                         <input type="password" name="password_confirmation" required minlength="8"
+                                            x-model="passwordConfirmacion"
+                                            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}"
+                                            title="Debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
                                             class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                             placeholder="Confirma tu nueva contraseña">
+
+                                        <p class="flex items-center gap-1.5 text-[10px] mt-2"
+                                            :class="passwordConfirmacion && passwordConfirmacion === passwordNueva ? 'text-emerald-400' : 'text-slate-500'">
+                                            <span
+                                                x-text="passwordConfirmacion && passwordConfirmacion === passwordNueva ? '✓' : '○'"></span>
+                                            Las contraseñas coinciden
+                                        </p>
 
                                     </div>
 

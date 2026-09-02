@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TicketController;
@@ -20,6 +22,70 @@ Route::post('/login', [
     AuthController::class,
     'login'
 ]);
+
+Route::post('/password/forgot', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'email' => ['required', 'email'],
+    ]);
+
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
+
+    if ($status === Password::RESET_LINK_SENT) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Te hemos enviado un enlace para restablecer tu contraseña.',
+        ], 200);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'No encontramos un usuario registrado con ese correo electrónico.',
+    ], 422);
+})->middleware('guest');
+
+Route::post('/password/reset', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'token' => ['required'],
+        'email' => ['required', 'email'],
+        'password' => [
+            'required',
+            'confirmed',
+            'min:8',
+            'regex:/[A-Z]/',
+            'regex:/[a-z]/',
+            'regex:/[0-9]/',
+            'regex:/[^A-Za-z0-9]/',
+        ],
+    ]);
+
+    $status = Password::reset(
+        $request->only(
+            'email',
+            'password',
+            'password_confirmation',
+            'token'
+        ),
+        function ($user, $password) {
+            $user->pswd = Hash::make($password);
+            $user->password_updated_at = now();
+            $user->save();
+        }
+    );
+
+    if ($status === Password::PASSWORD_RESET) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Tu contraseña ha sido restablecida correctamente.',
+        ], 200);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'El enlace para restablecer tu contraseña no es válido o ha expirado.',
+    ], 422);
+})->middleware('guest');
 
 Route::middleware('auth:sanctum')->group(function () {
 

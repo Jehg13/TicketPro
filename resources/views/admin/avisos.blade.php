@@ -174,7 +174,7 @@
         CONTENIDO PRINCIPAL
     ========================================================== --}}
 
-    <main
+    <main x-data="avisosApp()"
         class="md:ml-[280px]
                min-h-screen
                px-4 py-5
@@ -183,6 +183,28 @@
                pt-20 md:pt-8">
 
         <div class="max-w-[1500px] mx-auto">
+
+            @if (session('success'))
+                <div id="successMessage"
+                    class="fixed left-4 right-4 sm:left-auto sm:right-5 top-5 z-[9999] w-auto sm:w-full sm:max-w-sm rounded-2xl border border-green-500/30 bg-[#0f1535] p-4 shadow-[0_0_30px_rgba(34,197,94,0.20)]">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-white">¡Éxito!</p>
+                            <p class="mt-1 text-sm text-slate-400 break-words">{{ session('success') }}</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('successMessage')?.remove()"
+                            class="text-slate-500 hover:text-white shrink-0">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            @endif
 
             {{-- =================================================
                 BOTÓN MENÚ MOBILE
@@ -1271,7 +1293,7 @@
                     </div>
                 </div>
             </div>
-            <div x-data="avisosApp()" class="mt-8">
+            <div class="mt-8">
                 <div
                     class="bg-[#0b1026]/90 border border-blue-900/40 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden">
                     <div class="p-6 border-b border-slate-800/80">
@@ -1468,19 +1490,19 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex items-center justify-end gap-2">
-                                                <button type="button" @click="abrirVer(@js($aviso))"
+                                                <button type="button" @click="typeof abrirVer === 'function' && abrirVer(@js($aviso))"
                                                     class="p-2 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20 transition"
                                                     title="Ver aviso">
                                                     <i data-lucide="eye" class="w-4 h-4"></i>
                                                 </button>
                                                 <button type="button"
-                                                    @click="abrirEditar(@js($aviso))"
+                                                    @click="typeof abrirEditar === 'function' && abrirEditar(@js($aviso))"
                                                     class="p-2 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition"
                                                     title="Editar aviso">
                                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                                 </button>
                                                 <button type="button"
-                                                    @click="abrirEliminar(@js($aviso))"
+                                                    @click="avisoSeleccionado = @js($aviso); modalEliminar = true"
                                                     class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition"
                                                     title="Eliminar aviso">
                                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1508,6 +1530,60 @@
                                 @endforelse
                             </tbody>
                         </table>
+
+                        <div class="mt-8 px-2 pb-2 sm:px-4">
+                            <div class="flex flex-col items-center justify-between gap-5 border-t border-slate-800/80 pt-5 sm:flex-row">
+
+                                <span class="text-center text-xs text-slate-400 sm:text-left">
+                                    Mostrando
+                                    <span class="font-medium text-slate-200">
+                                        {{ $avisos->firstItem() ?? 0 }}
+                                    </span>
+                                    a
+                                    <span class="font-medium text-slate-200">
+                                        {{ $avisos->lastItem() ?? 0 }}
+                                    </span>
+                                    de
+                                    <span class="font-medium text-slate-200">
+                                        {{ $avisos->total() }}
+                                    </span>
+                                    avisos
+                                </span>
+
+                                <div class="flex items-center gap-2">
+
+                                    @if ($avisos->onFirstPage())
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-slate-600">
+                                            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                                        </span>
+                                    @else
+                                        <a href="{{ $avisos->previousPageUrl() }}"
+                                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-slate-400 transition-all duration-200 hover:bg-slate-700 hover:text-white">
+                                            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                                        </a>
+                                    @endif
+
+                                    @foreach ($avisos->getUrlRange(max(1, $avisos->currentPage() - 2), min($avisos->lastPage(), $avisos->currentPage() + 2)) as $page => $url)
+                                        <a href="{{ $url }}"
+                                            class="flex h-9 w-9 items-center justify-center rounded-xl text-xs transition-all duration-200 {{ $page == $avisos->currentPage() ? 'bg-blue-600 font-bold text-white shadow-lg shadow-blue-600/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+                                            {{ $page }}
+                                        </a>
+                                    @endforeach
+
+                                    @if ($avisos->hasMorePages())
+                                        <a href="{{ $avisos->nextPageUrl() }}"
+                                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-slate-400 transition-all duration-200 hover:bg-slate-700 hover:text-white">
+                                            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                                        </a>
+                                    @else
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-slate-600">
+                                            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                                        </span>
+                                    @endif
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div x-show="modalVer" x-cloak x-transition.opacity @keydown.escape.window="cerrarModales()"
@@ -1533,7 +1609,7 @@
                                         <h2 class="text-xl font-bold text-white" x-text="avisoSeleccionado.titulo">
                                         </h2>
                                     </div>
-                                    <button type="button" @click="cerrarModales()"
+                                    <button type="button" @click="typeof cerrarModales === 'function' && cerrarModales()"
                                         class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
                                         <i data-lucide="x" class="w-5 h-5"></i>
                                     </button>
@@ -1758,9 +1834,9 @@
                 <div @click.outside="cerrarModales()" x-show="modalEditar" x-transition
                     class="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0b1026] border border-blue-900/50 rounded-2xl shadow-2xl">
 
-                    <template x-if="avisoSeleccionado">
+                    <template x-if="$data?.avisoSeleccionado && $data.avisoSeleccionado.id">
 
-                        <form :action="'/tecnologias/avisos/' + avisoSeleccionado.id" method="POST"
+                        <form :action="($data?.avisoSeleccionado && $data.avisoSeleccionado.id) ? '/tecnologias/avisos/' + $data.avisoSeleccionado.id : '#'" method="POST"
                             enctype="multipart/form-data" class="p-6">
 
                             @csrf
@@ -2285,7 +2361,7 @@
 
                             <div class="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-slate-800">
 
-                                <button type="button" @click="cerrarModales()"
+                                <button type="button" @click="typeof cerrarModales === 'function' && cerrarModales()"
                                     class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:text-white transition">
 
                                     Cancelar
@@ -2313,7 +2389,7 @@
             class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <div @click.outside="cerrarModales()" x-show="modalEliminar" x-transition
                 class="w-full max-w-md bg-[#0b1026] border border-rose-900/50 rounded-2xl shadow-2xl">
-                <template x-if="avisoSeleccionado">
+                <template x-if="avisoSeleccionado && avisoSeleccionado.id">
                     <div class="p-6">
                         <div class="flex items-start gap-4">
                             <div
@@ -2334,7 +2410,7 @@
                                 </p>
                             </div>
                         </div>
-                        <form :action="'/tecnologias/avisos/' + avisoSeleccionado.id" method="POST"
+                        <form :action="avisoSeleccionado && avisoSeleccionado.id ? '/tecnologias/avisos/' + avisoSeleccionado.id : '#'" method="POST"
                             class="flex justify-end gap-3 mt-6">
                             @csrf
                             @method('DELETE')

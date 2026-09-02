@@ -115,7 +115,7 @@ Route::middleware(['guest'])->group(function () {
             ),
             function ($user, $password) {
 
-                $user->password = Hash::make($password);
+                $user->pswd = Hash::make($password);
                 $user->password_updated_at = now();
                 $user->save();
 
@@ -406,6 +406,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         '/tecnologias/usuarios',
         [ObtenerusuariosController::class, 'index']
     )->name('usuarios.tecnologias');
+
+    Route::get(
+        '/tecnologias/usuarios/generar-numero-empleado',
+        [ObtenerusuariosController::class, 'generarNumeroEmpleado']
+    )->name('usuarios.generar-numero-empleado');
 
 
     Route::get(

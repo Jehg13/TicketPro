@@ -66,7 +66,8 @@ class AvisosController extends Controller
         $avisos = Aviso::with('publicadoPor')
             ->orderByDesc('fijado')
             ->orderByDesc('fecha_inicio')
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
 
         $notificaciones = Notificacion::where(
             'login',

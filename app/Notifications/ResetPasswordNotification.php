@@ -12,9 +12,12 @@ class ResetPasswordNotification extends Notification
 
     protected string $token;
 
-    public function __construct(string $token)
+    protected ?string $customUrl;
+
+    public function __construct(string $token, ?string $customUrl = null)
     {
         $this->token = $token;
+        $this->customUrl = $customUrl;
     }
 
     public function via(object $notifiable): array
@@ -24,7 +27,7 @@ class ResetPasswordNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $url = url(route('password.reset', [
+        $url = $this->customUrl ?? url(route('password.reset', [
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));

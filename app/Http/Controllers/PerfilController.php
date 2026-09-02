@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use App\Models\SolicitudCambio;
 use App\Models\User;
 use App\Models\Notificacion;
@@ -111,6 +112,7 @@ class PerfilController extends Controller
                 'required',
                 'string',
                 'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
                 'confirmed',
             ],
         ], [
@@ -122,6 +124,9 @@ class PerfilController extends Controller
 
             'password.min' =>
                 'La nueva contraseña debe tener al menos 8 caracteres.',
+
+            'password.regex' =>
+                'La nueva contraseña debe incluir al menos una mayúscula, una minúscula y un número.',
 
             'password.confirmed' =>
                 'Las contraseñas nuevas no coinciden.',
@@ -310,7 +315,7 @@ class PerfilController extends Controller
                 'required',
                 'string',
                 'max:100',
-                'unique:users,login,' . $loginActual . ',login',
+                Rule::unique('users', 'login')->ignore($loginActual, 'login'),
             ],
 
             'email' => [
@@ -342,7 +347,14 @@ class PerfilController extends Controller
                 'required',
                 'string',
                 'max:100',
+                Rule::unique('numeros_empleado', 'numero_empleado')
+                    ->ignore($loginActual, 'login'),
             ],
+        ], [
+            'login.unique' =>
+                'Ese login ya está registrado por otro usuario.',
+            'numero_empleado.unique' =>
+                'Ese número de empleado ya está asignado a otro usuario.',
         ]);
 
         DB::beginTransaction();

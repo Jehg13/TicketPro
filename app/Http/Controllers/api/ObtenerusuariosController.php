@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ObtenerusuariosController extends Controller
@@ -240,6 +241,27 @@ class ObtenerusuariosController extends Controller
             ->first();
 
         if (!$usuario) {
+            $loginSolicitado = trim((string) $request->input('login', ''));
+            $loginDuplicado = $loginSolicitado !== '' &&
+                DB::table('users')
+                    ->whereRaw(
+                        'LOWER(TRIM(login)) = ?',
+                        [strtolower($loginSolicitado)]
+                    )
+                    ->exists();
+
+            if ($loginDuplicado) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ese login ya está asignado a otro usuario.',
+                    'errors' => [
+                        'login' => [
+                            'Ese login ya está asignado a otro usuario.'
+                        ]
+                    ]
+                ], 422);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'El usuario no existe.'
@@ -249,10 +271,15 @@ class ObtenerusuariosController extends Controller
         try {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
+                'login' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    Rule::unique('users', 'login')->ignore($login, 'login')
+                ],
                 'email' => ['required', 'email', 'max:255'],
                 'phone' => ['nullable', 'string', 'max:30'],
                 'password' => ['nullable', 'string', 'min:6', 'max:255'],
-                'current_password' => ['required', 'string'],
                 'numero_empleado' => ['required', 'string', 'max:50'],
                 'role' => ['required', 'string', 'max:100'],
                 'active' => ['required', 'in:Y,N'],
@@ -269,18 +296,35 @@ class ObtenerusuariosController extends Controller
         }
 
         $nombre = trim((string) $validated['name']);
+        $nuevoLogin = trim((string) $validated['login']);
         $email = trim((string) $validated['email']);
         $phone = isset($validated['phone']) && trim((string) $validated['phone']) !== ''
             ? trim((string) $validated['phone'])
             : null;
         $password = $validated['password'] ?? null;
-        $currentPassword = trim((string) ($validated['current_password'] ?? ''));
         $numeroEmpleado = trim((string) $validated['numero_empleado']);
         $role = trim((string) $validated['role']);
         $active = $validated['active'];
         $privAdmin = $validated['priv_admin'];
         $oficinaId = (int) $validated['oficina_id'];
         $departamentoNombre = trim((string) ($validated['departamento'] ?? ''));
+
+        $loginExiste = DB::table('users')
+            ->whereRaw('LOWER(TRIM(login)) = ?', [strtolower($nuevoLogin)])
+            ->where('login', '!=', $login)
+            ->exists();
+
+        if ($loginExiste) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ese login ya está asignado a otro usuario.',
+                'errors' => [
+                    'login' => [
+                        'Ese login ya está asignado a otro usuario.'
+                    ]
+                ]
+            ], 422);
+        }
 
         $numeroExiste = DB::table('numeros_empleado')
             ->where('numero_empleado', $numeroEmpleado)
@@ -321,16 +365,6 @@ class ObtenerusuariosController extends Controller
             ], 422);
         }
 
-        if ($currentPassword === '' || !Hash::check($currentPassword, Auth::user()->pswd)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'La contraseña actual es incorrecta.',
-                'errors' => [
-                    'current_password' => ['La contraseña actual es incorrecta.']
-                ]
-            ], 422);
-        }
-
         DB::beginTransaction();
 
         try {
@@ -350,6 +384,9 @@ class ObtenerusuariosController extends Controller
             DB::table('users')
                 ->where('login', $login)
                 ->update($datosUsuario);
+            DB::table('users')
+                ->where('login', $login)
+                ->update(['login' => $nuevoLogin]);
 
             $numeroEmpleadoExiste = DB::table('numeros_empleado')
                 ->where('login', $login)
@@ -359,13 +396,14 @@ class ObtenerusuariosController extends Controller
                 DB::table('numeros_empleado')
                     ->where('login', $login)
                     ->update([
+                        'login' => $nuevoLogin,
                         'numero_empleado' => $numeroEmpleado,
                         'updated_at' => now()
                     ]);
             } else {
                 DB::table('numeros_empleado')
                     ->insert([
-                        'login' => $login,
+                        'login' => $nuevoLogin,
                         'numero_empleado' => $numeroEmpleado,
                         'created_at' => now(),
                         'updated_at' => now()
@@ -381,12 +419,14 @@ class ObtenerusuariosController extends Controller
                     DB::table('departamentos')
                         ->where('usuario_departamento', $login)
                         ->update([
+                            'usuario_departamento' => $nuevoLogin,
                             'oficina_id' => $oficinaId
                         ]);
                 } else {
                     DB::table('departamentos')
                         ->where('usuario_departamento', $login)
                         ->update([
+                            'usuario_departamento' => $nuevoLogin,
                             'nombre' => $departamentoNombre,
                             'oficina_id' => $oficinaId
                         ]);
@@ -394,7 +434,7 @@ class ObtenerusuariosController extends Controller
             } elseif ($departamentoNombre !== '') {
                 DB::table('departamentos')
                     ->insert([
-                        'usuario_departamento' => $login,
+                        'usuario_departamento' => $nuevoLogin,
                         'nombre' => $departamentoNombre,
                         'oficina_id' => $oficinaId
                     ]);
@@ -402,8 +442,11 @@ class ObtenerusuariosController extends Controller
 
             DB::commit();
 
+            Notificacion::where('login', $login)
+                ->update(['login' => $nuevoLogin]);
+
             $usuarioActualizado = $this->consultaUsuarios()
-                ->where('users.login', $login)
+                ->where('users.login', $nuevoLogin)
                 ->first();
 
             if (!$usuarioActualizado) {

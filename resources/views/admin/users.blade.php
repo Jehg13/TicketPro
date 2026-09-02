@@ -715,7 +715,9 @@
                             <tbody class="divide-y divide-slate-800/50 text-slate-300">
 
                                 @forelse($usuarios as $usuario)
-                                    <tr class="hover:bg-slate-800/20 transition"
+                                    <tr data-numero-empleado="{{ $usuario->numero_empleado }}"
+                                        data-login="{{ $usuario->login }}"
+                                        class="hover:bg-slate-800/20 transition"
                                         :class="usuarioSeleccionado &&
                                             usuarioSeleccionado.login === @js($usuario->login) ?
                                             'bg-blue-500/5' :
@@ -1193,16 +1195,23 @@
                                             <div>
                                                 <label class="block text-xs font-medium text-slate-400 mb-2">Número de
                                                     empleado</label>
-                                                <input type="text" x-model="editarForm.numero_empleado"
+                                                <div class="flex gap-2">
+                                                    <input type="text" x-model="editarForm.numero_empleado"
                                                     placeholder="Número de empleado"
-                                                    class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+                                                    class="min-w-0 flex-1 bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+                                                    <button type="button" @click="generarNumeroEmpleado()"
+                                                        class="shrink-0 px-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:bg-blue-600/30 transition"
+                                                        title="Generar número de empleado">
+                                                        <i data-lucide="wand-sparkles" class="w-4 h-4"></i>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div>
                                                 <label
                                                     class="block text-xs font-medium text-slate-400 mb-2">Login</label>
-                                                <input type="text" :value="editarLogin" disabled
-                                                    class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed">
+                                                <input type="text" x-model="editarForm.login" required
+                                                    class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
                                             </div>
 
                                             <div>
@@ -1216,6 +1225,8 @@
                                                 <label
                                                     class="block text-xs font-medium text-slate-400 mb-2">Teléfono</label>
                                                 <input type="text" x-model="editarForm.phone"
+                                                    @input="editarForm.phone = formatearTelefono(editarForm.phone)"
+                                                    maxlength="14" inputmode="tel"
                                                     class="w-full bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
                                             </div>
 
@@ -1225,9 +1236,39 @@
                                                 <div class="relative">
                                                     <i data-lucide="lock"
                                                         class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
-                                                    <input type="password" x-model="editarForm.password"
+                                                    <div class="flex gap-2">
+                                                    <input type="text" x-model="editarForm.password"
+                                                        @input="editarForm.password = String(editarForm.password).slice(0, 255)"
                                                         autocomplete="new-password" placeholder="Nueva contraseña"
-                                                        class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+                                                        class="min-w-0 flex-1 bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500">
+                                                    <button type="button" @click="generarPasswordTemporal()"
+                                                        class="shrink-0 px-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:bg-blue-600/30 transition"
+                                                        title="Generar contraseña temporal">
+                                                        <i data-lucide="wand-sparkles" class="w-4 h-4"></i>
+                                                    </button>
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-2 text-[10px]">
+                                                    <p class="flex items-center gap-1.5"
+                                                        :class="editarForm.password.length >= 8 ? 'text-emerald-400' : 'text-slate-500'">
+                                                        <span x-text="editarForm.password.length >= 8 ? '✓' : '○'"></span>
+                                                        8 caracteres mínimo
+                                                    </p>
+                                                    <p class="flex items-center gap-1.5"
+                                                        :class="/[A-Z]/.test(editarForm.password) ? 'text-emerald-400' : 'text-slate-500'">
+                                                        <span x-text="/[A-Z]/.test(editarForm.password) ? '✓' : '○'"></span>
+                                                        Una mayúscula
+                                                    </p>
+                                                    <p class="flex items-center gap-1.5"
+                                                        :class="/[a-z]/.test(editarForm.password) ? 'text-emerald-400' : 'text-slate-500'">
+                                                        <span x-text="/[a-z]/.test(editarForm.password) ? '✓' : '○'"></span>
+                                                        Una minúscula
+                                                    </p>
+                                                    <p class="flex items-center gap-1.5"
+                                                        :class="/[0-9]/.test(editarForm.password) ? 'text-emerald-400' : 'text-slate-500'">
+                                                        <span x-text="/[0-9]/.test(editarForm.password) ? '✓' : '○'"></span>
+                                                        Un número
+                                                    </p>
                                                 </div>
                                                 <p class="text-[10px] text-slate-500 mt-1">Déjala vacía si no deseas
                                                     cambiarla.</p>
@@ -1766,9 +1807,10 @@
 
                             this.editarForm = {
                                 name: usuario.name ?? '',
+                                login: usuario.login ?? this.editarLogin,
                                 numero_empleado: usuario.numero_empleado ?? '',
                                 email: usuario.email ?? '',
-                                phone: usuario.phone ?? '',
+                                phone: this.formatearTelefono(usuario.phone ?? ''),
                                 password: '',
                                 role: usuario.role ?? 'Usuario',
                                 active: String(usuario.active ?? '').toUpperCase() === 'Y' ?
@@ -1843,12 +1885,72 @@
 
                 },
 
+                generarNumeroEmpleado() {
+                    fetch('/tecnologias/usuarios/generar-numero-empleado', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(async response => {
+                            const data = await response.json();
+                            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'No se pudo generar el número de empleado.');
+                            }
+                            this.editarForm.numero_empleado = data.numero_empleado;
+                        })
+                        .catch(error => {
+                            this.errorEditar = error.message;
+                        });
+                },
+
+                generarPasswordTemporal() {
+                    const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+                    const valores = new Uint32Array(10);
+                    crypto.getRandomValues(valores);
+                    this.editarForm.password = Array.from(valores, valor =>
+                        caracteres[valor % caracteres.length]
+                    ).join('');
+                },
+
+                formatearTelefono(valor) {
+                    const digitos = String(valor ?? '').replace(/\D/g, '').slice(0, 10);
+                    if (digitos.length <= 3) return digitos;
+                    if (digitos.length <= 6) return `(${digitos.slice(0, 3)}) ${digitos.slice(3)}`;
+                    return `(${digitos.slice(0, 3)}) ${digitos.slice(3, 6)}-${digitos.slice(6)}`;
+                },
+
                 solicitarPasswordEdicion() {
 
                     if (!this.editarLogin) {
 
                         this.errorEditar = 'No se encontró el login del usuario.';
 
+                        return;
+                    }
+
+                    const passwordNueva = String(this.editarForm.password ?? '');
+                    const passwordValida =
+                        passwordNueva === '' ||
+                        (passwordNueva.length >= 8 &&
+                            /[a-z]/.test(passwordNueva) &&
+                            /[A-Z]/.test(passwordNueva) &&
+                            /[0-9]/.test(passwordNueva));
+
+                    if (!passwordValida) {
+                        this.errorEditar =
+                            'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.';
+                        return;
+                    }
+
+                    const loginNuevo = String(this.editarForm.login ?? '').trim();
+                    const loginDuplicado = Array.from(document.querySelectorAll('[data-login]'))
+                        .some(elemento =>
+                            elemento.dataset.login === loginNuevo && loginNuevo !== this.editarLogin
+                        );
+
+                    if (loginDuplicado) {
+                        this.errorEditar = 'Ese login ya está registrado por otro usuario.';
                         return;
                     }
 
@@ -1950,6 +2052,7 @@
 
                     const payload = {
                         name: this.editarForm.name,
+                        login: this.editarForm.login,
                         numero_empleado: this.editarForm.numero_empleado,
                         email: this.editarForm.email,
                         phone: this.editarForm.phone,
@@ -2124,6 +2227,7 @@
 
                     this.editarForm = {
                         name: '',
+                        login: '',
                         numero_empleado: '',
                         email: '',
                         phone: '',

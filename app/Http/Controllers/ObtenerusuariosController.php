@@ -7,10 +7,32 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ObtenerusuariosController extends Controller
 {
+    public function generarNumeroEmpleado()
+    {
+        if (!Auth::check() || !$this->tienePermiso()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para generar números de empleado.'
+            ], 403);
+        }
+
+        do {
+            $numero = (string) random_int(100000, 999999);
+        } while (DB::table('numeros_empleado')
+            ->where('numero_empleado', $numero)
+            ->exists());
+
+        return response()->json([
+            'success' => true,
+            'numero_empleado' => $numero
+        ]);
+    }
+
     public function index(Request $request)
     {
         $this->verificarPermiso();
@@ -218,9 +240,21 @@ class ObtenerusuariosController extends Controller
         try {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
+                'login' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    Rule::unique('users', 'login')->ignore($login, 'login')
+                ],
                 'email' => ['required', 'email', 'max:255'],
                 'phone' => ['nullable', 'string', 'max:30'],
-                'password' => ['nullable', 'string', 'min:6', 'max:255'],
+                'password' => [
+                    'nullable',
+                    'string',
+                    'min:8',
+                    'max:255',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'
+                ],
                 'numero_empleado' => ['required', 'string', 'max:50'],
                 'role' => ['required', 'string', 'max:100'],
                 'active' => ['required', 'in:Y,N'],
@@ -237,6 +271,7 @@ class ObtenerusuariosController extends Controller
         }
 
         $nombre = trim((string) $validated['name']);
+        $nuevoLogin = trim((string) $validated['login']);
         $email = trim((string) $validated['email']);
 
         $phone = isset($validated['phone']) &&
@@ -312,6 +347,9 @@ class ObtenerusuariosController extends Controller
             DB::table('users')
                 ->where('login', $login)
                 ->update($datosUsuario);
+            DB::table('users')
+                ->where('login', $login)
+                ->update(['login' => $nuevoLogin]);
 
             $numeroEmpleadoExiste = DB::table('numeros_empleado')
                 ->where('login', $login)
@@ -321,13 +359,14 @@ class ObtenerusuariosController extends Controller
                 DB::table('numeros_empleado')
                     ->where('login', $login)
                     ->update([
+                        'login' => $nuevoLogin,
                         'numero_empleado' => $numeroEmpleado,
                         'updated_at' => now()
                     ]);
             } else {
                 DB::table('numeros_empleado')
                     ->insert([
-                        'login' => $login,
+                        'login' => $nuevoLogin,
                         'numero_empleado' => $numeroEmpleado,
                         'created_at' => now(),
                         'updated_at' => now()
@@ -343,12 +382,14 @@ class ObtenerusuariosController extends Controller
                     DB::table('departamentos')
                         ->where('usuario_departamento', $login)
                         ->update([
+                            'usuario_departamento' => $nuevoLogin,
                             'oficina_id' => $oficinaId
                         ]);
                 } else {
                     DB::table('departamentos')
                         ->where('usuario_departamento', $login)
                         ->update([
+                            'usuario_departamento' => $nuevoLogin,
                             'nombre' => $departamentoNombre,
                             'oficina_id' => $oficinaId
                         ]);
@@ -356,7 +397,7 @@ class ObtenerusuariosController extends Controller
             } elseif ($departamentoNombre !== '') {
                 DB::table('departamentos')
                     ->insert([
-                        'usuario_departamento' => $login,
+                    'usuario_departamento' => $nuevoLogin,
                         'nombre' => $departamentoNombre,
                         'oficina_id' => $oficinaId
                     ]);
@@ -364,8 +405,11 @@ class ObtenerusuariosController extends Controller
 
             DB::commit();
 
+            Notificacion::where('login', $login)
+                ->update(['login' => $nuevoLogin]);
+
             $usuarioActualizado = $this->consultaUsuarios()
-                ->where('users.login', $login)
+                ->where('users.login', $nuevoLogin)
                 ->first();
 
             if (!$usuarioActualizado) {
